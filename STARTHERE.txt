@@ -1,0 +1,101 @@
+
+		                 GnuCOBOL
+		https://www.gnu.org/software/gnucobol/
+		https://sourceforge.net/projects/gnucobol
+		https://savannah.gnu.org/projects/gnucobol
+
+If you're reading this file, then you must have recently installed GnuCOBOL
+on a Windows PC.  The README.txt file won't be very helpful to you, because
+it is intended for developers planning to build the GnuCOBOL compiler from
+source code.  Since you have installed a pre-built GnuCOBOL binary, you 
+probably want to get started right away.
+
+The most common problem getting started with GnuCOBOL is missing the 
+environment variables needed by the compiler, which are normally
+made available to sub-processes using the "set_env.cmd" script.  
+
+The quickest way to verify your installation of this GnuCOBOL binary is to 
+open a Windows CMD.EXE shell (or perhaps a Windows 10 Terminal shell), 
+then navigate to your compiler folder, whatever you named it, possibly 
+something like C:\GnuCOBOL.  This is sometimes erroneously called a "DOS
+Window", but it's a more modern version of that shell.  
+
+You should see a .bat file named "TestGC.cmd".  In Windows NT and higher, 
+a ".cmd" file is essentially the same as a ".bat" file.  Type "TestGC" at 
+the command line, and it will call "set_env.cmd" (to set required GnuCOBOL
+environment variables and PATH).  Then it will compile and execute the 
+"testfunc.cob" program twice, first as a .EXE file, and second as a .DLL
+file.  This will verify the compiler is working and correctly installed. 
+ 
+NOTE that the executable "testfunc" programs and listings are temporary
+files and will be automatically deleted when the TestGC.cmd script ends.  
+
+You must always run the "set_env.cmd" script when opening a new CMD.EXE 
+window before compiling and executing GnuCOBOL programs.  The environment 
+variables are only active for the duration of the CMD.EXE window, and
+will be forgotten when the window is closed.  
+
+It is possible to set up permanent GnuCOBOL environment variables, but 
+very difficult to change them if you need to install a newer version of 
+the compiler, or to simply change the name of the compiler folder or 
+its path. Setting this permanently (especially adding the contained bin
+folder to PATH) also creates the possiblity of conflicts with
+other software on your system.  
+
+You can double-click the "set_env.cmd" file in Windows Explorer to run it
+and open a CMD.EXE window.  You can also click on the "set_env.cmd" file 
+and "send to" the desktop.  That will create a desktop shortcut (icon) 
+that will open a CMD.EXE window, run set_env.cmd, and leave the window 
+open. Then you can CD (change directory) to a folder that contains your 
+.cob or .cbl source files and begin compiling and testing.
+
+There is also a supplied bat file named "gcx.cmd" for compiling COBOL 
+programs.  You can also create your own customized bat/cmd files.  
+
+If you open a new CMD.EXE window in a different folder or location,
+you can always call the set_env.cmd file using its full path name.  
+It must run in the folder where the GnuCOBOL compiler is installed
+in order to correctly set the environment variables and path.  
+
+I strongly recommend keeping your COBOL source and object code in 
+your own folders, and NOT in the GnuCOBOL compiler folder. 
+
+This version of GnuCOBOL includes GCSORT.EXE in the \bin folder where
+cobc.exe resides.  The GCSORT manual is also included in the \docs
+folder with GnuCOBOL manuals.
+
+This GnuCOBOL package also includes two different versions of
+the PDCurses runtime libraries, to allow you to try WinCON or WinGUI 
+support for screen input-output by renaming the library.  The default 
+PDCurses library is the WinCON version.
+
+06/28/2023  09:28 PM           202,214 pdcurses.dll
+06/28/2023  09:18 PM           185,615 pdcurses_wincon.dll
+06/28/2023  09:28 PM           202,214 pdcurses_wingui.dll
+
+You can use any text editor with GnuCOBOL.  One popular choice is
+open-source VSCodium which is the basis for Microsoft Visual
+Studio Code.  You can find more about this free software and download 
+it from:
+
+https://vscodium.com/    OR  
+https://github.com/VSCodium/vscodium/releases
+
+You can also find additional help in the GnuCOBOL forums on
+SourceForge:
+
+https://sourceforge.net/p/gnucobol/discussion/
+
+Good Luck!
+
+
+STARTHERE.txt written by 
+Arnold J. Trembley (arnold.trembley@att.net) 
+This GnuCOBOL binary was built by Chuck Haatvedt using MSYS2. 
+
+
+Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License,
+Version 1.3 or any later version published by the Free Software
+Foundation.
+A copy of the license is included in the distribution of this file.

@@ -1,0 +1,1068 @@
+#!/usr/bin/python2
+
+################################################################################
+# Copyright (c) 2019-2022 COBOLworx and contributors
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in
+#      the documentation and/or other materials provided with the
+#      distribution.
+#    * Neither the name of the COBOLworx Corporation nor the names of its
+#      contributors may be used to endorse or promote products derived
+#      from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+#######################################################################
+
+################################################################################
+# pylint: disable=line-too-long,unused-argument,unused-wildcard-import,import-error
+#
+# flake8 settings used
+# [flake8]
+# ignore = E402
+# max-line-length = 160
+################################################################################
+
+## Nasty command line for testing:
+## mkdir -p /tmp/list && cobcd -gv -T /tmp/lis/TEST.lis -Xref -ftsymbols -tlines=0 -Wall -fno-ec=DATA-INCOMPATIBLE -foptional-file -ext lib -fdump=all -D 'MY-COMPILER=2' -D 'MY-OS=Linux' -fno-ec=bound-ref-mod -lgmp -o TEST.so /home/bob/repos/cbl-gdb-samples/ref_test_2/rtest.cbl
+
+from __future__ import print_function
+
+import sys
+import os
+import platform
+import traceback
+import subprocess
+import tempfile
+import shutil
+import time
+
+def usage(version) :
+    print("This is the cobc debugging wrapper", version)
+
+def print_help(version) :
+    usage(version)
+    print("Use it as you would 'cobc'")
+    print("")
+    print("It doesn't see any switches except --help, --version, and -v")
+    print("")
+    print("It can be controlled by a few environment variables:")
+    print("COBCD_COBC=alt     Invokes the GnuCOBOL compiler with 'alt' instead of 'cobc'")
+    print("COBCDFLAGS=xyz     These flags are passed to the GnuCOBOL compiler")
+    print("COBCDMSG=1         Suppresses the libcd6-dbg/glibc-debuginfo warning message")
+    print("COBCDFMODE=N       Overrides how the cobcd.py script is attached to the executable:")
+    print("                   0 : Don't do anything")
+    print("                   1 : Embed a pointer to cobcd.py in the ELF executable .debug-gdb-scripts section")
+    print("                   2 : Embed the entire script in the ELF executable")
+    print("                   3 : Create a soft link named TARGET-gdb.py to cobcd.py next to TARGET")
+    print("                   4 : Make a copy of cobcd.py named TARGET-gdb.py next to TARGET")
+    print("")
+    print("The variables below are useful in development.  Don't count on them staying stable, or even existing")
+    print("")
+    print("ECHO=1             Causes line-by-line command echoing (also turned on by -v)")
+    print("COBCDEVEL=1        Use cbl-gdb development toolchain instead of production toolchain")
+    print("COBCDNOCLEAN=1     Don't delete intermediate files (similar to -save-temps, but also keeps .s)")
+    print("SAVE_S=1           Keeps a copy of the .s as it is before COBCD-SFIX processing")
+    print("SHOW_TIME=1        Outputs execution time analysis during cobcd processing")
+    print("")
+    print("If you need help with cobc, use the command 'cobc --help'")
+
+def DeleteAFile(fname) :
+    try :
+        os.remove(fname)
+    except :
+        pass
+
+def DeSpace(command) :
+    ## This routine removes extraneous spaces and empty list elements:
+    if isinstance(command,str) :
+        # Starting as string, return a list
+        return command.split()
+
+    if isinstance(command,list) :
+        retval = []
+        for element in command :
+            element = element.strip()
+            if len(element) :
+                retval.append(element)
+        return retval
+
+    if isinstance(command,unicode) :
+        # This will come into play with Python2
+        command = command.encode('ascii','replace')
+        return command.split()
+
+    # It's not a list, or a string, or a Python2 unicode string, so
+    # we don't know what to do with it.
+    return command
+
+def SubprocessCall(command,suppress_error) :
+    ## command must be a list of strings
+    try :
+        resultcode = subprocess.call(command)
+    except subprocess.CalledProcessError as err:
+        resultcode = err.returncode
+    except KeyboardInterrupt:
+        if not suppress_error :
+            print("The following command was interrupted:")
+            print("   ", ' '.join(command))
+        resultcode = 1
+    except OSError as err:
+        if not suppress_error :
+            print("(1) Something went wrong with the command:")
+            print("   ", ' '.join(command))
+            print( err )
+        resultcode = 1
+    except :
+        if not suppress_error :
+            print("(2) Something went wrong with the command:")
+            print("   ", ' '.join(command))
+            traceback.print_exc()
+        resultcode = 1
+    sys.stdout.flush()
+    sys.stderr.flush()
+    return resultcode
+
+def StripReturns(s) :
+    return s.replace('\r','')
+
+def QuoteMe(param) :
+    if param and param[0] not in ('\'','"') :
+        # It's not already quoted, so put apostrophes around it:
+        param = "'" + param + "'"
+    return param
+
+def InfoFetch(linelist,var) :
+    retval = []
+    lines = len(linelist)
+    for i in range(lines) :
+        if linelist[i].find(var) == 0 :
+            tokens = linelist[i].split()
+            retval = tokens[2:]
+            i += 1
+            while i < lines :
+                if linelist[i][0:1] not in (' ','\t') or linelist[i][2:3] not in (' ','\t') :
+                    ## The third char is 'e' when COBC reports an existing environment variable
+                    ## The first char is non-blank when reporting a new variable
+                    break
+                retval += linelist[i].split()
+                i += 1
+    return retval
+
+def RunCommand(command) :
+    # command must be a list of strings
+    std_file = tempfile.TemporaryFile()
+    err_file = tempfile.TemporaryFile()
+    errcode = -2
+    try:
+        errcode = subprocess.call(command,stdout=std_file,stderr=err_file)
+    except:
+        errcode = -1
+        pass
+    sys.stdout.flush()
+    sys.stderr.flush()
+    std_file.seek(0)
+    result_std = std_file.read().decode("utf-8").replace('\r','')  # A nod to Windows
+    std_file.close()
+    err_file.seek(0)
+    result_err = err_file.read().decode("utf-8").replace('\r','')  # A nod to Windows
+    err_file.close()
+
+    if not isinstance(result_std,str) and isinstance(result_std,unicode) :
+        # This will come into play with Python2
+        result_std = result_std.encode('ascii','replace')
+    if not isinstance(result_err,str) and isinstance(result_err,unicode) :
+        # This will come into play with Python2
+        result_err = result_err.encode('ascii','replace')
+
+    return errcode, result_std, result_err
+
+def CheckForDebugLibraries() :
+    ## If the debugging versions of libc.so.6 are installed, the unsuspecting user will be startled
+    ## by unexpectedly stepping into the library when debugging COBOL code.  Let's forestall a lot
+    ## of questions by warning about it now, and suggesting a solution:
+    errcode, std, err = RunCommand(["apt","list","--installed","libc6-dbg"])
+    suppress = os.getenv("COBCDMSG") or '0'
+    if errcode == 0 :
+        if std.find("libc6-dbg") != -1 and suppress != '1':
+            print("###   ")
+            print("###   There is something you need to know.")
+            print("###   ")
+            print("###   Your system has the libc6-dbg package installed.")
+            print("###   ")
+            print("###   This means that when you use the GDB STEP command, GDB will sometimes")
+            print("###   step into the debuggable libc6 routines.")
+            print("###   ")
+            print("###   This behavior can be annoying.")
+            print("###   ")
+            print("###   The solution is to remove the libc6-dbg package with")
+            print("###   ")
+            print("###        sudu apt remove libc6-dbg")
+            print("###   ")
+            print("###   Should you need to keep the libc6-dbg package installed,")
+            print("###   this informational message can be suppressed with the environment")
+            print("###   variable COBCDMSG=1")
+            print("###   ")
+    else :
+        pass
+
+def SmartPrint(parameters) :
+    # parameters is a list of strings:
+    for param in parameters :
+        if param.find(' ') != -1 :
+            param = '"' + param + '"'
+        print(param,' ',sep='',end='')
+    print('')
+
+def CollapseFoldedLines(lines) :
+    output = ""
+    for line in lines.split('\n') :
+        if line and line[0] != ' ' and line[0] != '\t' :
+            ## This is the beginning of a new line:
+            output += '\n'
+            output += line
+        else :
+            ## skip spaces:
+            i = 0
+            while i < len(line) :
+                if line[i] != ' ' and line[i] != '\t' :
+                    break
+                i += 1
+            output += ' '
+            output += line[i:]
+    return output
+
+def FindThisInThat(this,that) :
+    retval = None
+    for i in range(len(that)) :
+        if that[i] == this :
+            retval = i
+            break
+    return retval
+
+def Main() :
+    ###########################################################################
+    ## The version number in the next line is updated by a Linux bash script. #
+    ## The text "Version x.x" has to appear in square brackets.               #
+    ## Don't mess with it!                                                    #
+    ###########################################################################
+    SCRIPT_VERSION="[Version 4.28.6]"
+
+    show_time = os.environ.get("SHOW_TIME","0")
+    SHOW_TIME = False
+    if show_time != "0" :
+        SHOW_TIME = True    # For timing analysis.  Won't work on Python2
+    if SHOW_TIME :
+        clock_start = time.monotonic()
+        lap_start = 0
+
+    windows = False
+    os_name = platform.system()
+    # processor = platform.processor()
+    if os_name == "Windows" or os_name.find("MINGW") != -1 :
+        windows = True
+
+    if platform.uname()[2].find("el7") != -1 :
+        os_name = "rhel7"
+
+    if platform.uname()[2].find("el8") != -1 :
+        os_name = "rhel8"
+
+    # This script, invoked by the command `cobcd`, packages up the process of compiling
+    # a single COBOL source module and processing it so that gdb can be used for
+    # source-level debugging of that module. Found in the root folder of the
+    # cbl-gdb repository, it is designed to operate there pointing at the development
+    # versions of the processing programs as controlled by the external environment
+    # variables COBCDEVEL and COBCDNOCLEAN.  Once installed in, say, /usr/local/bin,
+    # it will use production versions of the processing programs
+    #
+    # You use it the same way you use cobc.  It works pretty hard at being invisible.
+    #
+    # That this script is good for compiling a single source module; at this
+    # writing we don't handle executables created from multiple source modules.
+    #
+    # Environment variable control:
+    # COBCDEVEL=1     ## Causes the use of the development toolchain rather than the
+    #                 ## production toolchain.
+    #
+    # COBCDNOCLEAN=1  ## For development. The intermediate files will find their way
+    #                 ## into the current working directory, instead of being
+    #                 ## deleted after the compilation is complete.
+    #
+    # COBCDFLAGS      ## Addition parameters passed to COBC
+    #
+    # COBCD_COBC=alt replace 'cobc' with 'alt'
+    #
+    # COBCDFMODE=N    ## Overrides the cobcd idea of how the cobcd.py script should
+    #                 ## be attached to the executable.
+    #                 ## 0 Don't do anything
+    #                 ## 1 Embed a pointer to cobcd.py in the ELF executable .debug-gdb-scripts section
+    #                 ## 2 Embed the entire script in the ELF executable
+    #                 ## 3 Create a soft link named TARGET-gdb.py to cobcd.py next to TARGET
+    #                 ## 4 Make a copy of cobcd.py named TARGET-gdb.py next to TARGET
+    #
+    # ECHO=1 causes massive debugging output
+    # SHOW_TIME=1 produces stage-by-stage timing analysis
+
+    COBCDEVEL    = os.environ.get("COBCDEVEL")    or ""
+    COBCDNOCLEAN = os.environ.get("COBCDNOCLEAN") or ""
+    COBCDFLAGS   = (os.environ.get("COBCDFLAGS")  or "").split()
+    ECHO         = os.environ.get("ECHO")         or ""
+    COBC         = os.environ.get("COBCD_COBC")   or "cobc"
+    COBCDFMODE   = os.environ.get("COBCDFMODE")   or "@COBCDFMODE@" ## This construction allows for ./configure or "make install" modifications
+    if COBCDFMODE[0] == "@" :
+        COBCDFMODE =  ""
+    SAVE_S       = os.environ.get("SAVE_S")       or ""
+    #ECHO = "1"  # This overrides the environment.  If this is uncommented,
+                # then you are probably doing development work on this script
+    SAVE_TEMPS=""
+    FMODE=""
+
+    if len(sys.argv) == 1 :
+        usage(SCRIPT_VERSION)
+        print("Use it as you would 'cobc'")
+        os._exit(1)
+
+    ## We need to know the directory that our script is in.
+    SCRIPTDIR = os.path.abspath(sys.argv[0]).replace('\\','/').split('/')[0:-1]
+    SCRIPTDIR = '/'.join(SCRIPTDIR)
+    #if not windows :
+    #    SCRIPTDIR = '/' + SCRIPTDIR
+
+    if COBCDEVEL :
+        ## For development purposes, pick up executables from subdirectories
+        ## from where the cobcd script was found
+        COBST  = SCRIPTDIR + "/cobcd-st/cobcd-st"
+        SFIX   = SCRIPTDIR + "/cobcd-sfix/cobcd-sfix"
+        PYTHON = SCRIPTDIR + "/python/cobcd.py"
+        FMODE  = COBCDFMODE or "1"  # '1' because most development takes place on Ubuntu/Intel, and we know it works
+    else :
+        # In normal operation, the executables are found in the same folder
+        # as the cobcd script
+        COBST  = SCRIPTDIR + "/cobcd-st"
+        SFIX   = SCRIPTDIR + "/cobcd-sfix"
+        PYTHON = SCRIPTDIR + "/cobcd.py"
+        # In normal operation, we embed a pointer
+        FMODE  = COBCDFMODE or "1"
+
+    if os_name == "rhel7" :
+        ## Embedding the entire file doesn't work in RHEL7:
+        FMODE  = COBCDFMODE or "1"
+
+    if windows :
+        ## In Windows attempting to embed either the filename or the file fails.
+        ## And we can't create a symlink because we don't have admin privileges
+        FMODE = COBCDFMODE or "4"  ## We will create make a renamed copy of cobcd.py next to the executable
+
+    if os_name == "SunOS"  :
+        ## In Solaris attempting to embed either the filename
+        ## or the file fails.  The problem is that the Solaris ld loader silently
+        ## discards the .debug_gdb_scripts section that gcc puts into the .o file
+        ## The environment variable LD_ALTEXEC=/usr/bin/gld (or `which gld`) fixes the
+        ## which loader, but the command line has to have "-lgmp -lncurses -ldb -lxml2 -lz" on it
+        ## I am not going to try to fix any of that until I understand it better
+        FMODE  = COBCDFMODE or "3"  ## We will create a Unix "soft link" with "ln"
+
+    ORIGINAL_COMMAND_LINE=[]
+    COMMAND_LINE=[]
+    COMMANDS_REMOVED=[]
+
+    ASKED_FOR_HELP=False
+    ASKED_FOR_VERSION=False
+
+    DASH_V     = ""
+    DASH_C     = ""
+    DASH_BIGC  = ""
+    DASH_S     = ""
+    resultcode = 0
+    TARGET     = ""
+    TARGET_EXT = ""
+
+    ## Here is where we pre-preprocess the command line parameters.
+    ## Anything that starts without a hyphen, or starts with two hyphens,
+    ## passes straight through.  Anything with one hyphen gets checked.
+    ## Some things with one hyphen pass through intact.  Anything else, like -abc, gets
+    ## passed along as -a -b -c
+    ##
+    params = []
+    prior_param = ["",""]
+    do_not_process = False
+    for param in sys.argv[1:] + COBCDFLAGS : ## Skip the program name, and add in the switches from the environment
+        prior_param[0] = prior_param[1]
+        prior_param[1] = param
+        ORIGINAL_COMMAND_LINE.append(param)
+        #print("param:",param)
+        if do_not_process :
+            do_not_process = False
+            params.append(param)
+            continue
+        if param in ("-D","-A","-Q") :
+            # These three can be followed by a quoted item that has to go through intact,
+            # because `-Q "-l gdb"` is very different from `-Q -l gdb`
+            do_not_process = True
+            params.append(param)
+            continue
+        if len(param) == 1 or param[0] != '-' :
+            ## If it is a single character, or it doesn't start with '-',
+            ## just pass it along:
+            params.append(param)
+            continue
+        ## Getting here means param starts with a single hyphen.
+        if param[1:].find('-') != -1 or param.find('=') != -1 :
+            # Anything with an embedded hyphen or '=' goes straight through
+            params.append(param)
+            continue
+        ## At this point, the param starts with a single '-'
+        if param[1] in (    'f' ,
+                            'W' ,
+                            'O' ,
+                            't' ,
+                            'T' ,
+                            'o' ,
+                            'j' ,
+                            'I' ,
+                            'L' ,
+                            'l' ,
+                            'A' ,
+                            'Q' ,
+                            'D' ,
+                            'K' ,
+                            'k' ,
+                            'P'
+                                ) :
+            # These initial letters always precede something that goes through intact
+            params.append(param)
+            continue
+        ## Now we handle the leftover specific words.
+        ## (See cobc/cobc.c "long_options")
+        if param[1:] in (   "help"    ,
+                            "hel"     ,
+                            "he"      ,
+                            "h"       ,
+                            "cob"     ,
+                            "info"    ,
+                            "inf"     ,
+                            "in"      ,
+                            "i"       ,
+                            "version" ,
+                            "versio"  ,
+                            "versi"   ,
+                            "vers"    ,
+                            "verbose" ,
+                            "verbos"  ,
+                            "verbo"   ,
+                            "verb"    ,
+                            "brief"   ,
+                            "brie"    ,
+                            "bri"     ,
+                            "br"      ,
+                            "b"       ,
+                            "###"     ,
+                            "##"      ,
+                            "#"       ,
+                            "Xref"     ,
+                            "Xre"     ,
+                            "Xr"      ,
+                            "X"       ,
+                            "debug"   ,
+                            "debu"    ,
+                            "deb"     ,
+                            "de"      ,
+                            "d"       ,
+                            "ext"     ,
+                            "ex"      ,
+                            "e"       ,
+                            "std"     ,
+                            "conf"    ,
+                            "con"     ,
+                            "co"      ,
+                            "static"  ,
+                            "stati"   ,
+                            "stat"    ,
+                            "sta"     ,
+                            "dynamic" ,
+                            "dynami"  ,
+                            "dynam"   ,
+                            "dyna"    ,
+                            "dyn"     ,
+                            "dy"      ,
+                            "job"     ,
+                            "jo"      ,
+                            "j"       ,
+                            "fsyntax" ,
+                            "fsynta"  ,
+                            "fsynt"   ,
+                            "save"    ,
+                            "sav"     ,
+                            "sa"
+                        ) :
+            params.append(param)
+            continue
+        ## Arriving here means a stacked set of switches that need to be unstacked:
+        for ch in param[1:] :
+            params.append( '-' + ch )
+
+    ## We can now pre-process the pre-preprocessed tokens.  There are a few
+    ## things we have to do.  There is some bookkeeping with version and help
+    ## requests that we need to know about.  And we need to do some bookkeeping
+    ## to make sure that source files don't get deleted while unwanted intermediate
+    ## files do get deleted
+
+    to_be_deleted = []
+    keepers = []
+
+    index=0
+    for param in params :
+        index += 1
+        if param and param[0] != '-' :
+            keepers.append(param)
+        ## We know there is a dash...
+        paramw = param[1:]
+        if paramw and paramw[0] == '-' :
+            ## There were two!  Get rid of the second one
+            paramw = paramw[1:]
+        ## If there is an equals sign, then we remove everything past it
+        paramw1 = paramw.split('=')[0]
+        if paramw in ("h","he","hel","help") or param.find("-h") == 0 :
+            ## Empirically, any option starting with "-h" is the same as "--help".
+            ## The double-dash versions require h, he, hel, or help
+            ASKED_FOR_HELP=True
+            COMMANDS_REMOVED.append(param)
+            continue
+        if paramw in ("V","vers","versi","versio","version") :
+            ASKED_FOR_VERSION=True
+            COMMANDS_REMOVED.append(param)
+            continue
+        if paramw in ("v","vv","vvv","verb","verbo","verbos","verbose") :
+            # Requests for verbosity mess up our -### processing, so we filter them out for later
+            DASH_V = param
+            COMMANDS_REMOVED.append(param)
+            continue
+        if paramw1 in ("sa","sav","save","save-","save-t","save-te","save-tem","save-temp","save-temps") :
+            # If he asked for -save-temps, we have to suppress the COBC processing of it
+            # We'll take care of it at the end.
+            SAVE_TEMPS=param
+            COMMANDS_REMOVED.append(param)
+            continue
+        if param in ("-E","-###","--###","-") :
+            command = [COBC] + ORIGINAL_COMMAND_LINE
+            if ECHO :
+                print('#### Ordinary compile due to one or more of "-E","-###","-"')
+                SmartPrint(command)
+            ## Execute it:
+            resultcode = SubprocessCall(command,False)
+            os._exit(resultcode)
+        elif paramw in ("fsynt","fsynta","fsyntax","fsyntax-","fsyntax-o","fsyntax-on","fsyntax-onl","fsyntax-only") :
+            command = [COBC] + ORIGINAL_COMMAND_LINE
+            if ECHO :
+                print('#### Ordinary compile due to "-fsyntax-only"')
+                SmartPrint(command)
+            ## Execute it:
+            resultcode = SubprocessCall(command,False)
+            os._exit(resultcode)
+        if param in ("-c") :
+            DASH_C = param
+        elif param in ("-C") :
+            DASH_BIGC = param
+        elif param in ("-S") :
+            DASH_S = param
+
+        COMMAND_LINE.append(param)
+
+    ## ORIGINAL_COMMAND_LINE is the original set of parameters
+
+    ## COMMANDS_REMOVED contains any that we pulled out because they interfere with COBCD
+    ## processing.
+
+    ## COMMAND_LINE + COMMANDS_REMOVED is ORIGINAL_COMAND_LINE
+
+    if ASKED_FOR_HELP :
+        print_help(SCRIPT_VERSION)
+        os._exit(0)
+
+    if ASKED_FOR_VERSION :
+        SubprocessCall([COBC,DASH_V,"-V"],False)
+        usage(SCRIPT_VERSION)
+        CheckForDebugLibraries()
+        os._exit(0)
+
+    if DASH_V :
+        ## If there was a -v request, we need to show the user everything we're doing
+        ECHO = 1
+
+    if SHOW_TIME :
+        time_now = time.monotonic() - clock_start
+        print("timer: %30s %5.4f %5.4f" % ("startup overhead", time_now - lap_start, time_now))
+        lap_start = time_now
+
+    #if ECHO :
+    #    print("   os_name....",os_name)
+    #    print("   processor..",processor)
+    #    print("")
+
+    # from now on we parse the output of different commands - and need the English ones
+    os.environ["LANG"]= 'en'
+
+    ## Now we have to call `COBC --info`; there are some things we need to know:
+    errcode, std, err = RunCommand([COBC, "--info"])
+
+    info_string = std.split('\n')
+
+    ## We need to know what underlying compiler is in use:
+    GCC = InfoFetch(info_string,"CC")
+    if len(GCC) >= 1 :
+        GCC = GCC[0]
+
+    ## We need to know the incoming value of COB_CFLAGS
+    ## When we invoke the compiler we go with the existing environment's
+    ## COB_CFLAGS value, if it exists.  Otherwise we extract the COB_CFLAGS
+    ## value from info_string
+
+    COB_CFLAGS_BASE = os.environ.get("COB_CFLAGS","")
+    if COB_CFLAGS_BASE == "" :
+        COB_CFLAGS_BASE = InfoFetch(info_string,"COB_CFLAGS")
+    else :
+        COB_CFLAGS_BASE = COB_CFLAGS_BASE.split()
+
+    ## We need to get rid of '-Wp,-D_FORTIFY_SOURCE=2' That value completely
+    ## messes up COBOL executables.
+    COB_CFLAGS_BASE = ' '.join(COB_CFLAGS_BASE)
+    COB_CFLAGS_BASE = COB_CFLAGS_BASE.replace("-Wp,-D_FORTIFY_SOURCE=2","")
+    COB_CFLAGS_BASE = COB_CFLAGS_BASE.split()
+
+    if SHOW_TIME :
+        time_now = time.monotonic() - clock_start
+        print("timer: %30s %5.4f %5.4f" % ("COBC --info", time_now - lap_start, time_now))
+        lap_start = time_now
+
+    ## If the underlying C compiler understands the -fcf-protection switch(GCC-9 and later?), we
+    ## need to turn it off when using COBC.  If the compiler doesn't understand it, we have to leave
+    ## it out of our commands:
+    errcode, std, err = RunCommand([GCC, "-fcf-protection"])
+    if err.find("unrecognized") != -1 :
+        # The compiler doesn't recognize the -fcf-protection switch, so we
+        # will be issuing an empty string:
+        FCF_PROTECTION = ""
+    else :
+        # The compiler recognizes the -fcf-protection switch, so we
+        # will be using that switch to turn off the protection, which defaults
+        # to ON, and which causes trouble for us when the debugger encounters
+        # endbr64 assembly-language instructions:
+        FCF_PROTECTION = "-fcf-protection=none"
+
+    if SHOW_TIME :
+        time_now = time.monotonic() - clock_start
+        print("timer: %30s %5.4f %5.4f" % ("check fcf-protection", time_now - lap_start, time_now))
+        lap_start = time_now
+
+    ## Normally, let's be quiet.
+    DASH_Q = "-q"
+    ## If verbose, then be a little noisy
+    if DASH_V :
+        DASH_Q = ""
+    ## But if ECHO is on, go back to quiet so that the line doesn't
+    ## come out twice:
+    if ECHO :
+        DASH_Q = "-q"
+
+    save_temps_split = SAVE_TEMPS.split('=')
+    cleaning_up = True
+    we_translated_something = False
+    if COBCDNOCLEAN :
+        cleaning_up = False
+    if save_temps_split and save_temps_split[0] == "" :
+        save_temps_split = []
+    if len(save_temps_split) >= 1 :
+        cleaning_up = False
+
+    ## The preliminary jousting is over.  It's now time to get serious.
+
+    ## We are going to leverage cobc's parsing and processing by using the -###
+    ## option.  That option sends the useful information goes to stderr, so we'll
+    ## arrange to capture that in result_file.
+    ##
+    ## We know that COMMAND_LINE doesn't have -### or -save-temps or -v in it.  We
+    ## will add the first two switches in order to get what we need:
+
+    if resultcode == 0 :
+        s = COB_CFLAGS_BASE + [FCF_PROTECTION]
+        os.environ["COB_CFLAGS"]= ' '.join(s)
+        os.environ["COBC_GEN_DUMP_COMMENTS"]= '1'
+        TRIPLE_X_ADDITION = " -### -save-temps -A -ggdb -fgen-c-line-directives -fgen-c-labels "
+        TRIPLE_X_COMMAND = DeSpace(COBC + TRIPLE_X_ADDITION) + COMMAND_LINE
+        try :
+            result_file = tempfile.TemporaryFile()
+            if ECHO :
+                SmartPrint(["COBC_GEN_DUMP_COMMENTS=1"]+TRIPLE_X_COMMAND)
+            compiler_out = subprocess.check_output(TRIPLE_X_COMMAND,stderr=result_file)
+            compiler_out = StripReturns(compiler_out.decode("utf-8")).split('\n')
+            ## The first three lines are boilerplate.  Anything after that is a compiler output,
+            ## like a >> DISPLAY directive, and so on
+            for line in compiler_out[3:-1] :    # the split puts a spurious ' ' at the end
+                print(line)
+            sys.stdout.flush()
+            sys.stderr.flush()
+            result_file.seek(0)
+            result_text = result_file.read()
+            result_file.close()
+            result_text = StripReturns(result_text.decode("utf-8"))
+        except :
+            ## It is common for something to go wrong with that first attempt; anything
+            ## from bad file names to syntax errors in the code.  Let's go for a minimal
+            ## response with an ordinary compilation and exit
+            command = [COBC] + ORIGINAL_COMMAND_LINE
+            print('#### Ordinary compile due to thrown exception')
+            SmartPrint(command)
+            ## Execute it, ensuring we report a failure via return code:
+            resultcode = SubprocessCall(command,True)
+            if resultcode == 0 :
+                print('#### Exception only because of additional options, possibly bad cobc version?')
+                SmartPrint(TRIPLE_X_ADDITION)
+                resultcode = 1
+            os._exit(resultcode)
+
+    if SHOW_TIME :
+        time_now = time.monotonic() - clock_start
+        print("timer: %30s %5.4f %5.4f" % ("COBC -###", time_now - lap_start, time_now))
+        lap_start = time_now
+
+    ## Let's process the results we got back from the -### request.
+    result_text = result_text.replace('"','')
+    result_lines = CollapseFoldedLines(result_text)
+    waiting_for_initial_file = True
+    cbl_file = ""
+    c_file = ""
+    i_file = ""
+    to_be_executed_count = 0
+    if ECHO :
+        for line in result_lines.split('\n') :
+            print("   ",line)
+        print("")
+    for line in result_lines.split('\n') :
+        #print("")
+        #print("Processing line:",line,waiting_for_initial_file)
+        if line and ( line.find("warning:") != -1 or line.find("note:") != -1 or line[-1] == ':' ) :
+            line += '\n'
+            sys.stderr.write(line)
+            sys.stderr.flush()
+#            command = [COBC] + ORIGINAL_COMMAND_LINE
+#            if ECHO :
+#                print('#### Ordinary compile due to "libcob: warning:...')
+#                SmartPrint(command)
+#            resultcode = SubprocessCall(command,False)
+#            os._exit(resultcode)
+        test_for = "preprocessing:"
+        n = line.find(test_for)
+        if n == 0:
+            tokens = line.split()
+            cbl_file = tokens[1]
+            i_file = tokens[3]
+            to_be_deleted.append(i_file)
+            if waiting_for_initial_file :
+                waiting_for_initial_file = False
+            continue
+
+        test_for = "translating:"
+        n = line.find(test_for)
+        if n == 0 :
+            we_translated_something = True
+            tokens = line.split()
+            i_file = tokens[1]
+            c_file = tokens[3]
+            cbl_file = tokens[4].replace('(','').replace(')','')
+            to_be_deleted.append(c_file)
+            to_be_deleted.append(i_file)
+            if waiting_for_initial_file :
+                waiting_for_initial_file = False
+
+            root = c_file.split('/')[-1]
+            root = '.'.join(root.split('.')[0:-1])
+            path_and_root = '.'.join(c_file.split('.')[0:-1])
+            ## We need to process the C file with COBST
+            DASH_M = ""
+            if FMODE == "1" :
+                DASH_M = "-m1"
+            if FMODE == "2" :
+                DASH_M = "-m2"
+            OUR_COMMAND = DeSpace([COBST,DASH_Q,DASH_M,path_and_root,cbl_file])
+            if ECHO :
+                SmartPrint(OUR_COMMAND)
+            resultcode = SubprocessCall(OUR_COMMAND,False)
+            if resultcode :
+                os._exit(resultcode)
+            if SHOW_TIME :
+                time_now = time.monotonic() - clock_start
+                print("timer: %30s %5.4f %5.4f" % ("COBST", time_now - lap_start, time_now))
+                lap_start = time_now
+
+            FILE_DELETE_US = root + ".delete_us"
+            try :
+                f = open(FILE_DELETE_US,"r")
+                all_the_files = f.read()
+                all_the_files = all_the_files.replace('\r','')  # Windows.  Always Windows
+                all_the_files = all_the_files.split('\n')
+                for file in all_the_files :
+                    if file :
+                        to_be_deleted.append(file)
+                f.close()
+            except :
+                ## If the file doesn't exist, then it doesn't exist
+                pass
+            DeleteAFile(FILE_DELETE_US)
+            continue
+
+        test_for = "to be executed:"
+        n = line.find(test_for)
+        if n == 0 :
+            to_be_executed_count += 1
+            execution_line = line[len(test_for)+1:]
+            execution_command = execution_line.split()
+            nTarget = FindThisInThat("-o",execution_command)
+            if nTarget :
+                TARGET = execution_command[nTarget+1]
+                TARGET_EXT = extension = TARGET.split('.')[-1]
+                to_be_deleted.append(TARGET)
+            if waiting_for_initial_file :
+                ## When encountering a "to be executed" when there was
+                ## no foreplay, you just execute it.
+                if ECHO :
+                    SmartPrint(execution_command)
+                resultcode = SubprocessCall(execution_command,False)
+                if resultcode :
+                    os._exit(resultcode)
+                if SHOW_TIME :
+                    time_now = time.monotonic() - clock_start
+                    print("timer: %30s %5.4f %5.4f" % ("command execution", time_now - lap_start, time_now))
+                    lap_start = time_now
+            else :
+                if TARGET_EXT == "s" :
+                    s_file = TARGET
+                    # This must be the result of something like a -S switch
+                    # we can run the command "as is"
+                    if ECHO :
+                        SmartPrint(execution_command)
+                    resultcode = SubprocessCall(execution_command,False)
+                    if resultcode :
+                        os._exit(resultcode)
+                    if SHOW_TIME :
+                        time_now = time.monotonic() - clock_start
+                        print("timer: %30s %5.4f %5.4f" % ("Generate .c -> .s explicitly", time_now - lap_start, time_now))
+                        lap_start = time_now
+
+                    # And having created .s, we can now SFIX it
+                    OUR_COMMAND = DeSpace([SFIX, DASH_Q, s_file, s_file, c_file, cbl_file])
+                    if ECHO :
+                        SmartPrint(OUR_COMMAND)
+                    resultcode = SubprocessCall(OUR_COMMAND,False)
+                    if resultcode :
+                        os._exit(resultcode)
+                    if SHOW_TIME :
+                        time_now = time.monotonic() - clock_start
+                        print("timer: %30s %5.4f %5.4f" % ("SFIX", time_now - lap_start, time_now))
+                        lap_start = time_now
+                else :
+                    if execution_line.find(c_file) != -1 :
+                        ## We have something other than .s as a target
+                        root = c_file.split('/')[-1]
+                        root = '.'.join(root.split('.')[0:-1])
+                        s_file = root and root + ".s"
+                        if s_file :
+                           to_be_deleted.append(s_file)
+                        if ECHO :
+                            print("")
+                            print("   to_be_executed:",execution_line)
+                            if cbl_file :
+                                print("   cbl_file...",cbl_file)
+                            if i_file :
+                                print("   i_file.....",i_file)
+                            if c_file :
+                                print("   c_file.....",c_file)
+                            if s_file :
+                                print("   s_file.....",s_file)
+                            print("")
+
+                        ## Now we compile the modified .C into a .S file:
+                        if DASH_BIGC :
+                            ## the -C flag means stop after creating the generated .c file
+                            continue
+
+                        ## With the C file modified, we can now compile it into a .s module:
+                        compile_command = execution_line
+                        compile_command = compile_command.replace(" -c "," ")
+                        compile_command += " -S"
+                        compile_command = compile_command.split()
+                        nTarget = FindThisInThat("-o",compile_command)
+                        compile_command[nTarget+1] = s_file
+                        if ECHO :
+                            SmartPrint(compile_command)
+                        resultcode = SubprocessCall(compile_command,False)
+                        if resultcode :
+                            os._exit(resultcode)
+                        if SHOW_TIME :
+                            time_now = time.monotonic() - clock_start
+                            print("timer: %30s %5.4f %5.4f" % ("COBC .C -> .S", time_now - lap_start, time_now))
+                            lap_start = time_now
+
+                        ## We now have a .s file, so we can run SFIX on it:
+                        if SAVE_S :
+                            shutil.copyfile(s_file,s_file+".original.s")
+                        OUR_COMMAND = DeSpace([SFIX, DASH_Q, s_file, s_file, c_file, cbl_file or i_file])
+                        if ECHO :
+                            SmartPrint(OUR_COMMAND)
+                        resultcode = SubprocessCall(OUR_COMMAND,False)
+                        if resultcode :
+                            os._exit(resultcode)
+
+                        if SHOW_TIME :
+                            time_now = time.monotonic() - clock_start
+                            print("timer: %30s %5.4f %5.4f" % ("SFIX", time_now - lap_start, time_now))
+                            lap_start = time_now
+
+                        if DASH_S :
+                            ## the -S flag means stop after creating the generated .s file
+                            continue
+
+                        assembly_command = execution_line
+                        assembly_command = assembly_command.split()
+                        nfound = FindThisInThat(c_file,assembly_command)
+                        assembly_command[nfound] = s_file
+                        if ECHO :
+                            SmartPrint(assembly_command)
+                        resultcode = SubprocessCall(assembly_command,False)
+                        if resultcode :
+                            os._exit(resultcode)
+                        if SHOW_TIME :
+                            time_now = time.monotonic() - clock_start
+                            print("timer: %30s %5.4f %5.4f" % ("compile .S -> .O", time_now - lap_start, time_now))
+                            lap_start = time_now
+
+                        if DASH_C :
+                            continue
+                            ## the -c flag means stop after creating the generated .o file
+
+            bare_name = TARGET.split('/')[-1].find('.') == -1
+            if bare_name :
+                keepers.append(TARGET)
+
+            ## When compiling .so or .dll, we might, at this point, have to
+            ## put a link to, or a copy of, cobcd.py next to the executable
+            extension = TARGET.split('.')[-1]
+            if extension in ("so","dll","exe") or bare_name:
+                if TARGET :
+                    PY_DEST=os.path.abspath(TARGET)
+                    PY_DEST = PY_DEST.split('/')[0:-1]
+                    PY_DEST .append(TARGET+"-gdb.py")
+                    PY_DEST = '/'.join(PY_DEST)
+                    if FMODE == "3" : ## This means make a soft link:
+                        ## This won't work on Python2.  So don't try.  And on Windows, you
+                        ## need admin privileges, so don't try there, either.
+                        DeleteAFile(PY_DEST)
+                        if ECHO :
+                            print("Creating symlink: os.symlink(" + PYTHON + "," + PY_DEST +")")
+                        os.symlink(PYTHON,PY_DEST)
+                    if FMODE == "4" : ## This means make a copy:
+                        DeleteAFile(PY_DEST)
+                        if ECHO :
+                            print("Copying",PYTHON,"to",PY_DEST)
+                        shutil.copyfile(PYTHON,PY_DEST)
+
+            waiting_for_initial_file = True
+            cbl_file = ""
+            c_file = ""
+            i_file = ""
+            TARGET = ""
+            TARGET_EXT = ""
+            continue
+
+    if not we_translated_something :
+        ## If we didn't translate something, then don't clean up.
+        cleaning_up = False
+
+    if len(save_temps_split) >= 2 :
+        print("save_temps_split", save_temps_split)
+        ## We are dealing with a -save-temps=<dest>
+        dest = save_temps_split[-1]
+
+        ## if dest starts with ~/ we need to replace the squiggle with $HOME
+        if dest[0:2] == "~/" :
+            dest = os.getenv("HOME") + dest[1:]
+
+        if ECHO :
+            print("os.mkdir:",dest)
+        try :
+            os.mkdir(dest)
+        except :
+            pass
+
+        to_be_deleted = set(to_be_deleted)
+        for file in to_be_deleted :
+            extension = file.split('.')[-1]
+            if extension in ("c","i","s","o","h") :
+                d = dest + '/' + file.split('/')[-1]
+                DeleteAFile(d)
+                if ECHO :
+                    print("shutil.move:", file, "->" ,dest)
+                try :
+                    shutil.move(file,dest)
+                except:
+                    ## This can happen when a file doesn't exist.
+                    ## It shouldn't happen, but, hey....
+                    pass
+
+    if cleaning_up :
+        for file in keepers :
+            extension = file.split('.')[-1]
+            if extension == 'c' :
+                ## If .c is a keeper, then we have to keep all the
+                ## .h files around as well  Setting DASH_BIGC at this
+                ## point is an easy way of doing that
+                DASH_BIGC = 'xxx'
+                break
+
+        for file in to_be_deleted :
+            if file not in keepers :
+                extension = file.split('.')[-1]
+                if extension in ("so","exe","dll","s") :
+                    continue
+                if DASH_C and extension == "o" :
+                    continue
+                if DASH_BIGC and extension in ("c","h"):
+                    continue
+                DeleteAFile(file)
+
+    ## Special processing for .s files:  If DASH_S is on, or COBCDNOCLEAN is on
+    ## we keep it. Otherwise, it gets deleted
+    if not DASH_S and not COBCDNOCLEAN :
+        for file in to_be_deleted :
+            extension = file.split('.')[-1]
+            if extension == "s" :
+                DeleteAFile(file)
+
+    if SHOW_TIME :
+        time_now = time.monotonic() - clock_start
+        print("timer: %30s %5.4f %5.4f" % ("Finished", time_now - lap_start, time_now))
+        lap_start = time_now
+
+    os._exit(resultcode)
+
+try :
+    Main()
+except :
+    traceback.print_exc()
+
