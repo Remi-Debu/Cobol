@@ -10,10 +10,13 @@
 
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       01  NAME PIC X(20).
+       01  WS-NAME PIC X(20).
 
        PROCEDURE DIVISION.
-           DISPLAY "Saisir votre nom : " NO ADVANCING ACCEPT NAME.
-           DISPLAY "Bienvenue, " FUNCTION TRIM(NAME) " !".
+           DISPLAY "Saisir votre nom :" SPACE 
+           NO ADVANCING.
+           ACCEPT WS-NAME.
+
+           DISPLAY "Bienvenue," SPACE FUNCTION TRIM(WS-NAME) SPACE "!".
 
            STOP RUN.
