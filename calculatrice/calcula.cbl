@@ -13,6 +13,7 @@
 
        DATA DIVISION.
        WORKING-STORAGE SECTION.
+       01  WS-AST      PIC X(80).
        01  WS-NUM-A    PIC S9(3)V9(2).
        01  WS-NUM-B    PIC S9(3)V9(2).
        01  WS-NUM-ZA   PIC Z(2)9.99.
@@ -26,32 +27,39 @@
        PROCEDURE DIVISION.
       *    Affichage des paragraphes tant que l'utilisateur souhaite
       *    continuer
-       0000-MAIN.
+      *0000-MAIN.
            PERFORM UNTIL WS-CONTINUE NOT EQUAL "y"
-               PERFORM 1000-DISPLAY
+               PERFORM 1000-DISPLAY THRU 1000-DISPLAY-END
                PERFORM 2000-EVALUATE
                PERFORM 1001-DISPLAY-CALCUL
                PERFORM 1002-DISPLAY-CONTINUE
            END-PERFORM.
 
            STOP RUN.
+      *0000-MAIN-END.
 
       *    Affichage des saisis utilisateur
        1000-DISPLAY.
+           MOVE ALL "*" TO WS-AST.
+           DISPLAY WS-AST.
+           DISPLAY "CALCULATRICE PROGRAMME"
+           DISPLAY WS-AST.
+
            IF WS-ITER = 0
-               DISPLAY "Saisir un operateur :"
+               DISPLAY "Saisir un nombre :"
                SPACE WITH NO ADVANCING
                ACCEPT WS-NUM-A
            END-IF.
 
-           DISPLAY "Saisir un operande (+, -, x, /, ^) :"
+           DISPLAY "Saisir +, -, x, /, ^ :"
            SPACE WITH NO ADVANCING.
            ACCEPT WS-OPER.
            MOVE FUNCTION LOWER-CASE(WS-OPER) TO WS-OPER.
 
-           DISPLAY "Saisir un operateur :"
+           DISPLAY "Saisir un nombre :"
            SPACE WITH NO ADVANCING.
            ACCEPT WS-NUM-B.
+       1000-DISPLAY-END.
 
       *    Affiche le détail du calcul
        1001-DISPLAY-CALCUL.
@@ -89,7 +97,7 @@
                WHEN "^"
                   PERFORM 2005-EXPO
                WHEN OTHER
-                  DISPLAY "Error"
+                  DISPLAY "Saisi d'operande incorrect."
            END-EVALUATE.
 
       *    CALCUL ADDITION

@@ -16,10 +16,15 @@
 
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT ASSU-FILE ASSIGN TO "assurances.dat"
+           SELECT ASSU-FILE1 ASSIGN TO "assurances-part1.dat"
            ORGANIZATION IS LINE SEQUENTIAL
            ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS ASSU-CODE-STATUS.
+           FILE STATUS IS ASSU1-CODE-STATUS.
+
+      *    SELECT ASSU-FILE2 ASSIGN TO "assurances-part2.dat"
+      *    ORGANIZATION IS LINE SEQUENTIAL
+      *    ACCESS MODE IS SEQUENTIAL
+      *    FILE STATUS IS ASSU2-CODE-STATUS.
 
            SELECT RAP-ASSU-FILE ASSIGN TO "rapport-assurances.dat"
            ORGANIZATION IS LINE SEQUENTIAL
@@ -28,7 +33,7 @@
 
        DATA DIVISION.
        FILE SECTION.
-       FD  ASSU-FILE.
+       FD  ASSU-FILE1.
        01  ASSU-RECORD PIC X(121).
 
        FD  RAP-ASSU-FILE.
@@ -36,8 +41,8 @@
 
 
        WORKING-STORAGE SECTION.
-       01  WS-LINE              PIC X(80).
-       01  ASSU-CODE-STATUS     PIC X(02).
+       01  WS-LINE              PIC X(121).
+       01  ASSU1-CODE-STATUS    PIC X(02).
        01  RAP-ASSU-CODE-STATUS PIC X(02).
        01  WS-STOP              PIC 9(01) VALUE 0.
        01  WS-INDEX             PIC 9(02) VALUE 1.
@@ -65,14 +70,27 @@
            DISPLAY "PROGRAMME ASSURANCES".
            DISPLAY WS-LINE.
 
+      *    ECRITURE
+           OPEN OUTPUT RAP-ASSU-FILE.
+
+           DISPLAY WS-LINE.
+           DISPLAY "WRITE FILE STATUS :" SPACE RAP-ASSU-CODE-STATUS.
+
+           WRITE RAP-ASSU-RECORD FROM WS-LINE.
+           WRITE RAP-ASSU-RECORD
+           FROM "RAPPORT ENREGISTREMENT ASSURANCE".
+           WRITE RAP-ASSU-RECORD FROM WS-LINE.
+
+           CLOSE RAP-ASSU-FILE.
+
       *    LECTURE du fichier et stock les donnees dans la table
       *    (séparateur "*")
-           OPEN INPUT ASSU-FILE.
+           OPEN INPUT ASSU-FILE1.
         
-           DISPLAY "READ FILE STATUS :" SPACE ASSU-CODE-STATUS.
+           DISPLAY "READ FILE STATUS :" SPACE ASSU1-CODE-STATUS.
 
            PERFORM UNTIL WS-STOP = 1
-               READ ASSU-FILE
+               READ ASSU-FILE1
                AT END 
                    SET WS-STOP TO 1
                NOT AT END 
@@ -89,37 +107,6 @@
                    ADD 1 TO WS-INDEX
            END-PERFORM.
                
-           CLOSE ASSU-FILE.
-
-      *    ECRITURE des données 3 et 7
-           OPEN OUTPUT RAP-ASSU-FILE.
-
-           DISPLAY WS-LINE.
-           DISPLAY "WRITE FILE STATUS :" SPACE RAP-ASSU-CODE-STATUS.
-
-           WRITE RAP-ASSU-RECORD FROM WS-RAP-ASSU(3).
-           WRITE RAP-ASSU-RECORD FROM WS-RAP-ASSU(7).
-           CLOSE RAP-ASSU-FILE.
-
-      *    AFFICHAGE des données 3 et 7
-           DISPLAY WS-LINE.
-           DISPLAY "ID       :" SPACE WS-ID(3).
-           DISPLAY "GROUP    :" SPACE WS-NAME-A(3).
-           DISPLAY "IRP      :" SPACE WS-NAME-B(3).
-           DISPLAY "INTITULE :" SPACE WS-NAME-C(3).
-           DISPLAY "CONTRAT  :" SPACE WS-STATUS(3).
-           DISPLAY "NUM A    :" SPACE WS-NUM-A(3).
-           DISPLAY "NUM B    :" SPACE WS-NUM-B(3).
-           DISPLAY "MONTANT  :" SPACE WS-AMOUNT(3) WS-EURO(WS-INDEX).
-           DISPLAY WS-LINE.
-           DISPLAY "ID       :" SPACE WS-ID(7).
-           DISPLAY "GROUP    :" SPACE WS-NAME-A(7).
-           DISPLAY "IRP      :" SPACE WS-NAME-B(7).
-           DISPLAY "INTITULE :" SPACE WS-NAME-C(7).
-           DISPLAY "CONTRAT  :" SPACE WS-STATUS(7).
-           DISPLAY "NUM A    :" SPACE WS-NUM-A(7).
-           DISPLAY "NUM B    :" SPACE WS-NUM-B(7).
-           DISPLAY "MONTANT  :" SPACE WS-AMOUNT(7) WS-EURO(WS-INDEX).
-           DISPLAY WS-LINE.
+           CLOSE ASSU-FILE1.
 
            STOP RUN.

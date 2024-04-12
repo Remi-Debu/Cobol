@@ -1,0 +1,36 @@
+01010000*AGA_BASE      *IRP MOTO Santé*Regimes Actifs                           *Actif   *20060101*30000101*  5675,90*€
+02598750*AGR_BASE      *IRP MOTO Sante*Regimes Retraites                        *Actif   *20060901*30000901* 13593,60*€
+03009800*AGTNA_AH      *IRP MOTO Sante*AGTNA                                    *Suspendu*20060101*30000101*  8435,90*€
+04009800*AGTNA_BASE    *IRP MOTO Sante*Regimes TNS Actifs                       *Actif   *20060101*30000101*  9368,30*€
+59009400*AGTNI_AH      *IRP MOTO Sante*AGTNI                                    *Suspendu*20061101*30000101*  1255,00*€
+59010200*AGTNR_BASE    *IRP MOTO Sante*Regimes TNS retraites                    *Actif   *20060101*30001201*  2102,80*€
+07032200*AH_BASE       *IRP MOTO Sante*TNS Actif IJ                             *Actif   *20060101*30000101*  8039,40*€
+59033076*ANI_FM        *IRP MOTO Sante*ANI FM                                   *Actif   *20060101*30000101*  6999,90*€
+59033176*ANI_PRV       *IRP MOTO Sante*ANI PRV                                  *Resilié *20060101*30000101* 13883,20*€
+10014020*ASA_BASE      *IRP MOTO Sante*ASI Actifs                               *Actif   *20060101*30000101*   655,70*€
+59014400*ASR_BASE      *IRP MOTO Sante*ASI Retraites                            *Resilie *20061201*30001101*  7575,50*€
+59014811*ASTNA_AH      *IRP MOTO Sante*ASTNA AH                                 *Actif   *20060101*30000301*  7438,50*€
+59014820*ASTNA_BASE    *IRP MOTO Sante*ASI TNS Actifs                           *Suspendu*20060701*30000101* 14351,40*€
+14040437*BAS_ACEDAT    *IRP MOTO Sante*CEDAT                                    *Suspendu*20150401*30000101*  1215,00*€
+59044469*BAS_ACENTRAL  *IRP MOTO Sante*Gpe CENTRAL MOTO ind                     *Actif   *20180101*30000801*   114,90*€
+16003330*BAS_ACLARIS   *IRP MOTO Santé*Gpe CLARIS AUTOMOBILES                   *Actif   *20190101*30000101*   917,90*€
+17046790*BAS_AKERPROI  *IRP MOTO Sante*Groupe KER PRO                           *Resilié *20191001*30000101*  7865,90*€
+59046800*BAS_AKERPROM  *IRP MOTO Sante*Groupe KER PRO                           *Resilie *20191001*30000101*  5766,20*€
+19049142*BAS_AKMMOTOR  *IRP MOTO Sante*AKM Motors                               *Resilié *20211101*30000101*  3663,10*€
+59049799*BAS_ALABBE    *IRP MOTO Santé*GRUAU LABBE                              *Resilié *20221101*30000101* 13545,50*€
+21044242*BAS_ALABEL    *IRP MOTO Sante*LABEL ind.                               *Actif   *20170801*30000101*  8418,60*€
+59041605*BAS_ALAMIRAU  *IRP MOTO Sante*Groupe LAMIRAULT ind.                    *Actif   *20160101*30000101*  3386,60*€
+23001230*BAS_ALAUNAY   *IRP MOTO Sante*Groupe LAUNAY ind.                       *Actif   *20180601*30000101* 11204,30*€
+59046699*BAS_ALECLEAO  *IRP MOTO Sante*LECLERC AUTOMOBILES                      *Actif   *20191001*30000101*  8178,50*€
+59046745*ANI_PRV       *IRP MOTO Sante*L.R PARTICIPATIONS                       *Suspendu*20191001*30000101* 11932,10*€
+59049026*BAS_ALOIRAL   *IRP MOTO Sante*Loire Alliance Motors                    *Suspendu*20220401*30000101* 13822,40*€
+27044672*BAS_AMAGYARC  *IRP MOTO Santé*MAGYAR ind.                              *Suspendu*20180101*30000101*   776,10*€
+59050005*BAS_AMAGYARC2 *IRP MOTO Sante*MAGYAR ind.                              *Actif   *20221101*30000301* 14696,00*€
+29045730*BAS_AMARY     *IRP MOTO Sante*Mary Automobiles ind.                    *Suspendu*20211001*30000101* 11582,00*€
+89001230*BAS_AMARY     *IRP MOTO Sante*CEDAT                                    *Actif   *20161001*30000401* 66406,00*€
+75087600*ANI_PRV       *IRP MOTO Sante*Groupe LAUNAY ind.                       *Actif   *20091001*30000101* 16366,00*€
+32000000*BAS_AMARY     *IRP MOTO Sante*Regimes TNS retraites                    *Suspendu*20161001*30000501*  7223,00*€
+77000000*BAS_AMARY     *IRP MOTO Sante*Groupe LAMIRAULT ind.                    *Resilié *20651001*30000101*   166,05*€
+34001230*ANI_PRV       *IRP MOTO Sante*Mary Automobiles ind.                    *Suspendu*20161001*30000101* 66966,00*€
+35022000*BAS_ALAMIRAU  *IRP MOTO Santé*CEDAT                                    *Actif   *20271001*30000601* 64866,00*€
+73032120*BAS_AKERPROI  *IRP MOTO Sante*ANI PRV                                  *Resilié *20261001*30000601*  6796,05*€
