@@ -17,7 +17,8 @@
        DATA DIVISION.
        FILE SECTION.
        FD  ASSU-FILE.
-       01  ASSU-RECORD PIC X(119).
+
+       01  ASSU-RECORD PIC X(121).
 
 
        WORKING-STORAGE SECTION.
@@ -36,6 +37,7 @@
                10 WS-NUM-A  PIC X(08).
                10 WS-NUM-B  PIC X(08).
                10 WS-AMOUNT PIC 9(06)V9(02).
+               10 WS-EURO   PIC X(03).
 
        PROCEDURE DIVISION.
            OPEN INPUT ASSU-FILE.
@@ -55,6 +57,7 @@
                    WS-NAME-B(WS-INDEX) WS-NAME-C(WS-INDEX) 
                    WS-STATUS(WS-INDEX) WS-NUM-A(WS-INDEX) 
                    WS-NUM-B(WS-INDEX) WS-AMOUNT(WS-INDEX)
+                   WS-EURO(WS-INDEX)
 
                    DISPLAY WS-ASSU(WS-INDEX)
                    ADD 1 TO WS-INDEX
@@ -71,7 +74,7 @@
            DISPLAY "CONTRAT  :" SPACE WS-STATUS(3).
            DISPLAY "NUM A    :" SPACE WS-NUM-A(3).
            DISPLAY "NUM B    :" SPACE WS-NUM-B(3).
-           DISPLAY "MONTANT  :" SPACE WS-AMOUNT(3).
+           DISPLAY "MONTANT  :" SPACE WS-AMOUNT(3) WS-EURO(WS-INDEX).
            DISPLAY "--------------------------------------------------".
            DISPLAY "ID       :" SPACE WS-ID(7).
            DISPLAY "GROUP    :" SPACE WS-NAME-A(7).
@@ -80,7 +83,7 @@
            DISPLAY "CONTRAT  :" SPACE WS-STATUS(7).
            DISPLAY "NUM A    :" SPACE WS-NUM-A(7).
            DISPLAY "NUM B    :" SPACE WS-NUM-B(7).
-           DISPLAY "MONTANT  :" SPACE WS-AMOUNT(7).
+           DISPLAY "MONTANT  :" SPACE WS-AMOUNT(7) WS-EURO(WS-INDEX).
            DISPLAY "--------------------------------------------------".
 
            STOP RUN.

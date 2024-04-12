@@ -1,29 +1,36 @@
-59008350*AGA_BASE      *IRP AUTO Sante*Regimes Actifs                           *Actif   *20060101*30000101*  5275,90*
-59008750*AGR_BASE      *IRP AUTO Sante*Regimes Retraites                        *Actif   *20060901*30000901* 13393,60*
-59009800*AGTNA_AH      *IRP AUTO Sante*AGTNA                                    *Suspendu*20060101*30000101*  8135,90*
-59009800*AGTNA_BASE    *IRP AUTO Sante*Regimes TNS Actifs                       *Actif   *20060101*30000101*  9868,30*
-59009400*AGTNI_AH      *IRP AUTO Sante*AGTNI                                    *Suspendu*20061101*30000101*  1955,00*
-59010200*AGTNR_BASE    *IRP AUTO Sante*Regimes TNS retraites                    *Actif   *20060101*30001201*  2402,80*
-59011000*AH_BASE       *IRP AUTO Sante*TNS Actif IJ                             *Actif   *20060101*30000101*  8539,40*
-59033076*ANI_FM        *IRP AUTO Sante*ANI FM                                   *Actif   *20060101*30000101*  6599,90*
-59033176*ANI_PRV       *IRP AUTO Sante*ANI PRV                                  *Resilie *20060101*30000101* 13583,20*
-59014000*ASA_BASE      *IRP AUTO Sante*ASI Actifs                               *Actif   *20060101*30000101*   255,70*
-59014400*ASR_BASE      *IRP AUTO Sante*ASI Retraites                            *Resilie *20061201*30001101*  7875,50*
-59014800*ASTNA_AH      *IRP AUTO Sante*ASTNA AH                                 *Actif   *20060101*30000301*  7738,50*
-59014800*ASTNA_BASE    *IRP AUTO Sante*ASI TNS Actifs                           *Suspendu*20060701*30000101* 14851,40*
-59040437*BAS_ACEDAT    *IRP AUTO Sante*CEDAT                                    *Suspendu*20150401*30000101*  1815,00*
-59044469*BAS_ACENTRAL  *IRP AUTO Sante*Gpe CENTRAL AUTO ind                     *Actif   *20180101*30000801*   914,90*
-59046027*BAS_ACLARIS   *IRP AUTO Sante*Gpe CLARIS AUTOMOBILES                   *Actif   *20190101*30000101*   217,90*
-59046790*BAS_AKERPROI  *IRP AUTO Sante*Groupe KER PRO                           *Resilie *20191001*30000101*  7065,90*
-59046800*BAS_AKERPROM  *IRP AUTO Sante*Groupe KER PRO                           *Resilie *20191001*30000101*  5666,20*
-59049142*BAS_AKMMOTOR  *IRP AUTO Sante*AKM Motors                               *Resilie *20211101*30000101*  3763,10*
-59049799*BAS_ALABBE    *IRP AUTO Sante*GRUAU LABBE                              *Resilie *20221101*30000101* 13845,50*
-59044242*BAS_ALABEL    *IRP AUTO Sante*LABEL ind.                               *Actif   *20170801*30000101*  8318,60*
-59041605*BAS_ALAMIRAU  *IRP AUTO Sante*Groupe LAMIRAULT ind.                    *Actif   *20160101*30000101*  3286,60*
-59045148*BAS_ALAUNAY   *IRP AUTO Sante*Groupe LAUNAY ind.                       *Actif   *20180601*30000101* 11504,30*
-59046699*BAS_ALECLEAO  *IRP AUTO Sante*LECLERC AUTOMOBILES                      *Actif   *20191001*30000101*  8778,50*
-59046745*BAS_ALECLELR  *IRP AUTO Sante*L.R PARTICIPATIONS                       *Suspendu*20191001*30000101* 11932,00*
-59049026*BAS_ALOIRAL   *IRP AUTO Sante*Loire Alliance Motors                    *Suspendu*20220401*30000101* 13722,40*
-59044672*BAS_AMAGYARC  *IRP AUTO Sante*MAGYAR ind.                              *Suspendu*20180101*30000101*   576,10*
-59050005*BAS_AMAGYARC2 *IRP AUTO Sante*MAGYAR ind.                              *Actif   *20221101*30000101* 14696,00*
-59045730*BAS_AMARY     *IRP AUTO Sante*Mary Automobiles ind.                    *Actif   *20161001*30000101* 11482,00*
+01000000*AGA_BASE      *IRP AUTO Sante*Regimes Actifs                           *Actif   *20060101*30000101*  5275,90*€
+59008750*AGR_BASE      *IRP AUTO Sante*Regimes Retraites                        *Actif   *20060901*30000901* 13393,60*€
+03009800*AGTNA_AH      *IRP AUTO Sante*AGTNA                                    *Suspendu*20060101*30000101*  8135,60*€
+04009800*AGTNA_BASE    *IRP AUTO Sante*Regimes TNS Actifs                       *Actif   *20060101*30000101*  9868,30*€
+59009400*AGTNI_AH      *IRP AUTO Sante*AGTNI                                    *Suspendu*20061101*30000101*  1955,30*€
+59010200*AGTNR_BASE    *IRP AUTO Sante*Regimes TNS retraites                    *Actif   *20060101*30001201*  2402,80*€
+07000000*AH_BASE       *IRP AUTO Sante*TNS Actif IJ                             *Actif   *20060101*30000101*  8539,40*€
+59033076*ANI_FM        *IRP AUTO Sante*ANI FM                                   *Actif   *20060101*30000101*  6599,90*€
+59033176*ANI_PRV       *IRP AUTO Sante*ANI PRV                                  *Resilie *20060101*30000101* 13583,20*€
+10014000*ASA_BASE      *IRP AUTO Sante*ASI Actifs                               *Actif   *20060101*30000101*   255,70*€
+59014400*ASR_BASE      *IRP AUTO Sante*ASI Retraites                            *Resilie *20061201*30001101*  7875,50*€
+59014800*ASTNA_AH      *IRP AUTO Sante*ASTNA AH                                 *Actif   *20060101*30000301*  7738,50*€
+59014800*ASTNA_BASE    *IRP AUTO Sante*ASI TNS Actifs                           *Suspendu*20060701*30000101* 14851,40*€
+14040437*BAS_ACEDAT    *IRP AUTO Sante*CEDAT                                    *Suspendu*20150401*30000101*  1815,00*€
+59044469*BAS_ACENTRAL  *IRP AUTO Sante*Gpe CENTRAL AUTO ind                     *Actif   *20180101*30000801*   914,90*€
+16000000*BAS_ACLARIS   *IRP AUTO Sante*Gpe CLARIS AUTOMOBILES                   *Actif   *20190101*30000101*   217,90*€
+17046790*BAS_AKERPROI  *IRP AUTO Sante*Groupe KER PRO                           *Resilie *20191001*30000101*  7065,90*€
+59046800*BAS_AKERPROM  *IRP AUTO Sante*Groupe KER PRO                           *Resilie *20191001*30000101*  5666,20*€
+19049142*BAS_AKMMOTOR  *IRP AUTO Sante*AKM Motors                               *Resilie *20211101*30000101*  3763,10*€
+59049799*BAS_ALABBE    *IRP AUTO Sante*GRUAU LABBE                              *Resilie *20221101*30000101* 13845,50*€
+21044242*BAS_ALABEL    *IRP AUTO Sante*LABEL ind.                               *Actif   *20170801*30000101*  8318,60*€
+59041605*BAS_ALAMIRAU  *IRP AUTO Sante*Groupe LAMIRAULT ind.                    *Actif   *20160101*30000101*  3286,60*€
+23000000*BAS_ALAUNAY   *IRP AUTO Sante*Groupe LAUNAY ind.                       *Actif   *20180601*30000101* 11504,30*€
+59046699*BAS_ALECLEAO  *IRP AUTO Sante*LECLERC AUTOMOBILES                      *Actif   *20191001*30000101*  8778,50*€
+59046745*ANI_PRV       *IRP AUTO Sante*L.R PARTICIPATIONS                       *Suspendu*20191001*30000101* 11932,00*€
+59049026*BAS_ALOIRAL   *IRP AUTO Sante*Loire Alliance Motors                    *Suspendu*20220401*30000101* 13722,40*€
+27044672*BAS_AMAGYARC  *IRP AUTO Sante*MAGYAR ind.                              *Suspendu*20180101*30000101*   576,10*€
+59050005*BAS_AMAGYARC2 *IRP AUTO Sante*MAGYAR ind.                              *Actif   *20221101*30000301* 14696,00*€
+29045730*BAS_AMARY     *IRP AUTO Sante*Mary Automobiles ind.                    *Suspendu*20211001*30000101* 11482,00*€
+89000000*BAS_AMARY     *IRP AUTO Sante*CEDAT                                    *Actif   *20161001*30000401* 66006,00*€
+75000000*ANI_PRV       *IRP AUTO Sante*Groupe LAUNAY ind.                       *Actif   *20091001*30000101* 16666,04*€
+32000000*BAS_AMARY     *IRP AUTO Sante*Regimes TNS retraites                    *Suspendu*20161001*30000501*  7823,00*€
+77000000*BAS_AMARY     *IRP AUTO Sante*Groupe LAMIRAULT ind.                    *Resilie *20651001*30000101*   666,00*€
+34000000*ANI_PRV       *IRP AUTO Sante*Mary Automobiles ind.                    *Suspendu*20161001*30000101* 66666,00*€
+35000000*BAS_ALAMIRAU  *IRP AUTO Sante*CEDAT                                    *Actif   *20271001*30000601* 64266,00*€
+73000000*BAS_AKERPROI  *IRP AUTO Sante*ANI PRV                                  *Resilie *20261001*30000601*  6096,05*€
