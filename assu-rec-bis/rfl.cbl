@@ -16,51 +16,51 @@
 
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT ASSU-FILE1 ASSIGN TO "assurances-part1.dat"
+           SELECT ASSU-PART1 ASSIGN TO "assurances-part1.dat"
            ORGANIZATION IS LINE SEQUENTIAL
            ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS WS-CODE-ASSU1.
+           FILE STATUS IS FS-ASSU1.
 
-           SELECT ASSU-FILE2 ASSIGN TO "assurances-part2.dat"
+           SELECT ASSU-PART2 ASSIGN TO "assurances-part2.dat"
            ORGANIZATION IS LINE SEQUENTIAL
            ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS WS-CODE-ASSU2.
+           FILE STATUS IS FS-ASSU2.
 
-           SELECT RAP-ASSU-FILE ASSIGN TO "rapport-assurances.dat"
+           SELECT RAP-ASSU ASSIGN TO "rapport-assurances.dat"
            ORGANIZATION IS LINE SEQUENTIAL
            ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS WS-CODE-RAP-ASSU.
+           FILE STATUS IS FS-RAP-ASSU.
 
        DATA DIVISION.
        FILE SECTION.
-       FD  ASSU-FILE1.
+       FD  ASSU-PART1.
        01  ASSU-RECORD1 PIC X(123).
 
-       FD  ASSU-FILE2.
+       FD  ASSU-PART2.
        01  ASSU-RECORD2 PIC X(123).
 
-       FD  RAP-ASSU-FILE.
+       FD  RAP-ASSU.
        01  RAP-ASSU-RECORD PIC X(123).
 
 
        WORKING-STORAGE SECTION.
        01  WS-DISPLAY.
-           05 WS-LINE      PIC X(200).
+           05 WS-DASH      PIC X(200).
            05 WS-AST       PIC X(200).
-           05 WS-WRITE-RAP PIC X(123).
+           05 WS-STRING PIC X(123).
 
-       01  WS-CODE-STATUS.
-           05  WS-CODE-ASSU1    PIC X(02).
-           05  WS-CODE-ASSU2    PIC X(02).
-           05  WS-CODE-RAP-ASSU PIC X(02).
+       01  WS-FILE-STATUS.
+           05  FS-ASSU1    PIC X(02).
+           05  FS-ASSU2    PIC X(02).
+           05  FS-RAP-ASSU PIC X(02).
 
-       01  WS-COUNTER.
-           05  WS-COUNT-RECORD1 PIC 9(03) VALUE 0.
-           05  WS-COUNT-RECORD2 PIC 9(03) VALUE 0.
-           05  WS-COUNT-TOTAL   PIC 9(04) VALUE 0.
-           05  WS-ACTIF         PIC 9(03) VALUE 0.
-           05  WS-SUSPENDU      PIC 9(03) VALUE 0.
-           05  WS-RESILIE       PIC 9(03) VALUE 0.
+       01  WS-COUNTERS.
+           05  WS-COUNT-RECORD1  PIC 9(03) VALUE 0.
+           05  WS-COUNT-RECORD2  PIC 9(03) VALUE 0.
+           05  WS-COUNT-TOTAL    PIC 9(04) VALUE 0.
+           05  WS-COUNT-ACTIF    PIC 9(03) VALUE 0.
+           05  WS-COUNT-SUSPENDU PIC 9(03) VALUE 0.
+           05  WS-COUNT-RESILIE  PIC 9(03) VALUE 0.
 
        01  WS-TABLE-ASSU. 
            05 WS-ASSU  OCCURS 1 TO 99 TIMES
@@ -86,32 +86,32 @@
                                   
 
        PROCEDURE DIVISION.
-           MOVE ALL "-" TO WS-LINE.
+           MOVE ALL "-" TO WS-DASH.
            MOVE ALL "*" TO WS-AST.
-           DISPLAY WS-LINE.
-           DISPLAY "PROGRAMME ASSURANCES".
-           DISPLAY WS-LINE.
+
+           DISPLAY WS-DASH.
+           DISPLAY "PROGRAMME RAPPORT DE SYNTHESE".
+           DISPLAY WS-DASH.
 
       *    HEADER RAPPORT
-           OPEN OUTPUT RAP-ASSU-FILE.
+           OPEN OUTPUT RAP-ASSU.
 
-           DISPLAY "WRITE FILE STATUS :" SPACE WS-CODE-RAP-ASSU.
+           DISPLAY "FS WRITE RAP ASSU :" SPACE FS-RAP-ASSU.
 
            WRITE RAP-ASSU-RECORD FROM WS-AST.
-           WRITE RAP-ASSU-RECORD
-           FROM "RAPPORT ENREGISTREMENT ASSURANCE".
+           WRITE RAP-ASSU-RECORD FROM "RAPPORT DE SYNTHESE".
            WRITE RAP-ASSU-RECORD FROM WS-AST.
 
-           CLOSE RAP-ASSU-FILE.
+           CLOSE RAP-ASSU.
 
       *    SECTION 1
       *    LECTURE 1
-           OPEN INPUT ASSU-FILE1.
+           OPEN INPUT ASSU-PART1.
         
-           DISPLAY "READ FILE STATUS :" SPACE WS-CODE-ASSU1.
+           DISPLAY "FS READ ASSU1 :" SPACE FS-ASSU1.
 
            PERFORM UNTIL WS-STOP = 1
-               READ ASSU-FILE1
+               READ ASSU-PART1
                AT END 
                    SET WS-STOP TO 1
                NOT AT END 
@@ -128,13 +128,13 @@
 
                    EVALUATE WS-STATUS(WS-INDEX)
                        WHEN "Actif"
-                           ADD 1 TO WS-ACTIF
+                           ADD 1 TO WS-COUNT-ACTIF
                        WHEN "Suspendu"
-                          ADD 1 TO WS-SUSPENDU
+                          ADD 1 TO WS-COUNT-SUSPENDU
                        WHEN "Resilie"
-                          ADD 1 TO WS-RESILIE
+                          ADD 1 TO WS-COUNT-RESILIE
                        WHEN "Resilié"
-                          ADD 1 TO WS-RESILIE
+                          ADD 1 TO WS-COUNT-RESILIE
                        WHEN OTHER
                           CONTINUE
                    END-EVALUATE
@@ -142,50 +142,43 @@
                    ADD 1 TO WS-INDEX
                    ADD 1 TO WS-COUNT-RECORD1
            END-PERFORM.           
-           CLOSE ASSU-FILE1.
-
-           DISPLAY WS-ACTIF.
-           DISPLAY WS-SUSPENDU.
-           DISPLAY WS-RESILIE.
+           CLOSE ASSU-PART1.
 
       *    ECRITURE 1
-           OPEN EXTEND RAP-ASSU-FILE.
+           OPEN EXTEND RAP-ASSU.
 
-           DISPLAY "WRITE FILE STATUS :" SPACE WS-CODE-RAP-ASSU.
+           DISPLAY "FS WRITE RAP ASSU :" SPACE FS-RAP-ASSU.
 
            WRITE RAP-ASSU-RECORD FROM WS-AST.
            WRITE RAP-ASSU-RECORD FROM "SECTION FICHIER 1".
            WRITE RAP-ASSU-RECORD FROM WS-AST.
 
-           INITIALIZE WS-INDEX.
+           SET WS-INDEX TO 1.
            PERFORM WS-COUNT-RECORD1 TIMES
-               DISPLAY "WS-COUNT-RECORD1 : " WS-COUNT-RECORD1
-               DISPLAY "WS-INDEX : " WS-INDEX
-
                STRING "LIBELLE :" SPACE WS-RAP-NAME-B(WS-INDEX) SPACE 
                "STATUS :" SPACE WS-RAP-STATUS(WS-INDEX)
                DELIMITED BY SIZE 
-               INTO WS-WRITE-RAP
+               INTO WS-STRING
 
-               WRITE RAP-ASSU-RECORD FROM WS-WRITE-RAP
+               WRITE RAP-ASSU-RECORD FROM WS-STRING
+               WRITE RAP-ASSU-RECORD FROM WS-DASH 
 
-               WRITE RAP-ASSU-RECORD FROM WS-LINE 
                ADD 1 TO WS-INDEX
            END-PERFORM.
 
-           CLOSE RAP-ASSU-FILE.
+           CLOSE RAP-ASSU.
 
       *    SECTION 2
       *    LECTURE 2
-           OPEN INPUT ASSU-FILE2.
+           OPEN INPUT ASSU-PART2.
         
-           DISPLAY "READ FILE STATUS :" SPACE WS-CODE-ASSU2.
+           DISPLAY "FS READ ASSU2 :" SPACE FS-ASSU2.
 
-           INITIALIZE WS-INDEX.
+           SET WS-INDEX TO 1.
            INITIALIZE WS-TABLE-ASSU.
            INITIALIZE WS-STOP.
            PERFORM UNTIL WS-STOP = 1
-               READ ASSU-FILE2
+               READ ASSU-PART2
                AT END 
                    SET WS-STOP TO 1
                NOT AT END 
@@ -200,30 +193,43 @@
                    MOVE WS-NAME-C(WS-INDEX) TO WS-RAP-NAME-B(WS-INDEX)
                    MOVE WS-STATUS(WS-INDEX) TO WS-RAP-STATUS(WS-INDEX)
 
+                   EVALUATE WS-STATUS(WS-INDEX)
+                       WHEN "Actif"
+                           ADD 1 TO WS-COUNT-ACTIF
+                       WHEN "Suspendu"
+                          ADD 1 TO WS-COUNT-SUSPENDU
+                       WHEN "Resilie"
+                          ADD 1 TO WS-COUNT-RESILIE
+                       WHEN "Resilié"
+                          ADD 1 TO WS-COUNT-RESILIE
+                       WHEN OTHER
+                          CONTINUE
+                   END-EVALUATE
+
                    ADD 1 TO WS-INDEX
                    ADD 1 TO WS-COUNT-RECORD2
            END-PERFORM.           
-           CLOSE ASSU-FILE2.
+           CLOSE ASSU-PART2.
 
       *    ECRITURE 2
-           OPEN EXTEND RAP-ASSU-FILE.
+           OPEN EXTEND RAP-ASSU.
 
-           DISPLAY "WRITE FILE STATUS :" SPACE WS-CODE-RAP-ASSU.
+           DISPLAY "FS WRITE RAP ASSU :" SPACE FS-RAP-ASSU.
 
            WRITE RAP-ASSU-RECORD FROM WS-AST.
            WRITE RAP-ASSU-RECORD FROM "SECTION FICHIER 2".
            WRITE RAP-ASSU-RECORD FROM WS-AST.
 
-           INITIALIZE WS-INDEX.
+           SET WS-INDEX TO 1.
            PERFORM WS-COUNT-RECORD2 TIMES
                STRING "LIBELLE :" SPACE WS-RAP-NAME-B(WS-INDEX) SPACE 
                "STATUS :" SPACE WS-RAP-STATUS(WS-INDEX)
                DELIMITED BY SIZE 
-               INTO WS-WRITE-RAP
+               INTO WS-STRING
 
-               WRITE RAP-ASSU-RECORD FROM WS-WRITE-RAP
+               WRITE RAP-ASSU-RECORD FROM WS-STRING
 
-               WRITE RAP-ASSU-RECORD FROM WS-LINE 
+               WRITE RAP-ASSU-RECORD FROM WS-DASH 
                ADD 1 TO WS-INDEX
            END-PERFORM.
 
@@ -231,35 +237,60 @@
            WRITE RAP-ASSU-RECORD FROM WS-AST.
 
       *    NOMBRE D'ENREGISTREMENTS SECTION 1
-           INITIALIZE WS-WRITE-RAP.
-           STRING "Nombre d'enregistrements de la section 1 :" SPACE
+           INITIALIZE WS-STRING.
+           STRING "Nombre d'enregistrements section 1 :" SPACE
            WS-COUNT-RECORD1
            DELIMITED BY SIZE 
-           INTO WS-WRITE-RAP.
+           INTO WS-STRING.
 
-           WRITE RAP-ASSU-RECORD FROM WS-WRITE-RAP.
+           WRITE RAP-ASSU-RECORD FROM WS-STRING.
 
       *    NOMBRE D'ENREGISTREMENTS SECTION 2
-           INITIALIZE WS-WRITE-RAP.
-           STRING "Nombre d'enregistrements de la section 2 :" SPACE
+           INITIALIZE WS-STRING.
+           STRING "Nombre d'enregistrements section 2 :" SPACE
            WS-COUNT-RECORD2
            DELIMITED BY SIZE 
-           INTO WS-WRITE-RAP.
+           INTO WS-STRING.
 
-           WRITE RAP-ASSU-RECORD FROM WS-WRITE-RAP.
+           WRITE RAP-ASSU-RECORD FROM WS-STRING.
 
       *    NOMBRE TOTAL D'ENREGISTREMENTS
            COMPUTE WS-COUNT-TOTAL = WS-COUNT-RECORD1 + WS-COUNT-RECORD2.
 
-           INITIALIZE WS-WRITE-RAP.
+           INITIALIZE WS-STRING.
            STRING "Nombre total d'enregistrements :" SPACE
            WS-COUNT-TOTAL
            DELIMITED BY SIZE 
-           INTO WS-WRITE-RAP.
+           INTO WS-STRING.
 
-           WRITE RAP-ASSU-RECORD FROM WS-WRITE-RAP.
+           WRITE RAP-ASSU-RECORD FROM WS-STRING.
            WRITE RAP-ASSU-RECORD FROM WS-AST.
 
-           CLOSE RAP-ASSU-FILE.
+      *    QUANTITE DE STATUS ACTIF
+           INITIALIZE WS-STRING.
+           STRING "Total d'actif :" SPACE WS-COUNT-ACTIF
+           DELIMITED BY SIZE 
+           INTO WS-STRING.
+
+           WRITE RAP-ASSU-RECORD FROM WS-STRING.
+
+      *    QUANTITE DE STATUS SUSPENDU
+           INITIALIZE WS-STRING.
+           STRING "Total de suspendu :" SPACE WS-COUNT-SUSPENDU
+           DELIMITED BY SIZE 
+           INTO WS-STRING.
+
+           WRITE RAP-ASSU-RECORD FROM WS-STRING.
+
+      *    QUANTITE DE STATUS RESILIE
+           INITIALIZE WS-STRING.
+           STRING "Total de resilie :" SPACE WS-COUNT-RESILIE
+           DELIMITED BY SIZE 
+           INTO WS-STRING.
+
+           WRITE RAP-ASSU-RECORD FROM WS-STRING.
+           WRITE RAP-ASSU-RECORD FROM WS-AST.
+
+           CLOSE RAP-ASSU.
 
            STOP RUN.
