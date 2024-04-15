@@ -74,12 +74,6 @@
                10 WS-NUM-B  PIC X(08).
                10 WS-AMOUNT PIC 9(06)V9(02).
                10 WS-EURO   PIC X(03).
-    
-       01  WS-TABLE-RAP-ASSU.
-           05 WS-RAP-ASSU OCCURS 1 TO 99 TIMES
-                          DEPENDING ON WS-INDEX.
-               10  WS-RAP-NAME-B PIC X(41)   .          
-               10  WS-RAP-STATUS PIC X(09).
 
        01  WS-STOP  PIC 9(01) VALUE 0.
        01  WS-INDEX PIC 9(02) VALUE 1.
@@ -123,9 +117,6 @@
                    WS-NUM-B(WS-INDEX) WS-AMOUNT(WS-INDEX)
                    WS-EURO(WS-INDEX)
 
-                   MOVE WS-NAME-C(WS-INDEX) TO WS-RAP-NAME-B(WS-INDEX)
-                   MOVE WS-STATUS(WS-INDEX) TO WS-RAP-STATUS(WS-INDEX)
-
                    EVALUATE WS-STATUS(WS-INDEX)
                        WHEN "Actif"
                            ADD 1 TO WS-COUNT-ACTIF
@@ -155,8 +146,8 @@
 
            SET WS-INDEX TO 1.
            PERFORM WS-COUNT-RECORD1 TIMES
-               STRING "LIBELLE :" SPACE WS-RAP-NAME-B(WS-INDEX) SPACE 
-               "STATUS :" SPACE WS-RAP-STATUS(WS-INDEX)
+               STRING "LIBELLE :" SPACE WS-NAME-C(WS-INDEX) SPACE 
+               "STATUS :" SPACE WS-STATUS(WS-INDEX)
                DELIMITED BY SIZE 
                INTO WS-STRING
 
@@ -190,9 +181,6 @@
                    WS-NUM-B(WS-INDEX) WS-AMOUNT(WS-INDEX)
                    WS-EURO(WS-INDEX)
 
-                   MOVE WS-NAME-C(WS-INDEX) TO WS-RAP-NAME-B(WS-INDEX)
-                   MOVE WS-STATUS(WS-INDEX) TO WS-RAP-STATUS(WS-INDEX)
-
                    EVALUATE WS-STATUS(WS-INDEX)
                        WHEN "Actif"
                            ADD 1 TO WS-COUNT-ACTIF
@@ -222,8 +210,8 @@
 
            SET WS-INDEX TO 1.
            PERFORM WS-COUNT-RECORD2 TIMES
-               STRING "LIBELLE :" SPACE WS-RAP-NAME-B(WS-INDEX) SPACE 
-               "STATUS :" SPACE WS-RAP-STATUS(WS-INDEX)
+               STRING "LIBELLE :" SPACE WS-NAME-C(WS-INDEX) SPACE 
+               "STATUS :" SPACE WS-STATUS(WS-INDEX)
                DELIMITED BY SIZE 
                INTO WS-STRING
 
