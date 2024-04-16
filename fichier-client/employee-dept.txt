@@ -1,0 +1,25 @@
+Matricule  Nom                  Prenom               Poste                 Salaire IDT Departement             Region
+59050287   Solange              Oliveur              Mecanicien            1200.00 059 Nord                    Hauts-de-France
+59050243   Matt                 Ador                 Gerant                5050.00 069 Rhone                   Auvergne-Rhone-Alpes
+59044257   Sophie               Stique               Mascote                800.00 001 Ain                     Auvergne-Rhone-Alpes
+59042524   Emma                 Tome                 Animateur              800.00 038 Isere                   Auvergne-Rhone-Alpes
+59046804   Theo                 Jasmin               Chef de projet        5000.00 038 Isere                   Auvergne-Rhone-Alpes
+59049142   Tergeist             Jean-Paul            Coboliste             6000.00 038 Isere                   Auvergne-Rhone-Alpes
+59048209   Doiseau              Denis                Magasinier            1200.00 069 Rhone                   Auvergne-Rhone-Alpes
+59044600   Bonnie               Clive                Assistante            1200.00 059 Nord                    Hauts-de-France
+59042808   Nete                 Marion               Directrice            9250.00 059 Nord                    Hauts-de-France
+59042817   Castaldi             Marc                 Sindicaliste           010.00 059 Nord                    Hauts-de-France
+59044074   Times                Vincent              Chaffeur              2000.00 072 Sarthe                  Pays de la Loire
+59040503   Mobil                Otto                 Carleur               2000.00 010 Aube                    Grand Est
+59040472   Mouss                Tik                  Peintre               1500.00 011 Aude                    Occitanie
+59047861   Lami                 Molette              Peintre               1500.00 012 Aveyron                 Occitanie
+59046848   Dupont               Marie                Assistante             800.00 013 Bouches-du-Rhone        Provence-Alpes-Cote d Azur
+                                                                            000.00
+59045187   Ford                 Henry                Magasinier            1200.00 014 Calvados                Normandie
+                                                                            000.00
+59041371   Musk                 Leon                 Javaliste             4000.00 015 Cantal                  Auvergne-Rhone-Alpes
+59041376   Micron               Louis                Javaliste             4000.00 016 Charente                Nouvelle-Aquitaine
+59045610   Pompel               Xavier               Javaliste             4000.00 017 Charente-Maritime       Nouvelle-Aquitaine
+                                                                            000.00
+59045589   Zigomar              Juan                 Chaffeur              2000.00 018 Cher                    Centre-Val de Loire
+TOTAL DES SALAIRES :   53510 €
