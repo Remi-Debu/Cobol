@@ -7,32 +7,26 @@
        FILE-CONTROL.
            SELECT F-EMPLOYEE ASSIGN TO "fichierclient.txt"
            ORGANIZATION IS LINE SEQUENTIAL
-           ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS FS-CLIENT.
+           ACCESS MODE IS SEQUENTIAL.
 
            SELECT F-DEPT ASSIGN TO "fr-liste-dept.txt"
            ORGANIZATION IS LINE SEQUENTIAL
-           ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS FS-LIST-DEPT.
+           ACCESS MODE IS SEQUENTIAL.
 
            SELECT F-CLISOR ASSIGN TO "employee-dept.txt"
            ORGANIZATION IS LINE SEQUENTIAL
-           ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS FS-LIST-DEPT.
+           ACCESS MODE IS SEQUENTIAL.
 
        DATA DIVISION.
        FILE SECTION.
-       COPY "FCLIENT.cpy" REPLACING ==:CLIENT:== BY ==EMPLOYEE== .
-       COPY "FDEPT.cpy".
-       COPY "FCLISORTIE.cpy".
-
+           COPY FCLIENT REPLACING ==:CLIENT:== BY ==EMPLOYEE==.
+           COPY FDEPT.
+           COPY FCLISOR.
 
        WORKING-STORAGE SECTION.
-       01  WS-FILE-STATUS.
-           05 FS-CLIENT    PIC X(02).
-           05 FS-LIST-DEPT PIC X(02).
+       COPY FRENTETE.
 
-       COPY "FRENTETE.cpy".
+       01  WS-FS-CLIENT PIC X(02).
 
        01  WS-TABLE.
            03 WS-DEPT OCCURS 1 TO 200 TIMES

@@ -1,7 +1,7 @@
        FD  F-CLISOR
            RECORDING MODE IS F.
 
-	   01  R-CLISOR.
+       01  R-CLISOR.
            03 RCLISOR-ID      PIC X(10).
        	   03 FILLER          PIC X.
        	   03 RCLISOR-NOM     PIC X(20).
