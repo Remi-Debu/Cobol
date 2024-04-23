@@ -16,16 +16,15 @@
        DATA DIVISION.
        FILE SECTION.
        FD  TRAIN1
-           RECORD IS VARYING IN SIZE FROM 33 TO 43 CHARACTERS
-           DEPENDING ON TRAIN1-LENGTH
-           RECORDING MODE IS V.   
+           RECORD CONTAINS 37 CHARACTERS
+           RECORDING MODE IS F.   
        COPY train1fd.
       *01  RTRAIN1        PIC X(37).
 
        FD  TRAIN3
-           RECORD IS VARYING IN SIZE FROM 33 TO 43 CHARACTERS
-            DEPENDING ON TRAIN3-LENGTH
-           RECORDING MODE IS V.   
+           RECORD CONTAINS 43 CHARACTERS
+      *     DEPENDING ON TRAIN3-LENGTH
+           RECORDING MODE IS F.   
        01  RTRAIN3        PIC X(43).
 
 
@@ -60,14 +59,14 @@
                   AT END
                  SET WS-STOP TO 1
               NOT AT END
-      *          ADD 1 TO WS-COUNT-READ
-      *
+                 ADD 1 TO WS-COUNT-READ
+       
       *          SET TRAIN1-LENGTH 
       *          TO FUNCTION LENGTH(TRAIN-PLANNING)
-      *
-      *          MOVE CORR TRAIN-PLANNING TO TRAIN-PLANNING-DETAILS
-      *
-      *          PERFORM NB-ARRET THRU NB-ARRET-END
+       
+                 MOVE CORR TRAIN-PLANNING TO TRAIN-PLANNING-DETAILS
+       
+                 PERFORM NB-ARRET THRU NB-ARRET-END
                  MOVE TRAIN-PLANNING TO TRAIN-PLANNING-DETAILS
                  DISPLAY TRAIN-PLANNING-DETAILS
       *          WRITE RTRAIN3 FROM TRAIN-PLANNING-DETAILS
