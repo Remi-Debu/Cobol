@@ -11,13 +11,13 @@
              05 TRAIN-TIME-MM     PIC 99.
 
           03 TRAIN-TIME-END.
-             05 TRAIN-TIME-HH     PIC 99.
-             05 TRAIN-TIME-MM     PIC 99.
+             05 TRAIN-T-HH     PIC 99.
+             05 TRAIN-T-MM     PIC 99.
 
           03 TRAIN-NBRE-HEURES    PIC 99.
           03 TRAIN-NBRE-ARRET     PIC 99.
 
-          03 TRAIN-HALT-FLAG      PIC X OCCURS 10 TIMES.
-             88 TRAIN-STOPS-HERE            VALUE 'H'.
-             88 TRAIN-SERVICE               VALUE 'S'.
-             88 TRAIN-FRETE                 VALUE 'F'.
+          03 TRAIN-HALT      PIC X OCCURS 10 TIMES.
+             88 TRAIN-STOP            VALUE 'H'.
+             88 TRAIN-SERV            VALUE 'S'.
+             88 TRAIN-FRETE           VALUE 'F'.
