@@ -38,8 +38,8 @@
        01  REC-COURSE.
            03 R-C-KEY       PIC 9(02).
            03 R-LABEL       PIC X(21).
-           03 R-COEF        PIC 9(01)B9(01).
-           03 R-GRADE       PIC 9(02)B9(02).
+           03 R-COEF        PIC 9,9.
+           03 R-GRADE       PIC 99,99.
 
        FD  F-OUTPUT
            RECORD CONTAINS 250 CHARACTERS
@@ -55,25 +55,47 @@
            88 F-OUTPUT-STATUS-OK  VALUE "0".
            88 F-OUTPUT-STATUS-EOF VALUE "10".
        
-       01  WS-BULLETIN.
-           03  WS-STUD OCCURS 20 TIMES.
-               05 WS-ELEVE      PIC X(14).
-               05 WS-MOYENNE-G  PIC Z9,99.
-               05  WS-COURS OCCURS 6 TIMES.
-                   07 WS-LABEL  PIC X(21).
-                   07 WS-COEF   PIC 9,9.
-                   07 WS-NOTE   PIC 99,99.
+       01  WS-TABLE-STUDENT.
+           03  WS-STUDENT OCCURS 1 TO 200 TIMES
+                          DEPENDING ON WS-S-CNT.
+               05 WS-ID        PIC 9(03).
+               05 WS-NAME      PIC X(14).
+               05 WS-S-AV      PIC 9(02)V9(02).
+       
+       01  WS-TABLE-COURSE.
+           03 WS-COURSE OCCURS 1 TO 200 TIMES
+                        DEPENDING ON WS-C-CNT.
+               05 WS-S-ID      PIC 9(03).
+               05 WS-LABEL     PIC X(21).
+               05 WS-COEF      PIC 9V9.
+               05 WS-SUM-COEF  PIC 9(05)V9(02).
+               05 WS-GRADE     PIC 9(02)V9(02).
+               05 WS-SUM-GRADE PIC 9(05)V9(02).
 
-       01  WS-I            PIC 99 VALUE 1.
-       01  WS-J            PIC 99 VALUE 1.
-       01  WS-TABLE-LENGTH PIC 99.
+       01  WS-S-CNT  PIC 9(03).
+       01  WS-C-CNT  PIC 9(03).
+
+       01  WS-I                  PIC 9(03) VALUE 1.
+       01  WS-J                  PIC 9(03) VALUE 1.
+       01  WS-STRING-LENGTH-INCR PIC 9(03).
+       01  WS-NB-S               PIC ZZ9.
+       01  WS-GRADE-COMMA        PIC Z9,99.
+       01  WS-AV-COMMA           PIC Z9,99.
+
+       01  WS-COEF-NUM           PIC 9V9.
+       01  WS-GRADE-NUM          PIC 9(02)V9(02).
+
        01  WS-REC-STRING   PIC X(250).
        01  WS-NOTE-TEMP    PIC 99V99.
-       01  WS-MOY-TEMP     PIC 99V99.
        01  WS-NB-ELEV      PIC Z9.
        01  WS-CLASS-MOY-G  PIC Z9V99.
-       
+
        PROCEDURE DIVISION.
+           PERFORM START-R-IP THRU END-R-IP.
+           PERFORM START-W-S-OP THRU END-W-S-OP.
+           STOP RUN.
+
+       START-R-IP.
            OPEN INPUT F-INPUT.
 
            SET F-INPUT-STATUS-OK TO TRUE.
@@ -82,94 +104,108 @@
                AT END SET F-INPUT-STATUS-EOF TO TRUE
                NOT AT END 
                    IF REC-F-INPUT-2 EQUAL 01
+                   ADD 1 TO WS-S-CNT 
+                    
+                   MOVE WS-S-CNT TO WS-ID(WS-S-CNT)
+
                    STRING FUNCTION TRIM(R-FIRSTNAME) SPACE 
                    FUNCTION TRIM(R-LASTNAME)
-                   DELIMITED BY SIZE INTO WS-ELEVE(WS-I)
-
-                   SET WS-J TO 1
-                   ADD 1 TO WS-I
+                   DELIMITED BY SIZE INTO WS-NAME(WS-S-CNT)
                    END-IF
 
                    IF REC-F-INPUT-2 EQUAL 02
-                   SUBTRACT 1 FROM WS-I
+                   ADD 1 TO WS-C-CNT
 
-                   MOVE R-LABEL TO WS-LABEL(WS-I, WS-J)
-                   MOVE R-COEF TO WS-COEF(WS-I, WS-J)
-                   MOVE R-GRADE TO WS-NOTE(WS-I, WS-J)
+                   MOVE WS-ID(WS-S-CNT) TO WS-S-ID(WS-C-CNT)
+                   MOVE R-LABEL TO WS-LABEL(WS-C-CNT)
+                   MOVE R-COEF TO WS-COEF(WS-C-CNT)
+                   MOVE R-GRADE TO WS-GRADE(WS-C-CNT)
 
-                   ADD 1 TO WS-J
-                   ADD 1 TO WS-I
+                   MOVE R-COEF TO WS-COEF-NUM
+                   ADD WS-COEF-NUM TO WS-SUM-COEF(WS-C-CNT)
+                   MOVE R-GRADE TO WS-GRADE-NUM
+                   ADD WS-GRADE-NUM TO WS-SUM-GRADE(WS-C-CNT)
+
                    END-IF
                END-READ
            END-PERFORM.
 
            CLOSE F-INPUT.
-       
+       END-R-IP.
+
+       START-W-S-OP.
            OPEN OUTPUT F-OUTPUT.
            
-           COMPUTE WS-TABLE-LENGTH = WS-I - 1
            PERFORM VARYING WS-I FROM 1 BY 1 
-                   UNTIL WS-I > WS-TABLE-LENGTH
+                   UNTIL WS-I > WS-S-CNT
 
-               PERFORM START-STUD-MOY-G THRU END-STUD-MOY-G
+           MOVE WS-NAME(WS-I) TO WS-REC-STRING
            
-               STRING WS-ELEVE(WS-I) SPACE "|" SPACE
-                      WS-MOYENNE-G(WS-I) SPACE "|" SPACE 
-                      WS-NOTE(WS-I, 1) SPACE "|" SPACE 
-                      WS-NOTE(WS-I, 2) SPACE "|" SPACE 
-                      WS-NOTE(WS-I, 3) SPACE "|" SPACE
-                      WS-NOTE(WS-I, 4) SPACE "|" SPACE
-                      WS-NOTE(WS-I, 5) SPACE "|" SPACE
-                      WS-NOTE(WS-I, 6)
-               DELIMITED BY SIZE
-               INTO WS-REC-STRING
+           SET WS-STRING-LENGTH-INCR TO 15
+              PERFORM VARYING WS-J
+              FROM 1 BY 1
+              UNTIL WS-J > WS-C-CNT
+              
+                 IF WS-S-ID(WS-J) EQUAL WS-I
+                 STRING WS-REC-STRING(1:WS-STRING-LENGTH-INCR) 
+                 DELIMITED BY SIZE,
+                 WS-GRADE(WS-J) 
+                 DELIMITED BY SIZE
+                 INTO WS-REC-STRING
+                 
+                 ADD 6 TO WS-STRING-LENGTH-INCR
+                 END-IF
+              END-PERFORM
 
-               WRITE REC-F-OUTPUT FROM WS-REC-STRING
+              PERFORM START-STUD-AV THRU END-STUD-AV
 
+              WRITE REC-F-OUTPUT FROM WS-REC-STRING
            END-PERFORM.
 
-           PERFORM START-NB-ELEV THRU END-NB-ELEV.
-           PERFORM START-CLASS-MOY-G THRU END-CLASS-MOY-G.
+           PERFORM START-NB-S THRU END-NB-S.
+      *    PERFORM START-CLASS-MOY-G THRU END-CLASS-MOY-G.
 
            CLOSE F-OUTPUT.
+       END-W-S-OP.
 
-           STOP RUN.
+       START-STUD-AV.
+           INITIALIZE WS-AV-COMMA.
 
-       START-STUD-MOY-G.
-           INITIALIZE WS-MOY-TEMP.
+           DISPLAY WS-SUM-GRADE(WS-I).
+           DISPLAY WS-SUM-COEF(WS-I).
 
-           PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J > 6
-               INITIALIZE WS-NOTE-TEMP
-               MOVE WS-NOTE(WS-I, WS-J) TO WS-NOTE-TEMP
-               ADD WS-NOTE-TEMP TO WS-MOY-TEMP
-           END-PERFORM.
+      *    PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J > 6
+      *        INITIALIZE WS-NOTE-TEMP
+      *        MOVE WS-GRADE(WS-I, WS-J) TO WS-NOTE-TEMP
+      *        ADD WS-NOTE-TEMP TO WS-AV-TEMP
+      *    END-PERFORM.
 
-           SUBTRACT 1 FROM WS-J GIVING WS-J
-           DIVIDE WS-MOY-TEMP BY WS-J GIVING WS-MOY-TEMP.
-           MOVE WS-MOY-TEMP TO WS-MOYENNE-G(WS-I).
-       END-STUD-MOY-G.
+      *    SUBTRACT 1 FROM WS-J GIVING WS-J
+      *    DIVIDE WS-AV-TEMP BY WS-J GIVING WS-AV-TEMP.
+      *    MOVE WS-AV-TEMP TO WS-S-AV(WS-I).
+       END-STUD-AV.
 
-       START-NB-ELEV.
+       START-NB-S.
            INITIALIZE WS-REC-STRING.
-
-           MOVE WS-TABLE-LENGTH TO WS-NB-ELEV.
-           STRING "Nombre d'eleve :" SPACE WS-NB-ELEV
+           
+           MOVE WS-S-CNT TO WS-NB-S.
+           STRING "Nombre d'eleve :" SPACE FUNCTION TRIM(WS-NB-S)
            DELIMITED BY SIZE
            INTO WS-REC-STRING.
            
            WRITE REC-F-OUTPUT FROM SPACE.
            WRITE REC-F-OUTPUT FROM WS-REC-STRING.
-       END-NB-ELEV.
+       END-NB-S.
 
-       START-CLASS-MOY-G.
-           PERFORM VARYING WS-I FROM 1 BY 1 
-                   UNTIL WS-I > WS-TABLE-LENGTH
-           ADD WS-MOYENNE-G(WS-I) TO WS-MOY-TEMP
-           END-PERFORM.
+      *START-CLASS-MOY-G.
+      *    PERFORM VARYING WS-I FROM 1 BY 1 
+      *            UNTIL WS-I > WS-TABLE-LENGTH
+      *    ADD WS-S-AV(WS-I) TO WS-AV-TEMP
+      *    END-PERFORM.
 
-           DIVIDE WS-MOY-TEMP BY WS-TABLE-LENGTH 
-           GIVING WS-CLASS-MOY-G.
+      *    DIVIDE WS-AV-TEMP BY WS-TABLE-LENGTH 
+      *    GIVING WS-CLASS-MOY-G.
 
-           WRITE REC-F-OUTPUT FROM WS-CLASS-MOY-G.
-       END-CLASS-MOY-G.
+      *    WRITE REC-F-OUTPUT FROM WS-CLASS-MOY-G.
+      *END-CLASS-MOY-G.
        
