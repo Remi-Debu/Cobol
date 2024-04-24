@@ -16,21 +16,18 @@
        DATA DIVISION.
        FILE SECTION.
        FD  TRAIN1
-           RECORD CONTAINS 37 CHARACTERS
-           RECORDING MODE IS F.   
+           RECORD CONTAINS 27 TO 37 CHARACTERS
+           RECORDING MODE IS V.   
+       01  RTRAIN1 PIC X(37).
        COPY train1fd.
-      *01  RTRAIN1        PIC X(37).
 
        FD  TRAIN3
-           RECORD CONTAINS 43 CHARACTERS
-      *     DEPENDING ON TRAIN3-LENGTH
+           RECORD CONTAINS 33 TO 43 CHARACTERS
            RECORDING MODE IS F.   
-       01  RTRAIN3        PIC X(43).
-
+       01  RTRAIN3 PIC X(43).
 
        WORKING-STORAGE SECTION.
        COPY train3fd.
-      *COPY TRAIN1FD.
 
        01  WS-DISPLAY.
            03 WS-AST PIC X(80).
@@ -50,8 +47,8 @@
            MOVE ALL "*" TO WS-AST.
 
        TRAIN-READWRITE.
-           OPEN INPUT TRAIN1.
-      *         OUTPUT TRAIN3.
+           OPEN INPUT TRAIN1
+                OUTPUT TRAIN3.
 
            SET WS-STOP TO 0.
            PERFORM UNTIL WS-STOP = 1
@@ -61,19 +58,15 @@
               NOT AT END
                  ADD 1 TO WS-COUNT-READ
        
-      *          SET TRAIN1-LENGTH 
-      *          TO FUNCTION LENGTH(TRAIN-PLANNING)
-       
                  MOVE CORR TRAIN-PLANNING TO TRAIN-PLANNING-DETAILS
        
                  PERFORM NB-ARRET THRU NB-ARRET-END
-                 MOVE TRAIN-PLANNING TO TRAIN-PLANNING-DETAILS
-                 DISPLAY TRAIN-PLANNING-DETAILS
-      *          WRITE RTRAIN3 FROM TRAIN-PLANNING-DETAILS
+                 
+                 WRITE RTRAIN3 FROM TRAIN-PLANNING-DETAILS
            END-PERFORM.
 
-           CLOSE TRAIN1.
-      *          TRAIN3.
+           CLOSE TRAIN1
+                 TRAIN3.
        TRAIN-READWRITE-END.
 
            OPEN INPUT TRAIN3.
@@ -110,9 +103,10 @@
            SET WS-INDEX TO 0
            SET TRAIN-NBRE-ARRET TO 0
            PERFORM UNTIL WS-INDEX > 10
-                    IF TRAIN-STOPS-HERE(WS-INDEX)
-                    ADD 1 TO TRAIN-NBRE-ARRET
-                    END-IF
-                    ADD 1 TO WS-INDEX
+               IF TRAIN-STOPS-HERE(WS-INDEX)
+               ADD 1 TO TRAIN-NBRE-ARRET
+               END-IF
+
+               ADD 1 TO WS-INDEX
            END-PERFORM.
        NB-ARRET-END.
