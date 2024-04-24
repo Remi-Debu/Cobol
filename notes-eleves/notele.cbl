@@ -38,8 +38,8 @@
        01  REC-COURSE.
            03 R-C-KEY       PIC 9(02).
            03 R-LABEL       PIC X(21).
-           03 R-COEF        PIC 9V9.
-           03 R-GRADE       PIC 99V99.
+           03 R-COEF        PIC 9(01)B9(01).
+           03 R-GRADE       PIC 9(02)B9(02).
 
        FD  F-OUTPUT
            RECORD CONTAINS 250 CHARACTERS
@@ -58,20 +58,23 @@
        01  WS-BULLETIN.
            03  WS-STUD OCCURS 20 TIMES.
                05 WS-ELEVE      PIC X(14).
-               05 WS-MOYENNE-G  PIC 99,99.
+               05 WS-MOYENNE-G  PIC Z9,99.
                05  WS-COURS OCCURS 6 TIMES.
                    07 WS-LABEL  PIC X(21).
                    07 WS-COEF   PIC 9,9.
                    07 WS-NOTE   PIC 99,99.
 
-       01  WS-I PIC 99 VALUE 1.
-       01  WS-J PIC 99 VALUE 1.
+       01  WS-I            PIC 99 VALUE 1.
+       01  WS-J            PIC 99 VALUE 1.
        01  WS-TABLE-LENGTH PIC 99.
-       01  WS-STRING PIC X(250).
+       01  WS-REC-STRING   PIC X(250).
+       01  WS-NOTE-TEMP    PIC 99V99.
+       01  WS-MOY-TEMP     PIC 99V99.
+       01  WS-NB-ELEV      PIC Z9.
+       01  WS-CLASS-MOY-G  PIC Z9V99.
        
        PROCEDURE DIVISION.
-           OPEN INPUT F-INPUT
-                OUTPUT F-OUTPUT.
+           OPEN INPUT F-INPUT.
 
            SET F-INPUT-STATUS-OK TO TRUE.
            PERFORM UNTIL F-INPUT-STATUS-EOF
@@ -89,25 +92,26 @@
 
                    IF REC-F-INPUT-2 EQUAL 02
                    SUBTRACT 1 FROM WS-I
-                   DISPLAY R-GRADE
+
                    MOVE R-LABEL TO WS-LABEL(WS-I, WS-J)
                    MOVE R-COEF TO WS-COEF(WS-I, WS-J)
                    MOVE R-GRADE TO WS-NOTE(WS-I, WS-J)
-                   DISPLAY WS-NOTE(WS-I, WS-J)
 
                    ADD 1 TO WS-J
                    ADD 1 TO WS-I
                    END-IF
                END-READ
            END-PERFORM.
+
+           CLOSE F-INPUT.
        
            OPEN OUTPUT F-OUTPUT.
            
-           MOVE WS-I TO WS-TABLE-LENGTH
+           COMPUTE WS-TABLE-LENGTH = WS-I - 1
            PERFORM VARYING WS-I FROM 1 BY 1 
-                   UNTIL WS-I >= WS-TABLE-LENGTH
+                   UNTIL WS-I > WS-TABLE-LENGTH
 
-               PERFORM START-CAL-MOY-G THRU END-CAL-MOY-G
+               PERFORM START-STUD-MOY-G THRU END-STUD-MOY-G
            
                STRING WS-ELEVE(WS-I) SPACE "|" SPACE
                       WS-MOYENNE-G(WS-I) SPACE "|" SPACE 
@@ -118,20 +122,54 @@
                       WS-NOTE(WS-I, 5) SPACE "|" SPACE
                       WS-NOTE(WS-I, 6)
                DELIMITED BY SIZE
-               INTO WS-STRING
+               INTO WS-REC-STRING
 
-               WRITE REC-F-OUTPUT FROM WS-STRING
+               WRITE REC-F-OUTPUT FROM WS-REC-STRING
+
            END-PERFORM.
+
+           PERFORM START-NB-ELEV THRU END-NB-ELEV.
+           PERFORM START-CLASS-MOY-G THRU END-CLASS-MOY-G.
 
            CLOSE F-OUTPUT.
 
            STOP RUN.
 
-       START-CAL-MOY-G.
-      *    PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J > 6
-      *        ADD WS-NOTE(WS-I, WS-J) TO WS-MOYENNE-G(WS-I)
-      *    END-PERFORM.
-           DISPLAY "index j " WS-J.
-      *    DIVIDE WS-MOYENNE-G(WS-I) BY WS-J GIVING WS-MOYENNE-G(WS-I).
-       END-CAL-MOY-G.
+       START-STUD-MOY-G.
+           INITIALIZE WS-MOY-TEMP.
+
+           PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J > 6
+               INITIALIZE WS-NOTE-TEMP
+               MOVE WS-NOTE(WS-I, WS-J) TO WS-NOTE-TEMP
+               ADD WS-NOTE-TEMP TO WS-MOY-TEMP
+           END-PERFORM.
+
+           SUBTRACT 1 FROM WS-J GIVING WS-J
+           DIVIDE WS-MOY-TEMP BY WS-J GIVING WS-MOY-TEMP.
+           MOVE WS-MOY-TEMP TO WS-MOYENNE-G(WS-I).
+       END-STUD-MOY-G.
+
+       START-NB-ELEV.
+           INITIALIZE WS-REC-STRING.
+
+           MOVE WS-TABLE-LENGTH TO WS-NB-ELEV.
+           STRING "Nombre d'eleve :" SPACE WS-NB-ELEV
+           DELIMITED BY SIZE
+           INTO WS-REC-STRING.
+           
+           WRITE REC-F-OUTPUT FROM SPACE.
+           WRITE REC-F-OUTPUT FROM WS-REC-STRING.
+       END-NB-ELEV.
+
+       START-CLASS-MOY-G.
+           PERFORM VARYING WS-I FROM 1 BY 1 
+                   UNTIL WS-I > WS-TABLE-LENGTH
+           ADD WS-MOYENNE-G(WS-I) TO WS-MOY-TEMP
+           END-PERFORM.
+
+           DIVIDE WS-MOY-TEMP BY WS-TABLE-LENGTH 
+           GIVING WS-CLASS-MOY-G.
+
+           WRITE REC-F-OUTPUT FROM WS-CLASS-MOY-G.
+       END-CLASS-MOY-G.
        
