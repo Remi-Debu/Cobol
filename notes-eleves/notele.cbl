@@ -59,17 +59,17 @@
            03  WS-STUDENT OCCURS 1 TO 200 TIMES
                           DEPENDING ON WS-S-CNT
                           INDEXED BY S-IDX.
-               05 WS-S-ID PIC 9(03).
-               05 WS-S-FIRSTNAME PIC X(20).
-               05 WS-S-LASTNAME  PIC X(20).
-               05 WS-S-AGE       PIC 9(02).
+               05 WS-S-FIRSTNAME      PIC X(20).
+               05 WS-S-LASTNAME       PIC X(20).
+               05 WS-S-AGE            PIC 9(02).
+               05 WS-S-SUM-GRADE-COEF PIC 9(05)V9(02).
+               05 WS-S-AV-GRADE       PIC 99V99.
        
        01  WS-TABLE-COURSE.
            03 WS-C-CNT  PIC 9(03) VALUE 1.
            03 WS-COURSE OCCURS 1 TO 200 TIMES
                         DEPENDING ON WS-C-CNT
                         INDEXED BY C-IDX.
-               05 WS-C-ID    PIC 9(03).
                05 WS-C-LABEL PIC X(21).
                05 WS-C-COEF  PIC 9V9.
 
@@ -78,10 +78,10 @@
            03 WS-GRADE OCCURS 1 TO 200 TIMES
                        DEPENDING ON WS-G-CNT
                        INDEXED BY G-IDX.
-               05 WS-G-ID         PIC 9(03).
-               05 WS-G-S-FULLNAME PIC X(40).
+               05 WS-G-S-FULLNAME PIC X(30).
                05 WS-G-C-LABEL    PIC X(25).
                05 WS-G-GRADE      PIC 99V99.
+               05 WS-G-COEF       PIC 9V9.
 
        01  WS-IS-EXIST PIC X.
            88 WS-IS-EXIST-Y VALUE "Y".
@@ -93,27 +93,20 @@
            03 WS-PNT-COEF     PIC 9,9.
 
        01  WS-I               PIC 9(03) VALUE 1.
+       01  WS-J               PIC 9(03) VALUE 1.
+              
        01  WS-STRING-POS      PIC 9(03) VALUE 1.
-       01  WS-NUM-TEMP        PIC 9(03).
+       01  WS-NUM-TEMP        PIC 9(03)V9(02).
+       01  WS-FULLNAME-TEMP   PIC X(30).
+       01  WS-SUM-COEF        PIC 9(10)V9.
+       01  WS-SUM-GRADE       PIC 9(10)V99.
 
        01  WS-DISPLAY.
-           03 WS-DASH   PIC X(180).
-           03 WS-BLANK  PIC X(80).
-           03 WS-EMPTY  PIC X.
-           03 WS-STRING PIC X(180).
-      *01  WS-J                  PIC 9(03) VALUE 1.
-      *01  WS-STRING-LENGTH-INCR PIC 9(03).
-      *01  WS-NB-S               PIC ZZ9.
-      *01  WS-GRADE-COMMA        PIC Z9,99.
-      *01  WS-AV-COMMA           PIC Z9,99.
-      *
-      *01  WS-COEF-NUM           PIC 9V9.
-      *01  WS-GRADE-NUM          PIC 9(02)V9(02).
-      *
-      *01  WS-REC-STRING   PIC X(250).
-      *01  WS-NOTE-TEMP    PIC 99V99.
-      *01  WS-NB-ELEV      PIC Z9.
-      *01  WS-CLASS-MOY-G  PIC Z9V99.
+           03 WS-DASH    PIC X(235).
+           03 WS-BLANK   PIC X(100).
+           03 WS-EMPTY   PIC X.
+           03 WS-STRING1 PIC X(235).
+           03 WS-STRING2 PIC X(235).
 
       ******************************************************************
        PROCEDURE DIVISION.
@@ -146,7 +139,6 @@
 
       ******************************************************************
        START-HANDLE-STUDENT.
-           MOVE WS-S-CNT      TO WS-S-ID(WS-S-CNT).
            MOVE R-S-FIRSTNAME TO WS-S-FIRSTNAME(WS-S-CNT).
            MOVE R-S-LASTNAME  TO WS-S-LASTNAME(WS-S-CNT).
            MOVE R-S-AGE       TO WS-S-AGE(WS-S-CNT).
@@ -167,7 +159,6 @@
            END-SEARCH.
            
            IF WS-IS-EXIST-N
-               MOVE WS-C-CNT  TO WS-C-ID(WS-C-CNT)
                MOVE R-C-LABEL TO WS-C-LABEL(WS-C-CNT)
                MOVE R-C-COEF  TO WS-C-COEF(WS-C-CNT)
 
@@ -177,14 +168,14 @@
 
       ******************************************************************
        START-HANDLE-GRADE.
-           STRING WS-S-FIRSTNAME(WS-S-CNT - 1) 
-           SPACE WS-S-LASTNAME(WS-S-CNT - 1)
+           STRING FUNCTION TRIM(WS-S-FIRSTNAME(WS-S-CNT - 1))
+           SPACE FUNCTION TRIM(WS-S-LASTNAME(WS-S-CNT - 1))
            DELIMITED BY SIZE
            INTO WS-G-S-FULLNAME(WS-G-CNT).
 
-           MOVE WS-G-CNT  TO WS-G-ID(WS-G-CNT).
            MOVE R-C-LABEL TO WS-G-C-LABEL(WS-G-CNT).
            MOVE R-C-GRADE TO WS-G-GRADE(WS-G-CNT).
+           MOVE R-C-COEF  TO WS-G-COEF(WS-G-CNT).
 
            ADD 1 TO WS-G-CNT.
        END-HANDLE-GRADE.
@@ -195,28 +186,8 @@
 
            PERFORM START-HEADER THRU END-HEADER.
            PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER.
-           
-           SET WS-I TO 1.
-           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I >= WS-G-CNT
-               INITIALIZE REC-F-OUTPUT
-               INITIALIZE WS-PNT-GRADE
-               MOVE WS-G-GRADE(WS-I) TO WS-PNT-GRADE
-
-               STRING WS-G-ID(WS-I) SPACE WS-G-S-FULLNAME(WS-I) SPACE
-               WS-G-C-LABEL(WS-I) SPACE WS-PNT-GRADE
-               DELIMITED BY SIZE INTO REC-F-OUTPUT
-
-      *        STRING WS-G-S-FULLNAME(WS-I) 
-      *        DELIMITED BY SIZE,
-      *        WS-GRADE(WS-J) 
-      *        DELIMITED BY SIZE
-      *        INTO WS-REC-STRING
-      *        
-      *        ADD 6 TO WS-STRING-LENGTH-INCR
-
-               WRITE REC-F-OUTPUT
-           END-PERFORM.
-           
+           PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS.
+           PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
            PERFORM START-FOOTER THRU END-FOOTER.
 
       *    PERFORM START-NB-S THRU END-NB-S.
@@ -227,133 +198,197 @@
 
       ******************************************************************
        START-HEADER.
-           INITIALIZE WS-STRING.
+           INITIALIZE WS-STRING1.
            MOVE ALL "-" TO WS-DASH.
 
            WRITE REC-F-OUTPUT FROM WS-DASH.
 
            STRING "|" WS-BLANK "BULLETIN D'ELEVES"
            DELIMITED BY SIZE
-           INTO WS-STRING.
+           INTO WS-STRING1.
 
-           MOVE "|" TO WS-STRING(180:1).
+           MOVE "|" TO WS-STRING1(235:1).
 
-           WRITE REC-F-OUTPUT FROM WS-STRING.
+           WRITE REC-F-OUTPUT FROM WS-STRING1.
            WRITE REC-F-OUTPUT FROM WS-DASH.
            WRITE REC-F-OUTPUT FROM WS-EMPTY.
        END-HEADER.
 
       ******************************************************************
        START-TABLE-HEADER.
-           INITIALIZE WS-STRING.
+           INITIALIZE WS-STRING1.
+           INITIALIZE WS-STRING2.
            MOVE ALL "-" TO WS-DASH.
            
            WRITE REC-F-OUTPUT FROM WS-DASH.
 
-           SET WS-I TO 1.
-           SET WS-STRING-POS TO 3.
-           PERFORM VARYING WS-I FROM 1 BY 1
-            UNTIL WS-I > WS-C-CNT
-            
-               STRING WS-C-LABEL(WS-I)
-               DELIMITED BY SIZE
-               INTO WS-STRING(WS-STRING-POS:29)
+           STRING "| ELEVE"
+           DELIMITED BY SIZE
+           INTO WS-STRING1.
 
-               ADD 29 TO WS-STRING-POS
+           STRING "| MOYENNE GENERALE"
+           DELIMITED BY SIZE
+           INTO WS-STRING1(41:20).
+
+           STRING "|"
+           DELIMITED BY SIZE
+           INTO WS-STRING2.
+
+           STRING "|"
+           DELIMITED BY SIZE
+           INTO WS-STRING2(41:20).
+
+           SET WS-I TO 1.
+           SET WS-STRING-POS TO 62.
+           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I >= WS-C-CNT
+              STRING "|" SPACE WS-C-LABEL(WS-I)
+              DELIMITED BY SIZE
+              INTO WS-STRING1(WS-STRING-POS:29)
+              
+              INITIALIZE WS-PNT-COEF
+              MOVE WS-C-COEF(WS-I) TO WS-PNT-COEF
+              
+              STRING "|" SPACE "Coef" SPACE WS-PNT-COEF
+              DELIMITED BY SIZE
+              INTO WS-STRING2(WS-STRING-POS:29)
+
+              ADD WS-C-COEF(WS-I) TO WS-SUM-COEF
+              ADD 29 TO WS-STRING-POS
            END-PERFORM.
 
-           MOVE "|" TO WS-STRING(1:1).
-           MOVE "|" TO WS-STRING(180:1).
+           MOVE "|" TO WS-STRING1(235:1).
+           MOVE "|" TO WS-STRING2(235:1).
            
-           WRITE REC-F-OUTPUT FROM WS-STRING.
+           WRITE REC-F-OUTPUT FROM WS-STRING1.
+           WRITE REC-F-OUTPUT FROM WS-STRING2.
            WRITE REC-F-OUTPUT FROM WS-DASH.
        END-TABLE-HEADER.
 
+      ******************************************************************
+       START-TABLE-DETAILS.
+           SET WS-I TO 1.
+           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I >= WS-S-CNT
+              INITIALIZE WS-FULLNAME-TEMP
+              INITIALIZE WS-STRING1
+
+              STRING FUNCTION TRIM(WS-S-FIRSTNAME(WS-I)) 
+              SPACE FUNCTION TRIM(WS-S-LASTNAME(WS-I))
+              DELIMITED BY SIZE
+              INTO WS-FULLNAME-TEMP 
+
+              STRING "|" SPACE WS-FULLNAME-TEMP
+              DELIMITED BY SIZE
+              INTO WS-STRING1(1:40)
+              
+              PERFORM START-TABLE-DETAILS-C THRU END-TABLE-DETAILS-C
+              
+              COMPUTE WS-S-AV-GRADE(WS-I) = 
+              WS-S-SUM-GRADE-COEF(WS-I) / WS-SUM-COEF
+              
+              INITIALIZE WS-PNT-GRADE
+              MOVE WS-S-AV-GRADE(WS-I) TO WS-PNT-GRADE
+              ADD WS-S-AV-GRADE(WS-I)  TO WS-SUM-GRADE
+
+              STRING "|" SPACE WS-PNT-GRADE
+              DELIMITED BY SIZE
+              INTO WS-STRING1(41:21)
+
+              MOVE "|" TO WS-STRING1(235:1)
+              WRITE REC-F-OUTPUT FROM WS-STRING1
+              WRITE REC-F-OUTPUT FROM WS-DASH
+           END-PERFORM.
+       END-TABLE-DETAILS.
+
+      ******************************************************************
+       START-TABLE-DETAILS-C.
+           SET WS-STRING-POS TO 62
+           SET WS-J TO 1
+           PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J >= WS-G-CNT
+              IF WS-G-S-FULLNAME(WS-J) EQUAL WS-FULLNAME-TEMP
+              INITIALIZE WS-PNT-GRADE
+              MOVE WS-G-GRADE(WS-J) TO WS-PNT-GRADE
+
+              STRING "|" SPACE WS-PNT-GRADE
+              DELIMITED BY SIZE
+              INTO WS-STRING1(WS-STRING-POS:20)
+
+      *       Ajoute les notes de l'eleve en fonction du coefficient
+      *       de la matière
+              MULTIPLY WS-G-GRADE(WS-J) BY WS-G-COEF(WS-J) 
+              GIVING WS-NUM-TEMP
+              ADD WS-NUM-TEMP TO WS-S-SUM-GRADE-COEF(WS-I)
+
+              ADD 29 TO WS-STRING-POS
+              END-IF
+           END-PERFORM.
+       END-TABLE-DETAILS-C.
+
+      ******************************************************************
+       START-TABLE-FOOTER.
+           INITIALIZE WS-STRING1.
+           DISPLAY WS-SUM-GRADE
+           
+           COMPUTE WS-NUM-TEMP = WS-SUM-GRADE / (WS-S-CNT - 1)
+
+           MOVE WS-NUM-TEMP TO WS-PNT-GRADE.
+
+           STRING "| CLASSE"
+           DELIMITED BY SIZE
+           INTO WS-STRING1(1:40).
+
+           STRING "|" SPACE WS-PNT-GRADE
+           DELIMITED BY SIZE
+           INTO WS-STRING1(41:20).
+
+           MOVE "|" TO WS-STRING1(235:1)
+
+           WRITE REC-F-OUTPUT FROM WS-STRING1.
+           WRITE REC-F-OUTPUT FROM WS-DASH.
+       END-TABLE-FOOTER.
+
+      ******************************************************************
        START-FOOTER.
            MOVE ALL "-" TO WS-DASH.
            
            WRITE REC-F-OUTPUT FROM WS-EMPTY.
            WRITE REC-F-OUTPUT FROM WS-DASH.
 
-           INITIALIZE WS-STRING.
+           INITIALIZE WS-STRING1.
            INITIALIZE WS-NUM-TEMP.
            INITIALIZE WS-PNT-NBR.
            STRING "| Nombre d'eleves" SPACE
-           DELIMITED BY SIZE INTO WS-STRING.
+           DELIMITED BY SIZE INTO WS-STRING1.
            MOVE WS-S-CNT TO WS-NUM-TEMP.
            SUBTRACT 1 FROM WS-NUM-TEMP.
            MOVE WS-NUM-TEMP TO WS-PNT-NBR.  
-           MOVE FUNCTION TRIM(WS-PNT-NBR) TO WS-STRING(25:5).
-           MOVE "|" TO WS-STRING(180:1).
-           WRITE REC-F-OUTPUT FROM WS-STRING.
+           MOVE FUNCTION TRIM(WS-PNT-NBR) TO WS-STRING1(25:5).
+           MOVE "|" TO WS-STRING1(235:1).
+           WRITE REC-F-OUTPUT FROM WS-STRING1.
            
-           INITIALIZE WS-STRING.
+           INITIALIZE WS-STRING1.
            INITIALIZE WS-NUM-TEMP.
            INITIALIZE WS-PNT-NBR.
            STRING "| Nombre de matieres" SPACE
-           DELIMITED BY SIZE INTO WS-STRING.
+           DELIMITED BY SIZE INTO WS-STRING1.
            MOVE WS-C-CNT TO WS-NUM-TEMP.
            SUBTRACT 1 FROM WS-NUM-TEMP.
            MOVE WS-NUM-TEMP TO WS-PNT-NBR.
-           MOVE FUNCTION TRIM(WS-PNT-NBR) TO WS-STRING(25:5).
-           MOVE "|" TO WS-STRING(180:1).
-           WRITE REC-F-OUTPUT FROM WS-STRING.
+           MOVE FUNCTION TRIM(WS-PNT-NBR) TO WS-STRING1(25:5).
+           MOVE "|" TO WS-STRING1(235:1).
+           WRITE REC-F-OUTPUT FROM WS-STRING1.
 
-           INITIALIZE WS-STRING.
+           INITIALIZE WS-STRING1.
            INITIALIZE WS-NUM-TEMP.
            INITIALIZE WS-PNT-NBR.
            STRING "| Nombre total de notes" SPACE
-           DELIMITED BY SIZE INTO WS-STRING.
+           DELIMITED BY SIZE INTO WS-STRING1.
            MOVE WS-G-CNT TO WS-NUM-TEMP.
            SUBTRACT 1 FROM WS-NUM-TEMP.
            MOVE WS-NUM-TEMP TO WS-PNT-NBR.
-           MOVE FUNCTION TRIM(WS-PNT-NBR) TO WS-STRING(25:5).
-           MOVE "|" TO WS-STRING(180:1).
-           WRITE REC-F-OUTPUT FROM WS-STRING.
+           MOVE FUNCTION TRIM(WS-PNT-NBR) TO WS-STRING1(25:5).
+           MOVE "|" TO WS-STRING1(235:1).
+           WRITE REC-F-OUTPUT FROM WS-STRING1.
 
            WRITE REC-F-OUTPUT FROM WS-DASH.
        END-FOOTER.
-
-      ******************************************************************
-      *START-STUD-AV.
-      *    INITIALIZE WS-AV-COMMA.
-      *
-      *    DISPLAY WS-SUM-GRADE(WS-I).
-      *    DISPLAY WS-SUM-COEF(WS-I).
-
-      *    PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J > 6
-      *        INITIALIZE WS-NOTE-TEMP
-      *        MOVE WS-GRADE(WS-I, WS-J) TO WS-NOTE-TEMP
-      *        ADD WS-NOTE-TEMP TO WS-AV-TEMP
-      *    END-PERFORM.
-
-      *    SUBTRACT 1 FROM WS-J GIVING WS-J
-      *    DIVIDE WS-AV-TEMP BY WS-J GIVING WS-AV-TEMP.
-      *    MOVE WS-AV-TEMP TO WS-S-AV(WS-I).
-      *END-STUD-AV.
-
-      ******************************************************************
-      *START-NB-S.
-      *    INITIALIZE WS-REC-STRING.
-      *    
-      *    MOVE WS-S-CNT TO WS-NB-S.
-      *    STRING "Nombre d'eleve :" SPACE FUNCTION TRIM(WS-NB-S)
-      *    DELIMITED BY SIZE
-      *    INTO WS-REC-STRING.
-      *    
-      *    WRITE REC-F-OUTPUT FROM SPACE.
-      *    WRITE REC-F-OUTPUT FROM WS-REC-STRING.
-      *END-NB-S.
-
-      *START-CLASS-MOY-G.
-      *    PERFORM VARYING WS-I FROM 1 BY 1 
-      *            UNTIL WS-I > WS-TABLE-LENGTH
-      *    ADD WS-S-AV(WS-I) TO WS-AV-TEMP
-      *    END-PERFORM.
-
-      *    DIVIDE WS-AV-TEMP BY WS-TABLE-LENGTH 
-      *    GIVING WS-CLASS-MOY-G.
-
-      *    WRITE REC-F-OUTPUT FROM WS-CLASS-MOY-G.
-      *END-CLASS-MOY-G.
        
