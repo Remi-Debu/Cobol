@@ -1,9 +1,55 @@
-MARC ASSIN     1000  0725  0675  1300  1100  0950
-JEAN BONOT     1150  1300  1600  1000  1200  1000
-MARTHE INGALE  1500  0900  0875  1400  0650  1000
-MARTHE INNIC   1500  0900  0875  1400  0650  1000
-ANNE HOMALY    1000  1100  1550  1800  1450  1000
-GERARD MANTORT 1000  1100  1875  1775  1250  1100
-PAUL OCHAN     0450  0650  0325  0650  0925  0875
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                                BULLETIN D'ELEVES                                                                                 |
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Nombre d'eleve : 7
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| SYSTEME D INFORMATION        PROGRAMMATION VBA            SQL                          SCHEMA RELATIONNEL           RESEAUX INFORMATIQUES        MODELISATION                    |
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+001 MARC                 ASSIN               SYSTEME D INFORMATION     10,00
+002 MARC                 ASSIN               PROGRAMMATION VBA          7,25
+003 MARC                 ASSIN               SQL                        6,75
+004 MARC                 ASSIN               SCHEMA RELATIONNEL        13,00
+005 MARC                 ASSIN               RESEAUX INFORMATIQUES     11,00
+006 MARC                 ASSIN               MODELISATION               9,50
+007 JEAN                 BONOT               SYSTEME D INFORMATION     11,50
+008 JEAN                 BONOT               PROGRAMMATION VBA         13,00
+009 JEAN                 BONOT               SQL                       16,00
+010 JEAN                 BONOT               SCHEMA RELATIONNEL        10,00
+011 JEAN                 BONOT               RESEAUX INFORMATIQUES     12,00
+012 JEAN                 BONOT               MODELISATION              10,00
+013 MARTHE               INGALE              SYSTEME D INFORMATION     15,00
+014 MARTHE               INGALE              PROGRAMMATION VBA          9,00
+015 MARTHE               INGALE              SQL                        8,75
+016 MARTHE               INGALE              SCHEMA RELATIONNEL        14,00
+017 MARTHE               INGALE              RESEAUX INFORMATIQUES      6,50
+018 MARTHE               INGALE              MODELISATION              10,00
+019 MARTHE               INNIC               SYSTEME D INFORMATION     15,00
+020 MARTHE               INNIC               PROGRAMMATION VBA          9,00
+021 MARTHE               INNIC               SQL                        8,75
+022 MARTHE               INNIC               SCHEMA RELATIONNEL        14,00
+023 MARTHE               INNIC               RESEAUX INFORMATIQUES      6,50
+024 MARTHE               INNIC               MODELISATION              10,00
+025 ANNE                 HOMALY              SYSTEME D INFORMATION     10,00
+026 ANNE                 HOMALY              PROGRAMMATION VBA         11,00
+027 ANNE                 HOMALY              SQL                       15,50
+028 ANNE                 HOMALY              SCHEMA RELATIONNEL        18,00
+029 ANNE                 HOMALY              RESEAUX INFORMATIQUES     14,50
+030 ANNE                 HOMALY              MODELISATION              10,00
+031 GERARD               MANTORT             SYSTEME D INFORMATION     10,00
+032 GERARD               MANTORT             PROGRAMMATION VBA         11,00
+033 GERARD               MANTORT             SQL                       18,75
+034 GERARD               MANTORT             SCHEMA RELATIONNEL        17,75
+035 GERARD               MANTORT             RESEAUX INFORMATIQUES     12,50
+036 GERARD               MANTORT             MODELISATION              11,00
+037 PAUL                 OCHAN               SYSTEME D INFORMATION      4,50
+038 PAUL                 OCHAN               PROGRAMMATION VBA          6,50
+039 PAUL                 OCHAN               SQL                        3,25
+040 PAUL                 OCHAN               SCHEMA RELATIONNEL         6,50
+041 PAUL                 OCHAN               RESEAUX INFORMATIQUES      9,25
+042 PAUL                 OCHAN               MODELISATION               8,75
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Nombre d'eleves       7                                                                                                                                                          |
+| Nombre de matieres    6                                                                                                                                                          |
+| Nombre total de notes 42                                                                                                                                                         |
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
