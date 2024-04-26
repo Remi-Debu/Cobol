@@ -1,3 +1,13 @@
+      ******************************************************************
+      *    Le programme lis le fichier "input.dat" pour ensuite        *
+      *    écrire dans un fichier "output.dat" un rapport sur les      *
+      *    notes des élèves.                                           *
+      *    Le rapport contient les notes et les moyennes en fonction   *
+      *    des coefficients des matières de chaque élève et de la      *
+      *    classe, ainsi que les moyennes générales.                   *
+      *    À la fin du rapport on retrouve un résumé des données       *
+      *    nombre d'élèves, de matières et de notes.                   *
+      ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. notele.
        AUTHOR.     Rémi.
@@ -59,61 +69,78 @@
            03  WS-STUDENT OCCURS 1 TO 200 TIMES
                           DEPENDING ON WS-S-CNT
                           INDEXED BY S-IDX.
-               05 WS-S-FIRSTNAME      PIC X(20).
-               05 WS-S-LASTNAME       PIC X(20).
+               05 WS-S-FIRSTNAME      PIC X(10).
+               05 WS-S-LASTNAME       PIC X(10).
                05 WS-S-AGE            PIC 9(02).
                05 WS-S-SUM-GRADE-COEF PIC 9(05)V9(02).
-               05 WS-S-AV-GRADE       PIC 99V99.
+               05 WS-S-AV-GRADE       PIC 9(02)V9(02).
        
        01  WS-TABLE-COURSE.
            03 WS-C-CNT  PIC 9(03) VALUE 1.
            03 WS-COURSE OCCURS 1 TO 200 TIMES
                         DEPENDING ON WS-C-CNT
                         INDEXED BY C-IDX.
-               05 WS-C-LABEL PIC X(21).
-               05 WS-C-COEF  PIC 9V9.
+               05 WS-C-LABEL     PIC X(21).
+               05 WS-C-COEF      PIC 9V9.
+               05 WS-C-SUM-GRADE PIC 9(05)V9(02).
+               05 WS-C-AV-GRADE  PIC 9(02)V9(02).
 
        01  WS-TABLE-GRADE.
            03 WS-G-CNT PIC 9(03) VALUE 1.
            03 WS-GRADE OCCURS 1 TO 200 TIMES
                        DEPENDING ON WS-G-CNT
                        INDEXED BY G-IDX.
-               05 WS-G-S-FULLNAME PIC X(30).
+               05 WS-G-S-FULLNAME PIC X(20).
                05 WS-G-C-LABEL    PIC X(25).
-               05 WS-G-GRADE      PIC 99V99.
                05 WS-G-COEF       PIC 9V9.
+               05 WS-G-GRADE      PIC 99V99.
 
-       01  WS-IS-EXIST PIC X.
+       01  WS-IS-EXIST      PIC X.
            88 WS-IS-EXIST-Y VALUE "Y".
            88 WS-IS-EXIST-N VALUE "N".
 
        01  WS-PNT.
-           03 WS-PNT-NBR      PIC ZZZZ9.
-           03 WS-PNT-GRADE    PIC Z9,99.
-           03 WS-PNT-COEF     PIC 9,9.
+           03 WS-PNT-NBR    PIC ZZZZ9.
+           03 WS-PNT-GRADE  PIC Z9,99.
+           03 WS-PNT-COEF   PIC 9,9.
 
-       01  WS-I               PIC 9(03) VALUE 1.
-       01  WS-J               PIC 9(03) VALUE 1.
-              
-       01  WS-STRING-POS      PIC 9(03) VALUE 1.
-       01  WS-NUM-TEMP        PIC 9(03)V9(02).
-       01  WS-FULLNAME-TEMP   PIC X(30).
-       01  WS-SUM-COEF        PIC 9(10)V9.
-       01  WS-SUM-GRADE       PIC 9(10)V99.
+       01  WS-I             PIC 9(03) VALUE 1.
+       01  WS-J             PIC 9(03) VALUE 1.
+       01  WS-STRING-POS    PIC 9(03) VALUE 1.
+       01  WS-NUM-TEMP      PIC 9(03)V9(02).
+       01  WS-FULLNAME-TEMP PIC X(30).
+       01  WS-SUM-COEF      PIC 9(10)V9.
+       01  WS-SUM-GRADE     PIC 9(10)V9(02).
 
        01  WS-DISPLAY.
-           03 WS-DASH    PIC X(235).
-           03 WS-BLANK   PIC X(100).
-           03 WS-EMPTY   PIC X.
-           03 WS-STRING1 PIC X(235).
-           03 WS-STRING2 PIC X(235).
+           03 WS-DASH       PIC X(235).
+           03 WS-MID-DASH   PIC X(235).
+           03 WS-BLANK      PIC X(100).
+           03 WS-EMPTY      PIC X.
+           03 WS-STRING1    PIC X(235).
+           03 WS-STRING2    PIC X(235).
 
       ******************************************************************
        PROCEDURE DIVISION.
-           PERFORM START-R-IP THRU END-R-IP.
-           PERFORM START-W-OP THRU END-W-OP.
+           PERFORM START-MAIN THRU END-MAIN.
            STOP RUN.
 
+      ******************************************************************
+      *    MAIN                                                        *
+      ******************************************************************
+       START-MAIN.
+           MOVE ALL "-" TO WS-DASH.
+           MOVE ALL "-" TO WS-MID-DASH.
+           MOVE "|" TO WS-MID-DASH(1:1).
+           MOVE "|" TO WS-MID-DASH(235:1).
+
+           PERFORM START-R-IP THRU END-R-IP.
+           PERFORM START-W-OP THRU END-W-OP.
+       END-MAIN.
+       
+      ******************************************************************
+      *    Lis le fichier "input.dat" et appels différents paragraphes *
+      *    qui vont servir à stocker dans la WS les données lue.       *
       ******************************************************************
        START-R-IP.
            OPEN INPUT F-INPUT.
@@ -138,6 +165,9 @@
        END-R-IP.
 
       ******************************************************************
+      *    Stock les données RECORD STUDENT dans la table STUDENT de   *
+      *    la WS.                                                      *
+      ******************************************************************
        START-HANDLE-STUDENT.
            MOVE R-S-FIRSTNAME TO WS-S-FIRSTNAME(WS-S-CNT).
            MOVE R-S-LASTNAME  TO WS-S-LASTNAME(WS-S-CNT).
@@ -146,6 +176,10 @@
            ADD 1 TO WS-S-CNT.
        END-HANDLE-STUDENT.
 
+      ******************************************************************
+      *    Stock les données RECORD COURSE seulement si le record      *
+      *    label n'a pas encore été stocké dans la table COURSE de     *
+      *    la WS.                                                      *
       ******************************************************************
        START-HANDLE-COURSE.
            INITIALIZE WS-IS-EXIST.
@@ -167,6 +201,9 @@
        END-HANDLE-COURSE.
 
       ******************************************************************
+      *    Stock les données RECORD GRADE dans la table GRADE de       *
+      *    la WS.                                                      *
+      ******************************************************************
        START-HANDLE-GRADE.
            STRING FUNCTION TRIM(WS-S-FIRSTNAME(WS-S-CNT - 1))
            SPACE FUNCTION TRIM(WS-S-LASTNAME(WS-S-CNT - 1))
@@ -181,29 +218,26 @@
        END-HANDLE-GRADE.
 
       ******************************************************************
+      *    Stock les données RECORD STUDENT dans la table STUDENT de   *
+      *    la WS.                                                      *
+      ******************************************************************
        START-W-OP.
            OPEN OUTPUT F-OUTPUT.
-
            PERFORM START-HEADER THRU END-HEADER.
            PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER.
            PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS.
            PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
            PERFORM START-FOOTER THRU END-FOOTER.
-
-      *    PERFORM START-NB-S THRU END-NB-S.
-      *    PERFORM START-CLASS-MOY-G THRU END-CLASS-MOY-G.
-
            CLOSE F-OUTPUT.
        END-W-OP.
 
       ******************************************************************
        START-HEADER.
            INITIALIZE WS-STRING1.
-           MOVE ALL "-" TO WS-DASH.
 
            WRITE REC-F-OUTPUT FROM WS-DASH.
 
-           STRING "|" WS-BLANK "BULLETIN D'ELEVES"
+           STRING "|" WS-BLANK "NOTES DES ELEVES"
            DELIMITED BY SIZE
            INTO WS-STRING1.
 
@@ -218,7 +252,6 @@
        START-TABLE-HEADER.
            INITIALIZE WS-STRING1.
            INITIALIZE WS-STRING2.
-           MOVE ALL "-" TO WS-DASH.
            
            WRITE REC-F-OUTPUT FROM WS-DASH.
 
@@ -228,7 +261,7 @@
 
            STRING "| MOYENNE GENERALE"
            DELIMITED BY SIZE
-           INTO WS-STRING1(41:20).
+           INTO WS-STRING1(25:20).
 
            STRING "|"
            DELIMITED BY SIZE
@@ -236,7 +269,7 @@
 
            STRING "|"
            DELIMITED BY SIZE
-           INTO WS-STRING2(41:20).
+           INTO WS-STRING2(25:20).
 
            SET WS-I TO 1.
            SET WS-STRING-POS TO 62.
@@ -276,14 +309,17 @@
               DELIMITED BY SIZE
               INTO WS-FULLNAME-TEMP 
 
-              STRING "|" SPACE WS-FULLNAME-TEMP
+              STRING "|" SPACE WS-S-FIRSTNAME(WS-I)
+              SPACE WS-S-LASTNAME(WS-I)
               DELIMITED BY SIZE
-              INTO WS-STRING1(1:40)
+              INTO WS-STRING1(1:20) 
               
               PERFORM START-TABLE-DETAILS-C THRU END-TABLE-DETAILS-C
               
-              COMPUTE WS-S-AV-GRADE(WS-I) = 
-              WS-S-SUM-GRADE-COEF(WS-I) / WS-SUM-COEF
+      *       COMPUTE WS-S-AV-GRADE(WS-I) ROUNDED = 
+      *       WS-S-SUM-GRADE-COEF(WS-I) / WS-SUM-COEF
+               DIVIDE WS-S-SUM-GRADE-COEF(WS-I) BY WS-SUM-COEF 
+               GIVING WS-S-AV-GRADE(WS-I) ROUNDED
               
               INITIALIZE WS-PNT-GRADE
               MOVE WS-S-AV-GRADE(WS-I) TO WS-PNT-GRADE
@@ -291,11 +327,11 @@
 
               STRING "|" SPACE WS-PNT-GRADE
               DELIMITED BY SIZE
-              INTO WS-STRING1(41:21)
+              INTO WS-STRING1(25:21)
 
               MOVE "|" TO WS-STRING1(235:1)
               WRITE REC-F-OUTPUT FROM WS-STRING1
-              WRITE REC-F-OUTPUT FROM WS-DASH
+              WRITE REC-F-OUTPUT FROM WS-MID-DASH
            END-PERFORM.
        END-TABLE-DETAILS.
 
@@ -326,21 +362,40 @@
       ******************************************************************
        START-TABLE-FOOTER.
            INITIALIZE WS-STRING1.
-           DISPLAY WS-SUM-GRADE
-           
-           COMPUTE WS-NUM-TEMP = WS-SUM-GRADE / (WS-S-CNT - 1)
-
-           MOVE WS-NUM-TEMP TO WS-PNT-GRADE.
-
            STRING "| CLASSE"
            DELIMITED BY SIZE
            INTO WS-STRING1(1:40).
+           
+           COMPUTE WS-NUM-TEMP ROUNDED = WS-SUM-GRADE / (WS-S-CNT - 1)
+           MOVE WS-NUM-TEMP TO WS-PNT-GRADE.
 
            STRING "|" SPACE WS-PNT-GRADE
            DELIMITED BY SIZE
            INTO WS-STRING1(41:20).
 
-           MOVE "|" TO WS-STRING1(235:1)
+           SET WS-STRING-POS TO 62.
+           SET WS-I TO 1
+           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I >= WS-C-CNT
+               INITIALIZE WS-PNT-GRADE
+
+               SET WS-J TO 1
+               PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J >= WS-G-CNT
+                   IF WS-G-C-LABEL(WS-J) EQUAL WS-C-LABEL(WS-I)
+                      ADD WS-G-GRADE(WS-J) TO WS-C-SUM-GRADE(WS-I)
+                   END-IF
+               END-PERFORM
+               
+               COMPUTE WS-C-AV-GRADE(WS-I) = WS-C-SUM-GRADE(WS-I) /
+               (WS-S-CNT - 1)
+               MOVE WS-C-AV-GRADE(WS-I) TO WS-PNT-GRADE
+               STRING "|" SPACE WS-PNT-GRADE
+               DELIMITED BY SIZE
+               INTO WS-STRING1(WS-STRING-POS:20)
+
+               ADD 29 TO WS-STRING-POS
+           END-PERFORM.
+
+           MOVE "|" TO WS-STRING1(235:1).
 
            WRITE REC-F-OUTPUT FROM WS-STRING1.
            WRITE REC-F-OUTPUT FROM WS-DASH.
