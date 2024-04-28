@@ -1,23 +1,19 @@
-       01 TRAIN-PLANNING-DETAILS.
-          03 RECORD-TYPE          PIC XXX.
-             88 TGV                         VALUE 'TGV'.
-             88 CORAIL                      VALUE 'COR'.
-             88 TER                         VALUE 'TER'.
-
-          03 STATION-DEPART       PIC X(18).
-
-          03 TRAIN-TIME.
-             05 TRAIN-TIME-HH     PIC 99.
-             05 TRAIN-TIME-MM     PIC 99.
-
-          03 TRAIN-TIME-END.
-             05 TRAIN-T-HH     PIC 99.
-             05 TRAIN-T-MM     PIC 99.
-
-          03 TRAIN-NBRE-HEURES    PIC 99.
-          03 TRAIN-NBRE-ARRET     PIC 99.
-
-          03 TRAIN-HALT      PIC X OCCURS 10 TIMES.
-             88 TRAIN-STOP            VALUE 'H'.
-             88 TRAIN-SERV            VALUE 'S'.
-             88 TRAIN-FRETE           VALUE 'F'.
+       01  TRAIN-PLANNING-DETAILS.
+           03  T-CNT PIC 9(03) VALUE 1.
+           03  TRAIN OCCURS 1 TO 200 TIMES
+                          DEPENDING ON T-CNT
+                          INDEXED BY T-IDX.
+               05 T-TYPE           PIC X(03).
+               05 T-STATION-DEPART PIC X(18).
+      
+               05 TRAIN-TIME-START.
+                  07 T-START-HH PIC 99.
+                  07 T-START-MM PIC 99.
+      
+               05 TRAIN-TIME-END.
+                  07 T-END-HH PIC 99.
+                  07 T-END-MM PIC 99.
+      
+               05 T-NBR-HOURS PIC 99.
+               05 T-HALT-FLAG PIC X(10).
+               05 T-NBR-HALT  PIC 99.
