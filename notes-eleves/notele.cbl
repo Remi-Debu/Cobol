@@ -62,7 +62,6 @@
            
        01  FS-OUTPUT PIC X(02).
            88 FS-OUTPUT-OK  VALUE "0".
-           88 FS-OUTPUT-EOF VALUE "10".
        
        01  TABLE-STUDENT.
            03  S-CNT  PIC 9(03) VALUE 1.
@@ -80,12 +79,12 @@
            03 COURSE OCCURS 1 TO 200 TIMES
                         DEPENDING ON C-CNT
                         INDEXED BY C-IDX.
-               05 C-ID          PIC X(03).
-               05 C-ID-NAME     PIC X(04).
-               05 C-LABEL       PIC X(21).
-               05 C-COEF        PIC 9V9.
-               05 C-SUM-GRADE   PIC 9(05)V9(02).
-               05 WS-C-AV-GRADE PIC 9(02)V9(02).
+               05 C-ID        PIC X(03).
+               05 C-ID-NAME   PIC X(04).
+               05 C-LABEL     PIC X(21).
+               05 C-COEF      PIC 9V9.
+               05 C-SUM-GRADE PIC 9(05)V9(02).
+               05 C-AV-GRADE  PIC 9(02)V9(02).
 
        01  TABLE-GRADE.
            03 G-CNT PIC 9(03) VALUE 1.
@@ -95,13 +94,13 @@
                05 G-S-FULLNAME PIC X(20).
                05 G-C-LABEL    PIC X(25).
                05 G-COEF       PIC 9V9.
-               05 G-GRADE      PIC 99V99.
+               05 G-GRADE      PIC 9(02)V9(02).
 
        01  WS-IS-EXIST      PIC X.
            88 WS-IS-EXIST-Y VALUE "Y".
            88 WS-IS-EXIST-N VALUE "N".
 
-       01  WS-PNT.
+       01  WS-PRINT.
            03 WS-PNT-NBR    PIC Z9.
            03 WS-PNT-GRADE  PIC Z9,99.
            03 WS-PNT-COEF   PIC 9,9.
@@ -111,13 +110,11 @@
            03 WS-PNT-EMPTY  PIC X.
            03 WS-PNT-STRING PIC X(87).
 
-       01  WS-I             PIC 9(03) VALUE 1.
-       01  WS-J             PIC 9(03) VALUE 1.
        01  WS-STRING-POS    PIC 9(03) VALUE 1.
        01  WS-NUM-TEMP      PIC 9(03)V9(02).
        01  WS-FULLNAME-TEMP PIC X(30).
        01  WS-SUM-COEF      PIC 9(10)V9.
-       01  WS-SUM-GRADE     PIC 9(10)V9(02).
+       01  WS-SUM-AV-GRADE     PIC 9(10)V9(02).
 
 
       ******************************************************************
@@ -126,7 +123,9 @@
            STOP RUN.
 
       ******************************************************************
-      *    MAIN                                                        *
+      *    MAIN qui appel le paragraphe qui s'occupe de la lecture du  *
+      *    fichier "input.dat" puis celui qui s'occupe de l'écriture   *
+      *    dans le fichier "output.dat".                               *
       ******************************************************************
        START-MAIN.
            MOVE ALL "-" TO WS-PNT-DASH.
@@ -142,23 +141,31 @@
       ******************************************************************
        START-R-IP.
            OPEN INPUT F-INPUT.
+           IF FS-INPUT EQUAL "00"
+              SET FS-INPUT-OK TO TRUE
 
-           SET FS-INPUT-OK TO TRUE.
-           PERFORM UNTIL FS-INPUT-EOF
-               READ F-INPUT 
-               AT END SET FS-INPUT-EOF TO TRUE
-               NOT AT END 
-                   IF REC-F-INPUT-2 EQUAL "01"
-                   PERFORM START-HANDLE-STUDENT THRU END-HANDLE-STUDENT
-                   END-IF
-
-                   IF REC-F-INPUT-2 EQUAL "02"
-                   PERFORM START-HANDLE-COURSE THRU END-HANDLE-COURSE
-                   PERFORM START-HANDLE-GRADE THRU END-HANDLE-GRADE
-                   END-IF
-               END-READ
-           END-PERFORM.
-
+              PERFORM UNTIL FS-INPUT-EOF
+                 READ F-INPUT 
+                 AT END 
+                    SET FS-INPUT-EOF TO TRUE
+                 NOT AT END 
+                    EVALUATE REC-F-INPUT-2
+                    WHEN "01"
+                       PERFORM START-HANDLE-STUDENT 
+                          THRU END-HANDLE-STUDENT
+                    WHEN "02"
+                       PERFORM START-HANDLE-COURSE 
+                          THRU END-HANDLE-COURSE
+                       PERFORM START-HANDLE-GRADE 
+                          THRU END-HANDLE-GRADE
+                    WHEN OTHER
+                       CONTINUE
+                    END-EVALUATE
+                  END-READ
+              END-PERFORM
+           ELSE
+              DISPLAY "ERREUR :" SPACE FS-INPUT
+           END-IF.
            CLOSE F-INPUT.
        END-R-IP.
 
@@ -181,8 +188,8 @@
       ******************************************************************
        START-HANDLE-COURSE.
            INITIALIZE WS-IS-EXIST.
+           
            SET C-IDX TO 1.
-
            SEARCH COURSE VARYING C-IDX
                AT END
                    SET WS-IS-EXIST-N TO TRUE
@@ -228,11 +235,15 @@
       ******************************************************************
        START-W-OP.
            OPEN OUTPUT F-OUTPUT.
-           PERFORM START-HEADER THRU END-HEADER.
-           PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER.
-           PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS.
-           PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
-           PERFORM START-FOOTER THRU END-FOOTER.
+           IF FS-OUTPUT EQUAL "00"
+              PERFORM START-HEADER THRU END-HEADER
+              PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER
+              PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS
+              PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER
+              PERFORM START-FOOTER THRU END-FOOTER
+           ELSE
+              DISPLAY "ERREUR :" SPACE FS-OUTPUT 
+           END-IF.
            CLOSE F-OUTPUT.
        END-W-OP.
 
@@ -252,7 +263,8 @@
        END-HEADER.
 
       ******************************************************************
-      *    Ecris l'en-tête de la table (les colonnes.                  *
+      *    Ecris l'en-tête du tableau qui contient le nom des colonnes *
+      *    (NOM, PRENOM, MOYENNE, C1, C2, ...)                         *
       ******************************************************************
        START-TABLE-HEADER.
            INITIALIZE WS-PNT-STRING.
@@ -271,14 +283,13 @@
            DELIMITED BY SIZE
            INTO WS-PNT-STRING(23:20).
 
-           SET WS-I TO 1.
            SET WS-STRING-POS TO 35.
-           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I >= C-CNT
-              STRING C-ID-NAME(WS-I)
+           PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX >= C-CNT
+              STRING C-ID-NAME(C-IDX)
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(WS-STRING-POS:29)
 
-              ADD C-COEF(WS-I) TO WS-SUM-COEF
+              ADD C-COEF(C-IDX) TO WS-SUM-COEF
               ADD 10 TO WS-STRING-POS
            END-PERFORM.
            
@@ -287,29 +298,34 @@
        END-TABLE-HEADER.
 
       ******************************************************************
+      *    Ecris chaque ligne du tableau qui contient les valeurs qui  *
+      *    correspondent au nom des colonnes.                          *
+      ******************************************************************
        START-TABLE-DETAILS.
-           SET WS-I TO 1.
-           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I >= S-CNT
+           PERFORM VARYING S-IDX FROM 1 BY 1 UNTIL S-IDX >= S-CNT
               INITIALIZE WS-FULLNAME-TEMP
               INITIALIZE WS-PNT-STRING
 
-              STRING FUNCTION TRIM(S-FIRSTNAME(WS-I)) 
-              SPACE FUNCTION TRIM(S-LASTNAME(WS-I))
+              STRING FUNCTION TRIM(S-FIRSTNAME(S-IDX)) 
+              SPACE FUNCTION TRIM(S-LASTNAME(S-IDX))
               DELIMITED BY SIZE
               INTO WS-FULLNAME-TEMP 
 
-              STRING S-FIRSTNAME(WS-I) SPACE S-LASTNAME(WS-I)
+              STRING S-FIRSTNAME(S-IDX) SPACE S-LASTNAME(S-IDX)
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(1:20) 
               
               PERFORM START-TABLE-DETAILS-C THRU END-TABLE-DETAILS-C
+
+      *       Calcul la moyenne générale d'un élève. 
+              DIVIDE S-SUM-GRADE-COEF(S-IDX) BY WS-SUM-COEF 
+              GIVING S-AV-GRADE(S-IDX) ROUNDED
               
-              DIVIDE S-SUM-GRADE-COEF(WS-I) BY WS-SUM-COEF 
-              GIVING S-AV-GRADE(WS-I) ROUNDED
-              
+      *       Effectue la somme des moyennes générales de chaque élève.
+              ADD S-AV-GRADE(S-IDX) TO WS-SUM-AV-GRADE
+
               INITIALIZE WS-PNT-GRADE
-              MOVE S-AV-GRADE(WS-I) TO WS-PNT-GRADE
-              ADD S-AV-GRADE(WS-I)  TO WS-SUM-GRADE
+              MOVE S-AV-GRADE(S-IDX) TO WS-PNT-GRADE
 
               STRING WS-PNT-GRADE
               DELIMITED BY SIZE
@@ -318,25 +334,28 @@
               WRITE REC-F-OUTPUT FROM WS-PNT-STRING
            END-PERFORM.
        END-TABLE-DETAILS.
-
+      
+      ******************************************************************
+      *    Ajoute à la ligne de détails du tableau les notes de        *
+      *    l'élève dans chaque matière et effectue la somme de         *
+      *    ses notes.                                                  *
       ******************************************************************
        START-TABLE-DETAILS-C.
-           SET WS-STRING-POS TO 33
-           SET WS-J TO 1
-           PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J >= G-CNT
-              IF G-S-FULLNAME(WS-J) EQUAL WS-FULLNAME-TEMP
+           SET WS-STRING-POS TO 33.
+           PERFORM VARYING G-IDX FROM 1 BY 1 UNTIL G-IDX >= G-CNT
+              IF G-S-FULLNAME(G-IDX) EQUAL WS-FULLNAME-TEMP
               INITIALIZE WS-PNT-GRADE
-              MOVE G-GRADE(WS-J) TO WS-PNT-GRADE
+              MOVE G-GRADE(G-IDX) TO WS-PNT-GRADE
 
               STRING WS-PNT-GRADE
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(WS-STRING-POS:20)
 
-      *       Ajoute les notes de l'eleve en fonction du coefficient
-      *       de la matière
-              MULTIPLY G-GRADE(WS-J) BY G-COEF(WS-J) 
+      *       Effectue la somme des notes avec le coefficient de la
+      *       matière pris en compte pour un élève.
+              MULTIPLY G-GRADE(G-IDX) BY G-COEF(G-IDX) 
               GIVING WS-NUM-TEMP
-              ADD WS-NUM-TEMP TO S-SUM-GRADE-COEF(WS-I)
+              ADD WS-NUM-TEMP TO S-SUM-GRADE-COEF(S-IDX)
 
               ADD 10 TO WS-STRING-POS
               END-IF
@@ -344,13 +363,19 @@
        END-TABLE-DETAILS-C.
 
       ******************************************************************
+      *    Ecris la dernière du tableau qui contient la moyenne        *
+      *    générale de la classe et les moyennes de la classe dans     *
+      *    chaque cours.                                               *
+      ******************************************************************
        START-TABLE-FOOTER.
            INITIALIZE WS-PNT-STRING.
+
            STRING "CLASSE"
            DELIMITED BY SIZE
            INTO WS-PNT-STRING(1:20).
-           
-           COMPUTE WS-NUM-TEMP ROUNDED = WS-SUM-GRADE / (S-CNT - 1)
+
+      *    Calcul de la moyenne générale de la classe   
+           COMPUTE WS-NUM-TEMP ROUNDED = WS-SUM-AV-GRADE / (S-CNT - 1)
            MOVE WS-NUM-TEMP TO WS-PNT-GRADE.
 
            STRING WS-PNT-GRADE
@@ -358,20 +383,23 @@
            INTO WS-PNT-STRING(23:20).
 
            SET WS-STRING-POS TO 33.
-           SET WS-I TO 1
-           PERFORM VARYING WS-I FROM 1 BY 1 UNTIL WS-I >= C-CNT
+           PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX >= C-CNT
                INITIALIZE WS-PNT-GRADE
 
-               SET WS-J TO 1
-               PERFORM VARYING WS-J FROM 1 BY 1 UNTIL WS-J >= G-CNT
-                   IF G-C-LABEL(WS-J) EQUAL C-LABEL(WS-I)
-                      ADD G-GRADE(WS-J) TO C-SUM-GRADE(WS-I)
+               PERFORM VARYING G-IDX FROM 1 BY 1 UNTIL G-IDX >= G-CNT
+                   IF G-C-LABEL(G-IDX) EQUAL C-LABEL(C-IDX)
+      *               Effectue la somme des notes des élèves pour une 
+      *               matière.
+                      ADD G-GRADE(G-IDX) TO C-SUM-GRADE(C-IDX)
                    END-IF
                END-PERFORM
-               
-               COMPUTE WS-C-AV-GRADE(WS-I) = C-SUM-GRADE(WS-I) /
+
+      *        Calcul la moyenne de la classe dans une matiere       
+               COMPUTE C-AV-GRADE(C-IDX) = C-SUM-GRADE(C-IDX) /
                (S-CNT - 1)
-               MOVE WS-C-AV-GRADE(WS-I) TO WS-PNT-GRADE
+
+               MOVE C-AV-GRADE(C-IDX) TO WS-PNT-GRADE
+
                STRING WS-PNT-GRADE
                DELIMITED BY SIZE
                INTO WS-PNT-STRING(WS-STRING-POS:20)
@@ -384,7 +412,13 @@
        END-TABLE-FOOTER.
 
       ******************************************************************
+      *    Ecris le pied de page du rapport qui contient le lexique    *
+      *    de la signification de C1, C2, ...                          *
+      *    puis les nombres d'élèves, de cours et de notes             *
+      *    et pour finir le message de fin du rapport                  *
+      ******************************************************************
        START-FOOTER.
+      *    Lexique
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
 
            PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX >= C-CNT
@@ -403,53 +437,80 @@
                WRITE REC-F-OUTPUT FROM WS-PNT-STRING
            END-PERFORM.
 
+      *    Nombre d'élèves
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
 
-           INITIALIZE WS-PNT-STRING.
            INITIALIZE WS-NUM-TEMP.
+           INITIALIZE WS-PNT-STRING.
            INITIALIZE WS-PNT-NBR.
+
            STRING "NOMBRE D'ELEVES" SPACE
-           DELIMITED BY SIZE INTO WS-PNT-STRING.
+           DELIMITED BY SIZE 
+           INTO WS-PNT-STRING.
+
            MOVE S-CNT TO WS-NUM-TEMP.
+
            SUBTRACT 1 FROM WS-NUM-TEMP.
-           MOVE WS-NUM-TEMP TO WS-PNT-NBR.  
+
+           MOVE WS-NUM-TEMP TO WS-PNT-NBR. 
+
            STRING SPACE "=>" SPACE WS-PNT-NBR
            DELIMITED BY SIZE
            INTO WS-PNT-STRING(16:7).
+
            WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
-           
-           INITIALIZE WS-PNT-STRING.
+
+      *    Nombre de cours   
            INITIALIZE WS-NUM-TEMP.
+           INITIALIZE WS-PNT-STRING.
            INITIALIZE WS-PNT-NBR.
+
            STRING "NOMBRE DE COURS" SPACE
-           DELIMITED BY SIZE INTO WS-PNT-STRING.
+           DELIMITED BY SIZE 
+           INTO WS-PNT-STRING.
+
            MOVE C-CNT TO WS-NUM-TEMP.
+
            SUBTRACT 1 FROM WS-NUM-TEMP.
+
            MOVE WS-NUM-TEMP TO WS-PNT-NBR.
+
            STRING SPACE "=>" SPACE WS-PNT-NBR
            DELIMITED BY SIZE
            INTO WS-PNT-STRING(16:7).
+
            WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
 
-           INITIALIZE WS-PNT-STRING.
+      *    Nombre de notes
            INITIALIZE WS-NUM-TEMP.
+           INITIALIZE WS-PNT-STRING.
            INITIALIZE WS-PNT-NBR.
+
            STRING "NOMBRE DE NOTES" SPACE
-           DELIMITED BY SIZE INTO WS-PNT-STRING.
+           DELIMITED BY SIZE 
+           INTO WS-PNT-STRING.
+
            MOVE G-CNT TO WS-NUM-TEMP.
+
            SUBTRACT 1 FROM WS-NUM-TEMP.
+
            MOVE WS-NUM-TEMP TO WS-PNT-NBR.
+
            STRING SPACE "=>" SPACE WS-PNT-NBR
            DELIMITED BY SIZE
            INTO WS-PNT-STRING(16:7).
-           WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
 
+           WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
+      
+      *    Fin de rapport
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
 
            INITIALIZE WS-PNT-STRING.
+
            STRING WS-PNT-BLANK "FIN DU RAPPORT"
            DELIMITED BY SIZE
            INTO WS-PNT-STRING.
+
            WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
        END-FOOTER.
        
