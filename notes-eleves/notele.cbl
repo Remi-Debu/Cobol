@@ -104,10 +104,9 @@
            03 WS-PNT-NBR    PIC Z9.
            03 WS-PNT-GRADE  PIC Z9,99.
            03 WS-PNT-COEF   PIC 9,9.
-           03 WS-PNT-DASH   PIC X(87).
-           03 WS-PNT-AST    PIC X(87).
-           03 WS-PNT-BLANK  PIC X(35).
-           03 WS-PNT-EMPTY  PIC X.
+           03 WS-PNT-AST    PIC X(87) VALUE ALL "*".
+           03 WS-PNT-BLANK  PIC X(35) VALUE SPACES.
+           03 WS-PNT-EMPTY  PIC X     VALUE SPACE.
            03 WS-PNT-STRING PIC X(87).
 
        01  WS-STRING-POS    PIC 9(03) VALUE 1.
@@ -128,9 +127,6 @@
       *    dans le fichier "output.dat".                               *
       ******************************************************************
        START-MAIN.
-           MOVE ALL "-" TO WS-PNT-DASH.
-           MOVE ALL "*" TO WS-PNT-AST.
-
            PERFORM START-R-IP THRU END-R-IP.
            PERFORM START-W-OP THRU END-W-OP.
        END-MAIN.
