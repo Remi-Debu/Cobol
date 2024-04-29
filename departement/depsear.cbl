@@ -7,26 +7,60 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT F-DEPT ASSIGN TO "departement.txt"
+           SELECT F-INPUT-DEPT ASSIGN TO "departement.txt"
            ORGANIZATION IS LINE SEQUENTIAL
            ACCESS MODE IS SEQUENTIAL
-           FILE STATUS IS FS-DEPT.
+           FILE STATUS IS FS-I-DEPT.
+
+           SELECT F-OUTPUT-DEPT ASSIGN TO "sort-departement.txt"
+           ORGANIZATION IS LINE SEQUENTIAL
+           ACCESS MODE IS SEQUENTIAL
+           FILE STATUS IS FS-O-DEPT.
+
+           SELECT F-WORK-DEPT ASSIGN TO "work-departement.txt"
+           ORGANIZATION IS LINE SEQUENTIAL
+           ACCESS MODE IS SEQUENTIAL
+           FILE STATUS IS FS-W-DEPT.
 
       ******************************************************************
        DATA DIVISION.
        FILE SECTION.
-       FD  F-DEPT
+       FD  F-INPUT-DEPT
            RECORD CONTAINS 52 CHARACTERS
            RECORDING MODE IS F.
-       01  R-DEPT.
-           03 R-D-NUM    PIC 9(03).
-           03 R-D-NAME   PIC X(23).
-           03 R-D-REGION PIC X(26).
+       01  R-I-DEPT.
+           03 R-I-D-NUM    PIC 9(03).
+           03 R-I-D-NAME   PIC X(23).
+           03 R-I-D-REGION PIC X(26).
+
+       FD  F-OUTPUT-DEPT
+           RECORD CONTAINS 52 CHARACTERS
+           RECORDING MODE IS F.
+       01  R-O-DEPT.
+           03 R-O-D-NUM    PIC 9(03).
+           03 R-O-D-NAME   PIC X(23).
+           03 R-O-D-REGION PIC X(26).
+
+       SD  F-WORK-DEPT
+           RECORD CONTAINS 52 CHARACTERS
+           RECORDING MODE IS F.
+       01  R-W-DEPT.
+           03 R-W-D-NUM    PIC 9(03).
+           03 R-W-D-NAME   PIC X(23).
+           03 R-W-D-REGION PIC X(26).
 
        WORKING-STORAGE SECTION.
-       01  FS-DEPT PIC X(02).
-           88 FS-DEPT-OK VALUE "00".
-           88 FS-DEPT-EOF VALUE "10".
+       01  FS-I-DEPT PIC X(02).
+           88 FS-I-DEPT-OK  VALUE "00".
+           88 FS-I-DEPT-EOF VALUE "10".
+
+       01  FS-O-DEPT PIC X(02).
+           88 FS-O-DEPT-OK  VALUE "00".
+           88 FS-O-DEPT-EOF VALUE "10".
+
+       01  FS-W-DEPT PIC X(02).
+           88 FS-W-DEPT-OK  VALUE "00".
+           88 FS-W-DEPT-EOF VALUE "10".
 
        01  TABLE-DEPT.
            03  D-CNT PIC 9(04) VALUE 1.
@@ -45,32 +79,37 @@
 
       ****************************************************************** 
        PROCEDURE DIVISION.
-       START-MAIN.
-           PERFORM START-R-DEPT THRU END-R-DEPT.
-           PERFORM START-UI-SEARCH THRU END-UI-SEARCH.
-       END-MAIN.
-           GOBACK.
+           SORT F-WORK-DEPT 
+           ON ASCENDING KEY R-W-D-NAME
+           USING F-INPUT-DEPT
+           GIVING F-OUTPUT-DEPT.
+           
+      *START-MAIN.
+      *    PERFORM START-R-DEPT THRU END-R-DEPT.
+      *    PERFORM START-UI-SEARCH THRU END-UI-SEARCH.
+      *END-MAIN.
+           STOP RUN.
             
       ******************************************************************
       *    Lis le fichier.
       ******************************************************************
        START-R-DEPT.
-           OPEN INPUT F-DEPT.
-           IF FS-DEPT EQUAL "00"
-              SET FS-DEPT-OK TO TRUE
+           OPEN INPUT F-INPUT-DEPT.
+           IF FS-I-DEPT EQUAL "00"
+              SET FS-I-DEPT-OK TO TRUE
 
-              PERFORM UNTIL FS-DEPT-EOF
-                 READ F-DEPT 
+              PERFORM UNTIL FS-I-DEPT-EOF
+                 READ F-INPUT-DEPT 
                  AT END 
-                    SET FS-DEPT-EOF TO TRUE
+                    SET FS-I-DEPT-EOF TO TRUE
                  NOT AT END 
                     PERFORM START-HANDLE-DEPT THRU END-HANDLE-DEPT
                   END-READ
               END-PERFORM
            ELSE
-              DISPLAY "ERREUR :" SPACE FS-DEPT
+              DISPLAY "ERREUR :" SPACE FS-I-DEPT
            END-IF.
-           CLOSE F-DEPT.
+           CLOSE F-INPUT-DEPT.
        END-R-DEPT.
            EXIT.
 
@@ -78,9 +117,9 @@
       *    Stock les données lus dans la table de la WS.               *
       ******************************************************************
        START-HANDLE-DEPT.
-           MOVE R-D-NUM    TO D-NUM(D-CNT).
-           MOVE R-D-NAME   TO D-NAME(D-CNT).
-           MOVE R-D-REGION TO D-REGION(D-CNT).
+           MOVE R-I-D-NUM    TO D-NUM(D-CNT).
+           MOVE R-I-D-NAME   TO D-NAME(D-CNT).
+           MOVE R-I-D-REGION TO D-REGION(D-CNT).
 
            ADD 1 TO D-CNT.
        END-HANDLE-DEPT.
