@@ -68,8 +68,8 @@
            03  STUDENT OCCURS 1 TO 200 TIMES
                           DEPENDING ON S-CNT
                           INDEXED BY S-IDX.
-               05 S-FIRSTNAME      PIC X(10).
                05 S-LASTNAME       PIC X(10).
+               05 S-FIRSTNAME      PIC X(10).
                05 S-AGE            PIC 9(02).
                05 S-SUM-GRADE-COEF PIC 9(05)V9(02).
                05 S-AV-GRADE       PIC 9(02)V9(02).
@@ -170,8 +170,8 @@
       *    la WS.                                                      *
       ******************************************************************
        START-HANDLE-STUDENT.
-           MOVE R-S-FIRSTNAME TO S-FIRSTNAME(S-CNT).
            MOVE R-S-LASTNAME  TO S-LASTNAME(S-CNT).
+           MOVE R-S-FIRSTNAME TO S-FIRSTNAME(S-CNT).
            MOVE R-S-AGE       TO S-AGE(S-CNT).
 
            ADD 1 TO S-CNT.
@@ -213,8 +213,8 @@
       *    la WS.                                                      *
       ******************************************************************
        START-HANDLE-GRADE.
-           STRING FUNCTION TRIM(S-FIRSTNAME(S-CNT - 1))
-           SPACE FUNCTION TRIM(S-LASTNAME(S-CNT - 1))
+           STRING FUNCTION TRIM(S-LASTNAME(S-CNT - 1))
+           SPACE FUNCTION TRIM(S-FIRSTNAME(S-CNT - 1))
            DELIMITED BY SIZE
            INTO G-S-FULLNAME(G-CNT).
 
@@ -302,12 +302,12 @@
               INITIALIZE WS-FULLNAME-TEMP
               INITIALIZE WS-PNT-STRING
 
-              STRING FUNCTION TRIM(S-FIRSTNAME(S-IDX)) 
-              SPACE FUNCTION TRIM(S-LASTNAME(S-IDX))
+              STRING FUNCTION TRIM(S-LASTNAME(S-IDX)) 
+              SPACE FUNCTION TRIM(S-FIRSTNAME(S-IDX))
               DELIMITED BY SIZE
               INTO WS-FULLNAME-TEMP 
 
-              STRING S-FIRSTNAME(S-IDX) SPACE S-LASTNAME(S-IDX)
+              STRING S-LASTNAME(S-IDX) SPACE S-FIRSTNAME(S-IDX)
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(1:20) 
               
