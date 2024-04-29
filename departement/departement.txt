@@ -1,0 +1,101 @@
+001Ain                    Auvergne-Rhone-Alpes      
+002Aisne                  Hauts-de-France           
+003Allier                 Auvergne-Rhone-Alpes      
+004Alpes-de-Haute-ProvenceProvence-Alpes-Cote d'Azur
+005Hautes-Alpes           Provence-Alpes-Cote d'Azur
+006Alpes-Maritimes        Provence-Alpes-Cote d'Azur
+007Ardeche                Auvergne-Rhone-Alpes      
+008Ardennes               Grand Est                 
+009Ariege                 Occitanie                 
+010Aube                   Grand Est                 
+011Aude                   Occitanie                 
+012Aveyron                Occitanie                 
+013Bouches-du-Rhone       Provence-Alpes-Cote d Azur
+014Calvados               Normandie                 
+015Cantal                 Auvergne-Rhone-Alpes      
+016Charente               Nouvelle-Aquitaine        
+017Charente-Maritime      Nouvelle-Aquitaine        
+018Cher                   Centre-Val de Loire       
+019Correze                Nouvelle-Aquitaine        
+02ACorse-du-Sud           Corse                     
+02BHaute-Corse            Corse                     
+021Cote-d Or              Bourgogne-Franche-Comte   
+022Cotes d Armor          Bretagne                  
+023Creuse                 Nouvelle-Aquitaine        
+024Dordogne               Nouvelle-Aquitaine        
+025Doubs                  Bourgogne-Franche-Comte   
+026Drome                  Auvergne-Rhone-Alpes      
+027Eure                   Normandie                 
+028Eure-et-Loir           Centre-Val de Loire       
+029Finistere              Bretagne                  
+030Gard                   Occitanie                 
+031Haute-Garonne          Occitanie                 
+032Gers                   Occitanie                 
+033Gironde                Nouvelle-Aquitaine        
+034Herault                Occitanie                 
+035Ille-et-Vilaine        Bretagne                  
+036Indre                  Centre-Val de Loire       
+037Indre-et-Loire         Centre-Val de Loire       
+038Isere                  Auvergne-Rhone-Alpes      
+039Jura                   Bourgogne-Franche-Comte   
+040Landes                 Nouvelle-Aquitaine        
+041Loir-et-Cher           Centre-Val de Loire       
+042Loire                  Auvergne-Rhone-Alpes      
+043Haute-Loire            Auvergne-Rhone-Alpes      
+044Loire-Atlantique       Pays de la Loire          
+045Loiret                 Centre-Val de Loire       
+046Lot                    Occitanie                 
+047Lot-et-Garonne         Nouvelle-Aquitaine        
+048Lozere                 Occitanie                 
+049Maine-et-Loire         Pays de la Loire          
+050Manche                 Normandie                 
+051Marne                  Grand Est                 
+052Haute-Marne            Grand Est                 
+053Mayenne                Pays de la Loire          
+054Meurthe-et-Moselle     Grand Est                 
+055Meuse                  Grand Est                 
+056Morbihan               Bretagne                  
+057Moselle                Grand Est                 
+058Nievre                 Bourgogne-Franche-Comte   
+059Nord                   Hauts-de-France           
+060Oise                   Hauts-de-France           
+061Orne                   Normandie                 
+062Pas-de-Calais          Hauts-de-France           
+063Puy-de-Dome            Auvergne-Rhone-Alpes      
+064Pyrenees-Atlantiques   Nouvelle-Aquitaine        
+065Hautes-Pyrenees        Occitanie                 
+066Pyrenees-Orientales    Occitanie                 
+067Bas-Rhin               Grand Est                 
+068Haut-Rhin              Grand Est                 
+069Rhone                  Auvergne-Rhone-Alpes      
+070Haute-Saone            Bourgogne-Franche-Comte   
+071Saone-et-Loire         Bourgogne-Franche-Comte   
+072Sarthe                 Pays de la Loire          
+073Savoie                 Auvergne-Rhone-Alpes      
+074Haute-Savoie           Auvergne-Rhone-Alpes      
+075Paris                  Ile-de-France             
+076Seine-Maritime         Normandie                 
+077Seine-et-Marne         Ile-de-France             
+078Yvelines               Ile-de-France             
+079Deux-Sevres            Nouvelle-Aquitaine        
+080Somme                  Hauts-de-France           
+081Tarn                   Occitanie                 
+082Tarn-et-Garonne        Occitanie                 
+083Var                    Provence-Alpes-Cote d'Azur
+084Vaucluse               Provence-Alpes-Cote d'Azur
+085Vendee                 Pays de la Loire          
+086Vienne                 Nouvelle-Aquitaine        
+087Haute-Vienne           Nouvelle-Aquitaine        
+088Vosges                 Grand Est                 
+089Yonne                  Bourgogne-Franche-Comte   
+090Territoire-de-Belfort  Bourgogne-Franche-Comte   
+091Essonne                Ile-de-France             
+092Hauts-de-Seine         Ile-de-France             
+093Seine-Saint-Denis      Ile-de-France             
+094Val-de-Marne           Ile-de-France             
+095Val-D Oise             Ile-de-France             
+971Guadeloupe             Guadeloupe                
+972Martinique             Martinique                
+973Guyane                 Guyane    
+974La Reunion             Ile de la reunion
+976Mayotte                Mayotte                   
