@@ -1,5 +1,5 @@
       ******************************************************************
-      *    Le programe lis le fichier "train1.dat" puis écris ses      *
+      *    Le programme lis le fichier "train1.dat" puis écris ses     *
       *    données triées par station dans l'ordre alphabétique dans   *
       *    le fichier "train3.dat".                                    *
       *    Ensuite réécris le fichier "train3.dat" sous forme de       *
