@@ -1,4 +1,7 @@
       ******************************************************************
+      *    Sous programme qui s'occupe de la lecture du fichier        *
+      *    "input.dat", de stocker les données dans les tableaux et    * 
+      *    trier ces tableaux.                                         *
       ****************************************************************** 
        IDENTIFICATION DIVISION.
        PROGRAM-ID. rnotele.
@@ -6,6 +9,10 @@
 
       ******************************************************************
        ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
            SELECT F-INPUT ASSIGN TO "input.dat"
@@ -38,7 +45,12 @@
            88 FS-INPUT-OK  VALUE "0".
            88 FS-INPUT-EOF VALUE "10".
 
-       01  TABLE-STUDENT.
+       01  WS-IS-EXIST      PIC X.
+           88 WS-IS-EXIST-Y VALUE "Y".
+           88 WS-IS-EXIST-N VALUE "N".
+
+       LINKAGE SECTION.
+       01  LK-TABLE-STUDENT.
            03  S-CNT  PIC 9(03) VALUE 1.
            03  STUDENT OCCURS 1 TO 200 TIMES
                           DEPENDING ON S-CNT
@@ -49,7 +61,7 @@
                05 S-SUM-GRADE-COEF PIC 9(05)V9(02).
                05 S-AV-GRADE       PIC 9(02)V9(02).
        
-       01  TABLE-COURSE.
+       01  LK-TABLE-COURSE.
            03 C-CNT  PIC 9(03) VALUE 1.
            03 COURSE OCCURS 1 TO 200 TIMES
                         DEPENDING ON C-CNT
@@ -61,7 +73,7 @@
                05 C-SUM-GRADE PIC 9(05)V9(02).
                05 C-AV-GRADE  PIC 9(02)V9(02).
 
-       01  TABLE-GRADE.
+       01  LK-TABLE-GRADE.
            03 G-CNT PIC 9(03) VALUE 1.
            03 GRADE OCCURS 1 TO 200 TIMES
                        DEPENDING ON G-CNT
@@ -70,22 +82,15 @@
                05 G-C-LABEL    PIC X(25).
                05 G-COEF       PIC 9V9.
                05 G-GRADE      PIC 9(02)V9(02).
-
-       01  WS-IS-EXIST      PIC X.
-           88 WS-IS-EXIST-Y VALUE "Y".
-           88 WS-IS-EXIST-N VALUE "N".
+       
 
       ****************************************************************** 
-       PROCEDURE DIVISION.
+       PROCEDURE DIVISION USING LK-TABLE-STUDENT, LK-TABLE-COURSE, 
+           LK-TABLE-GRADE.
+
        START-MAIN.
            PERFORM START-R-IP THRU END-R-IP.
-
-           CALL "wnotele" USING
-               BY REFERENCE TABLE-STUDENT,
-               BY REFERENCE TABLE-COURSE,
-               BY REFERENCE TABLE-GRADE
-           END-CALL.
-           
+           PERFORM START-SORT THRU END-SORT.
        END-MAIN.
            GOBACK.
 
@@ -125,6 +130,7 @@
            END-IF.
            CLOSE F-INPUT.
        END-R-IP.
+           EXIT.
 
       ******************************************************************
       *    Stock les données RECORD STUDENT dans la table STUDENT de   *
@@ -137,6 +143,7 @@
 
            ADD 1 TO S-CNT.
        END-HANDLE-STUDENT.
+           EXIT.
 
       ******************************************************************
       *    Stock les données RECORD COURSE seulement si le record      *
@@ -161,6 +168,7 @@
                ADD 1 TO C-CNT
            END-IF.
        END-HANDLE-COURSE.
+           EXIT.
 
       ******************************************************************
       *    Stock les données RECORD GRADE dans la table GRADE de       *
@@ -178,4 +186,16 @@
 
            ADD 1 TO G-CNT.
        END-HANDLE-GRADE.
+           EXIT.
+
+      ******************************************************************
+      *    Trie les tableaux COURSE, STUDENT ET GRADE.                 *
+      *                  Par LABEL, LASTNAME et LABEL.                 *
+      ******************************************************************
+       START-SORT.
+           SORT COURSE ASCENDING KEY C-LABEL.
+           SORT STUDENT ASCENDING KEY S-LASTNAME.
+           SORT GRADE ASCENDING KEY G-C-LABEL.
+       END-SORT.
+           EXIT.
            

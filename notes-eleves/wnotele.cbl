@@ -1,4 +1,6 @@
       ******************************************************************
+      *    Sous programme qui s'occupe de l'écriture du fichier        *
+      *    "output.dat"                                                *
       ****************************************************************** 
        IDENTIFICATION DIVISION.
        PROGRAM-ID. wnotele.
@@ -6,6 +8,10 @@
 
       ******************************************************************
        ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SPECIAL-NAMES.
+           DECIMAL-POINT IS COMMA.
+
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
            SELECT F-OUTPUT ASSIGN TO "output.dat"
@@ -41,7 +47,7 @@
        01  WS-SUM-AV-GRADE  PIC 9(10)V9(02).
 
        LINKAGE SECTION.
-       01  TABLE-STUDENT.
+       01  LK-TABLE-STUDENT.
            03  S-CNT  PIC 9(03) VALUE 1.
            03  STUDENT OCCURS 1 TO 200 TIMES
                           DEPENDING ON S-CNT
@@ -52,7 +58,7 @@
                05 S-SUM-GRADE-COEF PIC 9(05)V9(02).
                05 S-AV-GRADE       PIC 9(02)V9(02).
        
-       01  TABLE-COURSE.
+       01  LK-TABLE-COURSE.
            03 C-CNT  PIC 9(03) VALUE 1.
            03 COURSE OCCURS 1 TO 200 TIMES
                         DEPENDING ON C-CNT
@@ -64,7 +70,7 @@
                05 C-SUM-GRADE PIC 9(05)V9(02).
                05 C-AV-GRADE  PIC 9(02)V9(02).
 
-       01  TABLE-GRADE.
+       01  LK-TABLE-GRADE.
            03 G-CNT PIC 9(03) VALUE 1.
            03 GRADE OCCURS 1 TO 200 TIMES
                        DEPENDING ON G-CNT
@@ -75,8 +81,8 @@
                05 G-GRADE      PIC 9(02)V9(02).
 
       ****************************************************************** 
-       PROCEDURE DIVISION USING TABLE-STUDENT, TABLE-COURSE, 
-           TABLE-GRADE.
+       PROCEDURE DIVISION USING LK-TABLE-STUDENT, LK-TABLE-COURSE, 
+           LK-TABLE-GRADE.
        
        START-MAIN.
            PERFORM START-W-OP THRU END-W-OP.
@@ -92,6 +98,7 @@
            PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER.
            PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS.
            PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
+           PERFORM START-LEXIQUE THRU END-LEXIQUE.
            PERFORM START-FOOTER THRU END-FOOTER.
        END-W-OP.
            EXIT.
@@ -284,14 +291,11 @@
            EXIT.
 
       ******************************************************************
-      *    Ecris le pied de page du rapport qui contient le lexique    *
-      *    de la signification de C1, C2, ...                          *
-      *    puis les nombres d'élèves, de cours et de notes             *
-      *    et pour finir le message de fin du rapport                  *
+      *    Ecris le lexique de la signification de C1, C2, ...         *
       ******************************************************************
-       START-FOOTER.
+       START-LEXIQUE.
            OPEN EXTEND F-OUTPUT.
-      *    Lexique
+
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
 
            PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX > C-CNT
@@ -309,6 +313,18 @@
 
                WRITE REC-F-OUTPUT FROM WS-PNT-STRING
            END-PERFORM.
+
+           CLOSE F-OUTPUT.
+       END-LEXIQUE.
+           EXIT.
+
+      ******************************************************************
+      *    Ecris le pied de page du rapport qui contient les nombres   *
+      *    d'élèves, de cours et de notes et pour finir le message de  * 
+      *    fin du rapport                                              *
+      ******************************************************************
+       START-FOOTER.
+           OPEN EXTEND F-OUTPUT.
 
       *    Nombre d'élèves
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.

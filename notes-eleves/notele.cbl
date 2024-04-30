@@ -131,6 +131,7 @@
            PERFORM START-SORT THRU END-SORT.
            PERFORM START-W-OP THRU END-W-OP.
        END-MAIN.
+           EXIT.
        
       ******************************************************************
       *    Lis le fichier "input.dat" et appels différents paragraphes *
@@ -168,6 +169,7 @@
            END-IF.
            CLOSE F-INPUT.
        END-R-IP.
+           EXIT.
 
       ******************************************************************
       *    Stock les données RECORD STUDENT dans la table STUDENT de   *
@@ -180,6 +182,7 @@
 
            ADD 1 TO S-CNT.
        END-HANDLE-STUDENT.
+           EXIT.
 
       ******************************************************************
       *    Stock les données RECORD COURSE seulement si le record      *
@@ -204,6 +207,7 @@
                ADD 1 TO C-CNT
            END-IF.
        END-HANDLE-COURSE.
+           EXIT.
 
       ******************************************************************
       *    Stock les données RECORD GRADE dans la table GRADE de       *
@@ -221,14 +225,18 @@
 
            ADD 1 TO G-CNT.
        END-HANDLE-GRADE.
+           EXIT.
 
       ******************************************************************
+      *    Trie les tableaux COURSE, STUDENT ET GRADE.                 *
+      *                  Par LABEL, LASTNAME et LABEL.                 *
       ******************************************************************
        START-SORT.
            SORT COURSE ASCENDING KEY C-LABEL.
            SORT STUDENT ASCENDING KEY S-LASTNAME.
            SORT GRADE ASCENDING KEY G-C-LABEL.
        END-SORT.
+           EXIT.
 
       ******************************************************************
       *    Appel différents paragraphes qui vont servir à écrire le    *
@@ -239,8 +247,10 @@
            PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER.
            PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS.
            PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
+           PERFORM START-LEXIQUE THRU END-LEXIQUE.
            PERFORM START-FOOTER THRU END-FOOTER.
        END-W-OP.
+           EXIT.
 
       ******************************************************************
       *    Ecris l'en-tête du rapport.                                 *
@@ -259,6 +269,7 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
            CLOSE F-OUTPUT.
        END-HEADER.
+           EXIT.
 
       ******************************************************************
       *    Ecris l'en-tête du tableau qui contient le nom des colonnes *
@@ -303,6 +314,7 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-EMPTY.
            CLOSE F-OUTPUT.
        END-TABLE-HEADER.
+           EXIT.
 
       ******************************************************************
       *    Ecris chaque ligne du tableau qui contient les valeurs qui  *
@@ -345,6 +357,7 @@
 
            CLOSE F-OUTPUT.
        END-TABLE-DETAILS.
+           EXIT.
       
       ******************************************************************
       *    Ajoute à la ligne de détails du tableau les notes de        *
@@ -372,6 +385,7 @@
               END-IF
            END-PERFORM.
        END-TABLE-DETAILS-C.
+           EXIT.
 
       ******************************************************************
       *    Ecris la dernière du tableau qui contient la moyenne        *
@@ -423,16 +437,14 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
            CLOSE F-OUTPUT.
        END-TABLE-FOOTER.
+           EXIT.
 
       ******************************************************************
-      *    Ecris le pied de page du rapport qui contient le lexique    *
-      *    de la signification de C1, C2, ...                          *
-      *    puis les nombres d'élèves, de cours et de notes             *
-      *    et pour finir le message de fin du rapport                  *
+      *    Ecris le lexique de la signification de C1, C2, ...         *
       ******************************************************************
-       START-FOOTER.
+       START-LEXIQUE.
            OPEN EXTEND F-OUTPUT.
-      *    Lexique
+
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
 
            PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX > C-CNT
@@ -450,6 +462,18 @@
 
                WRITE REC-F-OUTPUT FROM WS-PNT-STRING
            END-PERFORM.
+
+           CLOSE F-OUTPUT.
+       END-LEXIQUE.
+           EXIT.
+
+      ******************************************************************
+      *    Ecris le pied de page du rapport qui contient les nombres   *
+      *    d'élèves, de cours et de notes et pour finir le message de  * 
+      *    fin du rapport                                              *
+      ******************************************************************
+       START-FOOTER.
+           OPEN EXTEND F-OUTPUT.
 
       *    Nombre d'élèves
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
@@ -519,4 +543,5 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
            CLOSE F-OUTPUT.
        END-FOOTER.
+           EXIT.
        
