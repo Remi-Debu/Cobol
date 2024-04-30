@@ -36,10 +36,7 @@
        FD  F-OUTPUT-DEPT
            RECORD CONTAINS 52 CHARACTERS
            RECORDING MODE IS F.
-       01  R-O-DEPT.
-           03 R-O-D-NUM    PIC 9(03).
-           03 R-O-D-NAME   PIC X(23).
-           03 R-O-D-REGION PIC X(26).
+       01  R-O-DEPT PIC X(52).
 
        SD  F-WORK-DEPT
            RECORD CONTAINS 52 CHARACTERS
@@ -79,15 +76,14 @@
 
       ****************************************************************** 
        PROCEDURE DIVISION.
+       START-MAIN.
            SORT F-WORK-DEPT 
            ON ASCENDING KEY R-W-D-NAME
-           USING F-INPUT-DEPT
-           GIVING F-OUTPUT-DEPT.
+           INPUT PROCEDURE IS START-R-DEPT THRU END-R-DEPT
+           OUTPUT PROCEDURE IS START-W-DEPT THRU END-W-DEPT.
            
-      *START-MAIN.
-      *    PERFORM START-R-DEPT THRU END-R-DEPT.
-      *    PERFORM START-UI-SEARCH THRU END-UI-SEARCH.
-      *END-MAIN.
+           PERFORM START-UI-SEARCH THRU END-UI-SEARCH.
+       END-MAIN.
            STOP RUN.
             
       ******************************************************************
@@ -101,6 +97,8 @@
               PERFORM UNTIL FS-I-DEPT-EOF
                  READ F-INPUT-DEPT 
                  AT END 
+                    SUBTRACT 1 FROM D-CNT
+                    DISPLAY D-CNT
                     SET FS-I-DEPT-EOF TO TRUE
                  NOT AT END 
                     PERFORM START-HANDLE-DEPT THRU END-HANDLE-DEPT
@@ -123,6 +121,22 @@
 
            ADD 1 TO D-CNT.
        END-HANDLE-DEPT.
+           EXIT.
+
+      ******************************************************************
+      *    Trie et écris le fichier.
+      ******************************************************************
+       START-W-DEPT.
+           SORT DEPT ASCENDING KEY D-NAME.
+
+           OPEN OUTPUT F-OUTPUT-DEPT.
+
+           PERFORM VARYING D-IDX FROM 1 BY 1 UNTIL D-IDX > D-CNT
+               WRITE R-O-DEPT FROM D-NAME(D-IDX)
+           END-PERFORM.
+
+           CLOSE F-OUTPUT-DEPT.
+       END-W-DEPT.
            EXIT.
 
 
