@@ -247,7 +247,7 @@
            PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER.
            PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS.
            PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
-           PERFORM START-LEXIQUE THRU END-LEXIQUE.
+           PERFORM START-LEXICON THRU END-LEXICON.
            PERFORM START-FOOTER THRU END-FOOTER.
        END-W-OP.
            EXIT.
@@ -442,7 +442,7 @@
       ******************************************************************
       *    Ecris le lexique de la signification de C1, C2, ...         *
       ******************************************************************
-       START-LEXIQUE.
+       START-LEXICON.
            OPEN EXTEND F-OUTPUT.
 
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
@@ -464,7 +464,7 @@
            END-PERFORM.
 
            CLOSE F-OUTPUT.
-       END-LEXIQUE.
+       END-LEXICON.
            EXIT.
 
       ******************************************************************
