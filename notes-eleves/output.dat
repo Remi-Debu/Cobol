@@ -3,22 +3,22 @@
 ***************************************************************************************
 NOM        PRENOM     MOYENNE     C1        C2        C3        C4        C5        C6
 
-ASSIN      MARC        9,65     10,00      7,25      6,75     13,00     11,00      9,50
-BONOT      JEAN       12,18     11,50     13,00     16,00     10,00     12,00     10,00
-INGALE     MARTHE     10,71     15,00      9,00      8,75     14,00      6,50     10,00
-INNIC      MARTHE     10,71     15,00      9,00      8,75     14,00      6,50     10,00
-HOMALY     ANNE       13,82     10,00     11,00     15,50     18,00     14,50     10,00
-MANTORT    GERARD     14,47     10,00     11,00     18,75     17,75     12,50     11,00
-OCHAN      PAUL        6,22      4,50      6,50      3,25      6,50      9,25      8,75
+ASSIN      MARC        9,65      9,50      7,25     11,00     13,00      6,75     10,00
+BONOT      JEAN       12,18     10,00     13,00     12,00     10,00     16,00     11,50
+HOMALY     ANNE       13,82     10,00     11,00     14,50     18,00     15,50     10,00
+INGALE     MARTHE     10,71     10,00      9,00      6,50     14,00      8,75     15,00
+INNIC      MARTHE     10,71     10,00      9,00      6,50     14,00      8,75     15,00
+MANTORT    GERARD     14,47     11,00     11,00     12,50     17,75     18,75     10,00
+OCHAN      PAUL        6,22      8,75      6,50      9,25      6,50      3,25      4,50
 
-CLASSE                11,11     10,85      9,53     11,10     13,32     10,32      9,89
+CLASSE                11,11      9,89      9,53     10,32     13,32     11,10     10,85
 ***************************************************************************************
-C1 => COEF: 1,0 LABEL: SYSTEME D INFORMATION
+C1 => COEF: 1,5 LABEL: MODELISATION
 C2 => COEF: 1,0 LABEL: PROGRAMMATION VBA
-C3 => COEF: 2,0 LABEL: SQL
+C3 => COEF: 1,0 LABEL: RESEAUX INFORMATIQUES
 C4 => COEF: 2,0 LABEL: SCHEMA RELATIONNEL
-C5 => COEF: 1,0 LABEL: RESEAUX INFORMATIQUES
-C6 => COEF: 1,5 LABEL: MODELISATION
+C5 => COEF: 2,0 LABEL: SQL
+C6 => COEF: 1,0 LABEL: SYSTEME D INFORMATION
 ***************************************************************************************
 NOMBRE D'ELEVES =>  7
 NOMBRE DE COURS =>  6

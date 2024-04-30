@@ -1,68 +1,46 @@
       ******************************************************************
-      *    Le programme lis le fichier "input.dat" pour ensuite        *
-      *    écrire dans un fichier "output.dat" un rapport sur les      *
-      *    notes des élèves.                                           *
-      *    Le rapport contient les notes et les moyennes en fonction   *
-      *    des coefficients des matières de chaque élève et de la      *
-      *    classe, ainsi que les moyennes générales.                   *
-      *    À la fin du rapport on retrouve un résumé des données       *
-      *    nombre d'élèves, de matières et de notes.                   *
-      ******************************************************************
+      ****************************************************************** 
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. notele.
-       AUTHOR.     Rémi.
+       PROGRAM-ID. wnotele.
+       AUTHOR         Rémi.
 
       ******************************************************************
        ENVIRONMENT DIVISION.
-       CONFIGURATION SECTION.
-       SPECIAL-NAMES.
-           DECIMAL-POINT IS COMMA.
-      
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT F-INPUT ASSIGN TO "input.dat"
-           ACCESS MODE IS SEQUENTIAL
-           ORGANIZATION IS LINE SEQUENTIAL
-           FILE STATUS IS FS-INPUT.
-
            SELECT F-OUTPUT ASSIGN TO "output.dat"
            ACCESS MODE IS SEQUENTIAL
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS FS-OUTPUT.
-      
+
       ******************************************************************
        DATA DIVISION.
        FILE SECTION.
-       FD F-INPUT
-           RECORD CONTAINS 2 TO 1000 CHARACTERS
-           RECORDING MODE IS V.
-       01  REC-F-INPUT-2    PIC X(02).
-
-       01  REC-STUDENT.
-           03 R-S-KEY       PIC 9(02).
-           03 R-S-LASTNAME  PIC X(07).
-           03 R-S-FIRSTNAME PIC X(06).   
-           03 R-S-AGE       PIC 9(02).
-
-       01  REC-COURSE.
-           03 R-C-KEY       PIC 9(02).
-           03 R-C-LABEL     PIC X(21).
-           03 R-C-COEF      PIC X(03).
-           03 R-C-GRADE     PIC X(05).
-
        FD  F-OUTPUT
            RECORD CONTAINS 2000 CHARACTERS
            RECORDING MODE IS F.
        01  REC-F-OUTPUT     PIC X(2000).
 
        WORKING-STORAGE SECTION.
-       01  FS-INPUT  PIC X(02).
-           88 FS-INPUT-OK  VALUE "0".
-           88 FS-INPUT-EOF VALUE "10".
-           
        01  FS-OUTPUT PIC X(02).
            88 FS-OUTPUT-OK  VALUE "0".
-       
+
+       01  WS-PRINT.
+           03 WS-PNT-NBR    PIC Z9.
+           03 WS-PNT-GRADE  PIC Z9,99.
+           03 WS-PNT-COEF   PIC 9,9.
+           03 WS-PNT-AST    PIC X(87) VALUE ALL "*".
+           03 WS-PNT-BLANK  PIC X(35) VALUE SPACES.
+           03 WS-PNT-EMPTY  PIC X     VALUE SPACE.
+           03 WS-PNT-STRING PIC X(87).
+
+       01  WS-STRING-POS    PIC 9(03) VALUE 1.
+       01  WS-NUM-TEMP      PIC 9(03)V9(02).
+       01  WS-FULLNAME-TEMP PIC X(30).
+       01  WS-SUM-COEF      PIC 9(10)V9.
+       01  WS-SUM-AV-GRADE  PIC 9(10)V9(02).
+
+       LINKAGE SECTION.
        01  TABLE-STUDENT.
            03  S-CNT  PIC 9(03) VALUE 1.
            03  STUDENT OCCURS 1 TO 200 TIMES
@@ -96,139 +74,14 @@
                05 G-COEF       PIC 9V9.
                05 G-GRADE      PIC 9(02)V9(02).
 
-       01  WS-IS-EXIST      PIC X.
-           88 WS-IS-EXIST-Y VALUE "Y".
-           88 WS-IS-EXIST-N VALUE "N".
-
-       01  WS-PRINT.
-           03 WS-PNT-NBR    PIC Z9.
-           03 WS-PNT-GRADE  PIC Z9,99.
-           03 WS-PNT-COEF   PIC 9,9.
-           03 WS-PNT-AST    PIC X(87) VALUE ALL "*".
-           03 WS-PNT-BLANK  PIC X(35) VALUE SPACES.
-           03 WS-PNT-EMPTY  PIC X     VALUE SPACE.
-           03 WS-PNT-STRING PIC X(87).
-
-       01  WS-STRING-POS    PIC 9(03) VALUE 1.
-       01  WS-NUM-TEMP      PIC 9(03)V9(02).
-       01  WS-FULLNAME-TEMP PIC X(30).
-       01  WS-SUM-COEF      PIC 9(10)V9.
-       01  WS-SUM-AV-GRADE  PIC 9(10)V9(02).
-
-
-      ******************************************************************
-       PROCEDURE DIVISION.
-           PERFORM START-MAIN THRU END-MAIN.
-           STOP RUN.
-
-      ******************************************************************
-      *    MAIN qui appel le paragraphe qui s'occupe de la lecture du  *
-      *    fichier "input.dat" puis celui qui s'occupe de l'écriture   *
-      *    dans le fichier "output.dat".                               *
-      ******************************************************************
+      ****************************************************************** 
+       PROCEDURE DIVISION USING TABLE-STUDENT, TABLE-COURSE, 
+           TABLE-GRADE.
+       
        START-MAIN.
-           PERFORM START-R-IP THRU END-R-IP.
-           PERFORM START-SORT THRU END-SORT.
            PERFORM START-W-OP THRU END-W-OP.
        END-MAIN.
-       
-      ******************************************************************
-      *    Lis le fichier "input.dat" et appels différents paragraphes *
-      *    qui vont servir à stocker dans la WS les données lue.       *
-      ******************************************************************
-       START-R-IP.
-           OPEN INPUT F-INPUT.
-           IF FS-INPUT EQUAL "00"
-              SET FS-INPUT-OK TO TRUE
-
-              PERFORM UNTIL FS-INPUT-EOF
-                 READ F-INPUT 
-                 AT END 
-                    SUBTRACT 1 FROM S-CNT
-                    SUBTRACT 1 FROM C-CNT
-                    SUBTRACT 1 FROM G-CNT
-                    SET FS-INPUT-EOF TO TRUE
-                 NOT AT END 
-                    EVALUATE REC-F-INPUT-2
-                    WHEN "01"
-                       PERFORM START-HANDLE-STUDENT 
-                          THRU END-HANDLE-STUDENT
-                    WHEN "02"
-                       PERFORM START-HANDLE-COURSE 
-                          THRU END-HANDLE-COURSE
-                       PERFORM START-HANDLE-GRADE 
-                          THRU END-HANDLE-GRADE
-                    WHEN OTHER
-                       CONTINUE
-                    END-EVALUATE
-                  END-READ
-              END-PERFORM
-           ELSE
-              DISPLAY "ERREUR :" SPACE FS-INPUT
-           END-IF.
-           CLOSE F-INPUT.
-       END-R-IP.
-
-      ******************************************************************
-      *    Stock les données RECORD STUDENT dans la table STUDENT de   *
-      *    la WS.                                                      *
-      ******************************************************************
-       START-HANDLE-STUDENT.
-           MOVE R-S-LASTNAME  TO S-LASTNAME(S-CNT).
-           MOVE R-S-FIRSTNAME TO S-FIRSTNAME(S-CNT).
-           MOVE R-S-AGE       TO S-AGE(S-CNT).
-
-           ADD 1 TO S-CNT.
-       END-HANDLE-STUDENT.
-
-      ******************************************************************
-      *    Stock les données RECORD COURSE seulement si le record      *
-      *    label n'a pas encore été stocké dans la table COURSE de     *
-      *    la WS.                                                      *
-      ******************************************************************
-       START-HANDLE-COURSE.
-           INITIALIZE WS-IS-EXIST.
-           
-           SET C-IDX TO 1.
-           SEARCH COURSE VARYING C-IDX
-               AT END
-                   SET WS-IS-EXIST-N TO TRUE
-               WHEN C-LABEL(C-IDX) EQUAL R-C-LABEL
-                   GO TO END-HANDLE-COURSE
-           END-SEARCH.
-           
-           IF WS-IS-EXIST-N
-               MOVE R-C-LABEL TO C-LABEL(C-CNT)
-               MOVE R-C-COEF  TO C-COEF(C-CNT)
-
-               ADD 1 TO C-CNT
-           END-IF.
-       END-HANDLE-COURSE.
-
-      ******************************************************************
-      *    Stock les données RECORD GRADE dans la table GRADE de       *
-      *    la WS.                                                      *
-      ******************************************************************
-       START-HANDLE-GRADE.
-           STRING FUNCTION TRIM(S-LASTNAME(S-CNT - 1))
-           SPACE FUNCTION TRIM(S-FIRSTNAME(S-CNT - 1))
-           DELIMITED BY SIZE
-           INTO G-S-FULLNAME(G-CNT).
-
-           MOVE R-C-LABEL TO G-C-LABEL(G-CNT).
-           MOVE R-C-GRADE TO G-GRADE(G-CNT).
-           MOVE R-C-COEF  TO G-COEF(G-CNT).
-
-           ADD 1 TO G-CNT.
-       END-HANDLE-GRADE.
-
-      ******************************************************************
-      ******************************************************************
-       START-SORT.
-           SORT COURSE ASCENDING KEY C-LABEL.
-           SORT STUDENT ASCENDING KEY S-LASTNAME.
-           SORT GRADE ASCENDING KEY G-C-LABEL.
-       END-SORT.
+           GOBACK.
 
       ******************************************************************
       *    Appel différents paragraphes qui vont servir à écrire le    *
@@ -241,6 +94,7 @@
            PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
            PERFORM START-FOOTER THRU END-FOOTER.
        END-W-OP.
+           EXIT.
 
       ******************************************************************
       *    Ecris l'en-tête du rapport.                                 *
@@ -259,6 +113,7 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-AST.
            CLOSE F-OUTPUT.
        END-HEADER.
+           EXIT.
 
       ******************************************************************
       *    Ecris l'en-tête du tableau qui contient le nom des colonnes *
@@ -303,6 +158,7 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-EMPTY.
            CLOSE F-OUTPUT.
        END-TABLE-HEADER.
+           EXIT.
 
       ******************************************************************
       *    Ecris chaque ligne du tableau qui contient les valeurs qui  *
@@ -345,6 +201,7 @@
 
            CLOSE F-OUTPUT.
        END-TABLE-DETAILS.
+           EXIT.
       
       ******************************************************************
       *    Ajoute à la ligne de détails du tableau les notes de        *
@@ -372,6 +229,7 @@
               END-IF
            END-PERFORM.
        END-TABLE-DETAILS-C.
+           EXIT.
 
       ******************************************************************
       *    Ecris la dernière du tableau qui contient la moyenne        *
@@ -423,6 +281,7 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
            CLOSE F-OUTPUT.
        END-TABLE-FOOTER.
+           EXIT.
 
       ******************************************************************
       *    Ecris le pied de page du rapport qui contient le lexique    *
@@ -519,4 +378,5 @@
            WRITE REC-F-OUTPUT FROM WS-PNT-STRING.
            CLOSE F-OUTPUT.
        END-FOOTER.
-       
+           EXIT.
+           
