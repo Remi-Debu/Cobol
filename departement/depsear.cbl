@@ -124,7 +124,8 @@
            EXIT.
 
       ******************************************************************
-      *    Trie et écris le fichier.
+      *    Trie nom de département le tableau des départements         *
+      *    et écris le fichier.
       ******************************************************************
        START-W-DEPT.
            SORT DEPT ASCENDING KEY D-NAME.
