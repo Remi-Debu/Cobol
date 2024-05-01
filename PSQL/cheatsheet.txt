@@ -1,0 +1,14 @@
+PSQL commandes :
+
+psql --version (Si PSQL existe sur la machine, donne sa version)
+psql --help  (Liste des options avec la commande "psql")
+psql --list (Liste des DB)
+psql --dbname=DBNAME (Se connecte à une DB => ex: cblsql)
+
+DBNAME=#
+\h (Voir SQL commandes)
+\? (Voir PSQL commandes)
+\q (Quitter)
+
+\d (Liste des tables)
+\i "PATH"(Execute les commandes depuis un fichier)
