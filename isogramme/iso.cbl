@@ -1,39 +1,50 @@
       ******************************************************************
-      *                                                                *
       *    Le programme demande à l'utilisateur de saisir des mots ou  *
       *    des phrase (de longueur 25 max), il peut en saisir jusqu'à  *
-      *    5 ou décidé d'arrêter avant. Ensuite affiche selon si les   *
-      *    mots ou les phrases contiennent 2 caractères ou plus        *
-      *    identiques.                                                 *
-      *                                                                *
+      *    5 ou décidé d'arrêter avant. Ensuite affiche un message     *
+      *    selon si les mots ou les phrases contiennent 2 caractères   *
+      *    ou plus identiques.                                         *
       ******************************************************************
        IDENTIFICATION DIVISION.
        PROGRAM-ID. iso.
        AUTHOR.    Rémi.
 
+      ******************************************************************
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        01  WS-TABLE-WORD OCCURS 5 TIMES.
-         03 WS-WORD           PIC X(25).
-         03 WS-WORD-UPPER     PIC X(25).
-         03  WS-TABLE-COUNTER OCCURS 26 TIMES.
-             05 WS-COUNT-CHAR PIC 9(01).
-         03  WS-ISO           PIC X(01) VALUE "N".
-           88 WS-ISO-YES                VALUE "Y".
-           88 WS-ISO-NO                 VALUE "N".
+           03 WS-WORD           PIC X(25).
+           03 WS-WORD-UPPER     PIC X(25).
+           03 WS-TABLE-COUNTER OCCURS 26 TIMES.
+               05 WS-COUNT-CHAR PIC 9(01).
+           03  WS-ISO           PIC X(01) VALUE "N".
+               88 WS-ISO-YES              VALUE "Y".
+               88 WS-ISO-NO               VALUE "N".
 
        01  WS-ALPHABET PIC X(26) VALUE "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
 
        01  WS-WORD-I            PIC 9(02) VALUE 1.
        01  WS-COUNT-CHAR-I      PIC 9(02).
        01  WS-TABLE-WORD-LENGTH PIC 9(02).
-       01  WS-STOP              PIC X(01) VALUE "Y".
+       
+       01  WS-STOP PIC X(01) VALUE "Y".
+           88 WS-STOP-Y      VALUE "Y".
+           88 WS-STOP-N      VALUE "N".
 
+      ******************************************************************
        PROCEDURE DIVISION.
-           PERFORM START-MAIN THRU END-MAIN.
+       START-MAIN.
+           PERFORM START-LOOP THRU END-LOOP.
+       END-MAIN.
            STOP RUN.
 
-       START-MAIN.
+      ******************************************************************
+      *    Demande à l'utilisateur de saisir autant de mots qu'il le   *
+      *    souhaite jusqu'à la limite de 5.                            *
+      *    Puis appel les paragraphes qui vont identifier si les mots  *
+      *    saisis sont isogramme.                                      *
+      ******************************************************************
+       START-LOOP.
            PERFORM UNTIL WS-STOP EQUAL "N" OR WS-WORD-I > 5
                DISPLAY SPACE
                DISPLAY "Saisi un mot :" SPACE WITH NO ADVANCING
@@ -43,8 +54,7 @@
                MOVE FUNCTION UPPER-CASE(WS-WORD(WS-WORD-I)) 
                TO WS-WORD-UPPER(WS-WORD-I)
 
-               PERFORM START-INSPECT-WORD 
-               THRU END-INSPECT-WORD
+               PERFORM START-INSPECT-WORD THRU END-INSPECT-WORD
 
                ADD 1 TO WS-WORD-I
 
@@ -54,17 +64,19 @@
                ELSE    
                    DISPLAY "Limite de demande atteinte."
                END-IF
-
            END-PERFORM.
 
            DISPLAY SPACE.
            PERFORM START-CHECK-ISO THRU END-CHECK-ISO.
-       END-MAIN.
+       END-LOOP.
+           EXIT.
 
-      *    Analyse le mot saisi pour incrémenter les différents 
-      *    compteurs 
-      *    Et si un des compteurs est supérieur à 1 
-      *    set la variable is-iso à "Y" car le mot est isogramme.
+      ******************************************************************
+      *    Analyse le mot saisi pour incrémenter les différents        *
+      *    compteurs                                                   *
+      *    Et si un des compteurs est supérieur à 1                    *
+      *    set la variable is-iso à "Y" car le mot est isogramme.      *
+      ******************************************************************
        START-INSPECT-WORD.
            PERFORM VARYING WS-COUNT-CHAR-I FROM 1 BY 1 
                    UNTIL WS-COUNT-CHAR-I > 26
@@ -78,9 +90,12 @@
                END-IF
            END-PERFORM.
        END-INSPECT-WORD.
+           EXIT.
 
-      *    Vérifie dans la table qui contient les mots saisis
-      *    s'ils sont isogrammes et affiche le message qui correspond.
+      ******************************************************************
+      *    Vérifie dans la table qui contient les mots saisis          *
+      *    s'ils sont isogrammes et affiche le message qui correspond. *
+      ******************************************************************
        START-CHECK-ISO.
            MOVE WS-WORD-I TO WS-TABLE-WORD-LENGTH.
            PERFORM VARYING WS-WORD-I FROM 1 BY 1 
@@ -95,3 +110,4 @@
                END-IF
            END-PERFORM.
        END-CHECK-ISO.
+           EXIT.
