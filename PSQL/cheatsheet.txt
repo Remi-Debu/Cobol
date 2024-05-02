@@ -20,7 +20,8 @@ DBNAME=#
 ******************************************************************************************************************************
                                                     DESCRIPTION DES TABLES
 ******************************************************************************************************************************
-Table: offers
+Table: offers (15 enregistrements)
+******************************************************************************************************************************
   Column   |     Type      | Collation | Nullable |      Default      
 -----------+---------------+-----------+----------+-------------------
  off_id    | smallint      |           | not null | 
@@ -30,7 +31,8 @@ Indexes:
     "id_offers" PRIMARY KEY, btree (off_id)
 
 ******************************************************************************************************************************
-Table: operator
+Table: operator (10 enregistrements)
+******************************************************************************************************************************
        Column        |     Type      | Collation | Nullable | Default 
 ---------------------+---------------+-----------+----------+---------
  ope_id              | smallint      |           | not null | 
@@ -45,7 +47,8 @@ Referenced by:
     TABLE "converted" CONSTRAINT "converted_conv_operator_id_fkey" FOREIGN KEY (conv_operator_id) REFERENCES operator(ope_id)
 
 ******************************************************************************************************************************
-Table: prospect
+Table: prospect (150 enregistrements)
+******************************************************************************************************************************
          Column         |      Type      | Collation | Nullable |       Default        
 ------------------------+----------------+-----------+----------+----------------------
  pros_id                | smallint       |           | not null | 
@@ -70,7 +73,8 @@ Referenced by:
     TABLE "converted" CONSTRAINT "converted_conv_prospect_id_fkey" FOREIGN KEY (conv_prospect_id) REFERENCES prospect(pros_id)
 
 ******************************************************************************************************************************
- Table: converted
+ Table: converted (40 enregistrements)
+ ******************************************************************************************************************************
       Column       |   Type   | Collation | Nullable | Default 
 -------------------+----------+-----------+----------+---------
  conv_id           | smallint |           | not null | 
@@ -84,4 +88,4 @@ Indexes:
 Foreign-key constraints:
     "converted_conv_operator_id_fkey" FOREIGN KEY (conv_operator_id) REFERENCES operator(ope_id)
     "converted_conv_prospect_id_fkey" FOREIGN KEY (conv_prospect_id) REFERENCES prospect(pros_id)
-    
+
