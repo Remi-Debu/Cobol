@@ -9,9 +9,8 @@ HOMALY     ANNE       13,82     10,00     11,00     14,50     18,00     15,50   
 INGALE     MARTHE     10,71     10,00      9,00      6,50     14,00      8,75     15,00
 INNIC      MARTHE     10,71     10,00      9,00      6,50     14,00      8,75     15,00
 MANTORT    GERARD     14,47     11,00     11,00     12,50     17,75     18,75     10,00
-OCHAN      PAUL        6,22      8,75      6,50      9,25      6,50      3,25      4,50
 
-CLASSE                11,11      9,89      9,53     10,32     13,32     11,10     10,85
+CLASSE                11,92     10,08     10,04     10,50     14,45     12,41     11,91
 ***************************************************************************************
 C1 => COEF: 1,5 LABEL: MODELISATION
 C2 => COEF: 1,0 LABEL: PROGRAMMATION VBA
@@ -20,8 +19,8 @@ C4 => COEF: 2,0 LABEL: SCHEMA RELATIONNEL
 C5 => COEF: 2,0 LABEL: SQL
 C6 => COEF: 1,0 LABEL: SYSTEME D INFORMATION
 ***************************************************************************************
-NOMBRE D'ELEVES =>  7
+NOMBRE D'ELEVES =>  6
 NOMBRE DE COURS =>  6
-NOMBRE DE NOTES => 42
+NOMBRE DE NOTES => 36
 ***************************************************************************************
                                    FIN DU RAPPORT
