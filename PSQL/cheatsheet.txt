@@ -1,3 +1,4 @@
+******************************************************************************************************************************
 PSQL commandes :
 
 psql --version (Si PSQL existe sur la machine, donne sa version)
@@ -11,4 +12,72 @@ DBNAME=#
 \q (Quitter)
 
 \d (Liste des tables)
+\d TABLENAME (Affiche la table et sa structure) 
 \i "PATH"(Execute les commandes depuis un fichier)
+
+******************************************************************************************************************************
+Table: offers
+  Column   |     Type      | Collation | Nullable |      Default      
+-----------+---------------+-----------+----------+-------------------
+ off_id    | smallint      |           | not null | 
+ off_name  | character(50) |           | not null | 'Missing'::bpchar
+ off_price | character(10) |           | not null | '€99,99'::bpchar
+Indexes:
+    "id_offers" PRIMARY KEY, btree (off_id)
+
+******************************************************************************************************************************
+Table: operator
+       Column        |     Type      | Collation | Nullable | Default 
+---------------------+---------------+-----------+----------+---------
+ ope_id              | smallint      |           | not null | 
+ ope_spoken_language | character(50) |           |          | 
+ ope_lastname        | character(50) |           |          | 
+ ope_firstname       | character(50) |           |          | 
+ ope_signature       | character(50) |           |          | 
+ ope_location        | character(50) |           |          | 
+Indexes:
+    "id_operator" PRIMARY KEY, btree (ope_id)
+Referenced by:
+    TABLE "converted" CONSTRAINT "converted_conv_operator_id_fkey" FOREIGN KEY (conv_operator_id) REFERENCES operator(ope_id)
+
+******************************************************************************************************************************
+Table: prospect
+         Column         |      Type      | Collation | Nullable |       Default        
+------------------------+----------------+-----------+----------+----------------------
+ pros_id                | smallint       |           | not null | 
+ pros_dateregistration  | character(10)  |           | not null | '2024-01-01'::bpchar
+ pros_namelast          | character(30)  |           | not null | 'DOE'::bpchar
+ pros_namefirst         | character(30)  |           | not null | 'JOHN'::bpchar
+ pros_emailname         | character(30)  |           | not null | 'N/A'::bpchar
+ pros_emaildomain       | character(30)  |           | not null | 'N/A'::bpchar
+ pros_gender            | character(20)  |           |          | 
+ pros_datebirth         | character(10)  |           |          | 
+ pros_phone             | character(20)  |           | not null | 'N/A'::bpchar
+ pros_addstreet         | character(100) |           |          | 
+ pros_addcity           | character(35)  |           |          | 
+ pros_addcountry        | character(35)  |           |          | 
+ pros_ownmobilephone    | character(3)   |           |          | 
+ pros_ownwebathome      | character(3)   |           |          | 
+ pros_ownfamilymembers  | character(3)   |           |          | 
+ pros_durationmonthcall | character(4)   |           |          | 
+Indexes:
+    "id_prospect" PRIMARY KEY, btree (pros_id)
+Referenced by:
+    TABLE "converted" CONSTRAINT "converted_conv_prospect_id_fkey" FOREIGN KEY (conv_prospect_id) REFERENCES prospect(pros_id)
+
+******************************************************************************************************************************
+ Table: converted
+      Column       |   Type   | Collation | Nullable | Default 
+-------------------+----------+-----------+----------+---------
+ conv_id           | smallint |           | not null | 
+ conv_prospect_id  | smallint |           |          | 
+ conv_operator_id  | smallint |           |          | 
+ conv_call_date    | date     |           |          | 
+ conv_mobile_taken | integer  |           |          | 
+ conv_web_taken    | integer  |           |          | 
+Indexes:
+    "id_converted" PRIMARY KEY, btree (conv_id)
+Foreign-key constraints:
+    "converted_conv_operator_id_fkey" FOREIGN KEY (conv_operator_id) REFERENCES operator(ope_id)
+    "converted_conv_prospect_id_fkey" FOREIGN KEY (conv_prospect_id) REFERENCES prospect(pros_id)
+    
