@@ -1,15 +1,13 @@
       ******************************************************************
-      *                                                                *
       *    Le programme demande à l'utilisateur de saisir 2 nombres et *
       *    additionne, soustrait, divise et multiplie ces 2 nombres    *
       *    pour ensuite afficher les calculs et les resultats.         *
-      *                                                                *
       ******************************************************************
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. operatn.
        AUTHOR.     Rémi.
 
+      ******************************************************************
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        01  WS-NUM-GROUP.
@@ -21,6 +19,7 @@
            03 WS-MULTIPLY-RESULT  PIC 9(11).
            03 WS-TEMP             PIC 9(10).
 
+      ******************************************************************
        PROCEDURE DIVISION.
       *    Affichages et saisis
            DISPLAY "Saisir un premier nombre :" 
