@@ -1,14 +1,12 @@
       ******************************************************************
-      *                                                                *
       *    Le programme demande à l'utilisateur de saisir 2 nombres    *
       *    puis calcul et affiche le PGCD (Plus Grand Commun Diviseur) *
-      *                                                                *
       ******************************************************************
-
        IDENTIFICATION DIVISION.
        PROGRAM-ID. pgcd.
        AUTHOR.     Rémi.
 
+      ******************************************************************
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        01  WS-NUM-GROUPE.        
@@ -34,10 +32,14 @@
            03 WS-BLANK2      PIC X(19).
            03 WS-MESSAGE-NUM PIC X(33).
 
+      ******************************************************************
        PROCEDURE DIVISION.
            PERFORM 0000-MAIN THRU 0000-MAIN-END.
            STOP RUN.
 
+      ******************************************************************
+      *    Appel 
+      ******************************************************************
        0000-MAIN.
            PERFORM 1000-AFFICHAGE-BIENVENUE 
               THRU 1000-AFFICHAGE-BIENVENUE-END.
@@ -48,6 +50,7 @@
            PERFORM 1000-AFFICHER-FIN 
               THRU 1000-AFFICHER-FIN-END.
        0000-MAIN-END.
+           EXIT.
 
        1000-BOUCLE.
            PERFORM UNTIL WS-NON
@@ -68,7 +71,8 @@
               THRU 1000-CONTINUER-END
 
            END-PERFORM.
-       1000-BOUCLE-END.  
+       1000-BOUCLE-END.
+           EXIT.
 
        1000-AFFICHAGE-BIENVENUE.
            MOVE ALL "*" TO WS-AST.
@@ -78,6 +82,7 @@
            DISPLAY WS-AST.
            DISPLAY SPACE.
        1000-AFFICHAGE-BIENVENUE-END.
+           EXIT.
 
        1000-AFFICHAGE-SAISI.
            MOVE "Saisir un nombre entier positif :" TO WS-MESSAGE-NUM.
@@ -88,6 +93,7 @@
            DISPLAY "2." SPACE WS-MESSAGE-NUM SPACE NO ADVANCING.
            ACCEPT WS-SAISIE-NUM2.
        1000-AFFICHAGE-SAISI-END.
+           EXIT.
 
       *    Contrôle si les 2 saisis sont des numériques.
       *    sinon affiche un message d'erreur et redirige l'utilisateur
@@ -119,6 +125,7 @@
               GO TO 1000-AFFICHAGE-SAISI
            END-IF.
        2000-SAISIE-CONTROLE-END.
+           EXIT.
 
       *    Inverse les valeurs WS-NUM1 et WS-NUM2,
       *    si WS-NUM1 est plus petit que WS-NUM2
@@ -129,6 +136,7 @@
                MOVE WS-TEMP  TO WS-NUM2
            END-IF.
        2000-INVERSER-NUM-END.
+           EXIT.
 
        2000-DIVISION.
            DIVIDE    WS-NUM1
@@ -136,6 +144,7 @@
            GIVING    WS-QUOT
            REMAINDER WS-REST.
        2000-DIVISION-END.
+           EXIT.
 
       *    Boucle jusqu'à ce que le reste soit inférieur ou égal à 0,
       *    remplace les valeurs WS-NUM1 et WS-NUM2
@@ -149,6 +158,7 @@
                PERFORM 2000-DIVISION THRU 2000-DIVISION-END
            END-PERFORM.
        2000-CALCUL-PGCD-END.
+           EXIT.
 
        1000-AFFICHAGE-PGCD.    
            IF WS-REST <= 0
@@ -157,6 +167,7 @@
               DISPLAY "Le PGCD est" SPACE FUNCTION TRIM(WS-PGCD) "!"
            END-IF.
        1000-AFFICHAGE-PGCD-END.
+           EXIT.
 
       *    Demande à l'utilisateur s'il souhaite continuer en fonction 
       *    de sa saisi (OUI / NON).
@@ -183,6 +194,7 @@
                   GO TO 1000-CONTINUER
            END-EVALUATE.
        1000-CONTINUER-END.
+           EXIT.
 
        1000-AFFICHER-FIN.
            DISPLAY SPACE.
@@ -190,3 +202,4 @@
            DISPLAY "*" WS-BLANK2 "FIN" WS-BLANK2 "*".
            DISPLAY WS-AST.
        1000-AFFICHER-FIN-END.
+           EXIT.
