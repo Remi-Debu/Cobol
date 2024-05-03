@@ -60,7 +60,7 @@
            END-IF.
                
            PERFORM 3001-SQL-TBL-STUDENT-START
-               THRU 3001-SQL-TBL-STUDENT-END.
+              THRU 3001-SQL-TBL-STUDENT-END.
 
        1000-MAIN-END.
            EXEC SQL COMMIT WORK END-EXEC.
