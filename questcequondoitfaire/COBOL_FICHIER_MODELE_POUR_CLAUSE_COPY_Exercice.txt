@@ -1,0 +1,1 @@
+IdentifiantCT     Muna   IdentifiantSE    MunaSE    IdentifiantRG   MunaRG    Libellé               MotClé              Lissable TVA  CMU   Etat  TypeRG    Soustype      DateMAJ     DébutEffet  FinEffet    Priorité 
