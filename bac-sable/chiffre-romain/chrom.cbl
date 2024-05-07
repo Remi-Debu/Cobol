@@ -11,10 +11,10 @@
       ******************************************************************
        WORKING-STORAGE SECTION.
        01  TABLE-NUM.
-           03 NUM   PIC 9(04) OCCURS 13 TIMES.
+           03 NUM PIC 9(04) OCCURS 13 TIMES.
 
-       01  TABLE-LETTER.
-           03 LETTER PIC X(02) OCCURS 13 TIMES.
+       01  TABLE-ROMAN-LETTER.
+           03 LETTER PIC X(03) OCCURS 13 TIMES.
 
        01  WS-IDX           PIC 9(02) VALUE 1.
        01  WS-LETTER-LENGTH PIC 9(02).
@@ -36,21 +36,28 @@
       ******************************************************************
       *    Parcours les 2 tableaux NUM et LETTER et si le nombre saisi *
       *    par l'utilisateur est + grand que le nombre du tableau à    *
-      *    l'emplacement selon l'index alors 
+      *    l'emplacement selon l'index alors ajoute à output la lettre *
+      *    correspondant au nombre et soustrait 1 à l'index.           *
       ******************************************************************
        START-HANDLE-OUTPUT.
            PERFORM VARYING WS-IDX FROM 1 BY 1 UNTIL WS-IDX > 13
               IF WS-INPUT >= NUM(WS-IDX)
+      *          Le nombre saisi - le nombre du tableau
                  SUBTRACT NUM(WS-IDX) FROM WS-INPUT
 
+      *          La longueur de la lettre
                  MOVE FUNCTION LENGTH(FUNCTION TRIM(LETTER(WS-IDX))) 
                  TO WS-LETTER-LENGTH
 
+      *          Ajoute la lettre au string chiffre Romain
                  MOVE LETTER(WS-IDX) 
                  TO WS-OUTPUT(WS-START-POS:WS-LETTER-LENGTH) 
 
-                 SUBTRACT 1 FROM WS-IDX 
+      *          Augmente la position de départ pour l'output
                  ADD WS-LETTER-LENGTH TO WS-START-POS
+
+      *          L'index - 1   
+                 SUBTRACT 1 FROM WS-IDX 
               END-IF
            END-PERFORM.
        END-HANDLE-OUTPUT.
