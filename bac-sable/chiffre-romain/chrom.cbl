@@ -36,7 +36,7 @@
       ******************************************************************
       *    Parcours les 2 tableaux NUM et LETTER et si le nombre saisi *
       *    par l'utilisateur est + grand que le nombre du tableau à    *
-      *    l'emplacement selon l'index alors
+      *    l'emplacement selon l'index alors 
       ******************************************************************
        START-HANDLE-OUTPUT.
            PERFORM VARYING WS-IDX FROM 1 BY 1 UNTIL WS-IDX > 13
