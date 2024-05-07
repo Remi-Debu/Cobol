@@ -6,6 +6,7 @@
 
       ******************************************************************
        ENVIRONMENT DIVISION.
+      ******************************************************************
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
            SELECT F-INPUT ASSIGN TO "filename.txt"
@@ -15,6 +16,7 @@
 
       ******************************************************************
        DATA DIVISION.
+      ******************************************************************
        FILE SECTION.
        FD  F-INPUT
            RECORD CONTAINS 100 CHARACTERS
