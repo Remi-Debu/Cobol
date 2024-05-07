@@ -34,12 +34,13 @@
            03  CLIENT OCCURS 1 TO 1000
                       DEPENDING ON C-CNT
                       INDEXED BY C-IDX.
-	            05 C-ID      PIC X(08).
-               05 C-NOM     PIC X(20).
-               05 C-PRENOM  PIC X(20).
-               05 C-POSTE   PIC X(14).
-               05 C-SALAIRE PIC X(07).
-               05 C-AGENCE  PIC X(03).
+	          05 C-ID      PIC X(09).
+              05 C-NOM     PIC X(20).
+              05 C-PRENOM  PIC X(20).
+              05 C-POSTE   PIC X(14).
+              05 C-CODE    PIC X(03).
+              05 C-SALAIRE PIC 9(04)V99.
+              05 C-AGENCE  PIC X(05).
        
        01  Z-IDX PIC Z(10)9.
        01  WS-SALAIRE-MAX PIC 9(04)V99 VALUE 0.
@@ -85,22 +86,22 @@
       ******************************************************************
        START-HANDLE-CLIENT.
            MOVE RCLIENT TO CLIENT(C-CNT).
-           ADD 1 TO C-CNT.
 
       *    Si le salaire lu est + grand que le salaire max
       *    alors remplace sa valeur
-           IF RCLIENT-SALAIRE > WS-SALAIRE-MAX
+           IF C-SALAIRE(C-CNT) > WS-SALAIRE-MAX
               INITIALIZE WS-SALAIRE-MAX
-              MOVE RCLIENT-SALAIRE TO WS-SALAIRE-MAX
+              MOVE C-SALAIRE(C-CNT) TO WS-SALAIRE-MAX
            END-IF.
 
       *    Si le salaire lu est + petit que le salaire min
       *    alors remplace sa valeur
-           IF RCLIENT-SALAIRE < WS-SALAIRE-MIN
+           IF C-SALAIRE(C-CNT) < WS-SALAIRE-MIN
               INITIALIZE WS-SALAIRE-MIN
-              MOVE RCLIENT-SALAIRE TO WS-SALAIRE-MIN
+              MOVE C-SALAIRE(C-CNT) TO WS-SALAIRE-MIN
            END-IF.
 
+           ADD 1 TO C-CNT.
        END-HANDLE-CLIENT.
            EXIT.
 
