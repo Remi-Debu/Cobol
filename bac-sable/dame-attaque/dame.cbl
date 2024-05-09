@@ -47,11 +47,12 @@
        01  WS-ALPHABET PIC X(26) VALUE "ABCDEFGH".
        01  A-IDX       PIC 9.
 
-       01  START-POS PIC 9(03).
+       01  START-POS      PIC 9(03).
        01  PNT-CHESSBOARD PIC X(100).
-       01  WS-BLANK    PIC X(15) VALUE ALL SPACES.
-       01  WS-AST      PIC X(50) VALUE ALL "*".
-       01  WS-DASH     PIC X(37) VALUE ALL "-".
+       01  WS-BLANK       PIC X(10) VALUE ALL SPACES.
+       01  WS-MINI-BLANK  PIC X(03) VALUE ALL SPACES.
+       01  WS-AST         PIC X(37) VALUE ALL "*".
+       01  WS-DASH        PIC X(37) VALUE ALL "-".
       ****************************************************************** 
        PROCEDURE DIVISION.
       ******************************************************************
@@ -268,13 +269,17 @@
        START-CHECK-QUEEN-ATTACK.
            PERFORM START-PRINT-CHESSBOARD THRU END-PRINT-CHESSBOARD.
 
+           DISPLAY WS-AST.
            IF WQ-COLUMN EQUAL BQ-COLUMN
               OR WQ-ROW EQUAl BQ-ROW 
               OR WQ-COLUMN - BQ-COLUMN = WQ-ROW - BQ-ROW
            
-              DISPLAY "Les reines peuvent s'attaquer !"
+              
+              DISPLAY WS-MINI-BLANK "Les reines peuvent s'attaquer !"
            ELSE
-              DISPLAY "Les reines ne peuvent pas s'attaquer."
+              DISPLAY WS-MINI-BLANK 
+              "Les reines ne peuvent pas s'attaquer."
            END-IF.
+           DISPLAY WS-AST.
        END-CHECK-QUEEN-ATTACK.
     
