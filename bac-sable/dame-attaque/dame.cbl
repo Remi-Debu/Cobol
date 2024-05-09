@@ -11,13 +11,28 @@
        DATA DIVISION.
       ******************************************************************
        WORKING-STORAGE SECTION.
-       01  CHECK-WQ-INPUT PIC X(02) VALUE "NO".
-           88 WQ-OK VALUE "OK".
-           88 WQ-NO VALUE "NO".
+       01  CHECK-WQ-INPUT PIC X(03).
+           88 WQ-OK      VALUE "OK".
+           88 WQ-ERR-ROW VALUE "ROW".
+           88 WQ-ERR-COL VALUE "COL".
 
-       01  CHECK-BQ-INPUT PIC X(02) VALUE "NO".
-           88 BQ-OK VALUE "OK".
-           88 BQ-NO VALUE "NO".
+       01  CHECK-BQ-INPUT PIC X(03).
+           88 BQ-OK      VALUE "OK".
+           88 BQ-ERR-ROW VALUE "ROW".
+           88 BQ-ERR-COL VALUE "COL".
+           88 BQ-ERR-EQU VALUE "EQU".
+
+       01  CHESSBOARD.
+           03 TABLE-ROW OCCURS 8 TIMES.
+              05 FILLER PIC XX VALUE "| ".
+              05 CB-ROW-NUM PIC 9.
+              05 FILLER PIC XXX VALUE " | ".
+              05 TABLE-COLUMN OCCURS 8 TIMES.
+                 07 CB-SQUARE PIC X.
+                 07 FILLER PIC XXX VALUE " | ".
+
+       01  R-CNT PIC 9.
+       01  C-CNT PIC 9.
 
        01  WHITE-QUEEN.
            03 WQ-POS    PIC X(10).
@@ -30,8 +45,13 @@
            03 BQ-ROW    PIC 9(09).
 
        01  WS-ALPHABET PIC X(26) VALUE "ABCDEFGH".
+       01  A-IDX       PIC 9.
+
+       01  START-POS PIC 9(03).
+       01  PNT-CHESSBOARD PIC X(100).
+       01  WS-BLANK    PIC X(15) VALUE ALL SPACES.
        01  WS-AST      PIC X(50) VALUE ALL "*".
-       01  A-IDX       PIC 9(02).
+       01  WS-DASH     PIC X(37) VALUE ALL "-".
       ****************************************************************** 
        PROCEDURE DIVISION.
       ******************************************************************
@@ -49,18 +69,64 @@
       ******************************************************************
        START-HEADER.
            DISPLAY WS-AST.
-           DISPLAY "LA DAME ATTAQUE !".
+           DISPLAY WS-BLANK "LA DAME ATTAQUE !".
            DISPLAY WS-AST.
-           DISPLAY SPACE.
-           DISPLAY "L'echiquier est represente par un tableau de 8"
-           SPACE "par 8.".
-           DISPLAY "Les colonnes vont de A a H.".
-           DISPLAY "Les lignes vont de 1 a 8.".
-           DISPLAY "Veuillez renseigner les positions des reines" 
-           SPACE "sur l'echiquier.".
-           DISPLAY "Exemple de position : B4".
-           DISPLAY SPACE.
+           PERFORM START-PRINT-CHESSBOARD THRU END-PRINT-CHESSBOARD.
        END-HEADER.
+           EXIT.
+
+      ******************************************************************
+      *    Affiche l'échiquier.                                        *
+      ******************************************************************
+       START-PRINT-CHESSBOARD.
+           DISPLAY SPACE.
+      *    Affiche la 1ere ligne du chessboard (les noms de colonnes)
+           STRING "|   |" SPACE DELIMITED BY SIZE INTO PNT-CHESSBOARD.
+           INITIALIZE A-IDX.
+           SET START-POS TO 7.
+           PERFORM 8 TIMES 
+              ADD 1 TO A-IDX
+
+              STRING WS-ALPHABET(A-IDX :1) SPACE "|" 
+              DELIMITED BY SIZE
+              INTO PNT-CHESSBOARD(START-POS:4)
+
+              ADD 4 TO START-POS
+           END-PERFORM.
+           DISPLAY WS-DASH.
+           DISPLAY PNT-CHESSBOARD.
+
+      *    Affiche le reste du chessboard
+           INITIALIZE R-CNT.
+           PERFORM 8 TIMES
+              INITIALIZE PNT-CHESSBOARD
+              ADD 1 TO R-CNT 
+
+      *       Numéro de la ligne
+              SET CB-ROW-NUM(R-CNT) TO R-CNT
+              STRING TABLE-ROW(R-CNT) 
+              DELIMITED BY SIZE
+              INTO PNT-CHESSBOARD
+
+      *       Affiche le reste des cases du chessboard
+              INITIALIZE C-CNT
+              SET START-POS TO 7
+              PERFORM 8 TIMES 
+              ADD 1 TO C-CNT
+
+              STRING TABLE-COLUMN(R-CNT, C-CNT)
+              DELIMITED BY SIZE
+              INTO PNT-CHESSBOARD(START-POS:4)
+
+              ADD 4 TO START-POS
+              END-PERFORM
+           
+           DISPLAY WS-DASH
+           DISPLAY PNT-CHESSBOARD
+           END-PERFORM.
+           DISPLAY WS-DASH.
+           DISPLAY SPACE.
+       END-PRINT-CHESSBOARD.
            EXIT.
 
       ******************************************************************
@@ -69,16 +135,27 @@
       ******************************************************************
        START-USER-INPUT-WQ.
            INITIALIZE WQ-ROW.
+           INITIALIZE WQ-COLUMN.
+           INITIALIZE WQ-POS.
            DISPLAY "Position de la reine blanche :" 
            SPACE WITH NO ADVANCING.
            ACCEPT WQ-POS.
 
-           PERFORM START-CHECK-HANDLE-INPUT THRU END-CHECK-HANDLE-INPUT.
-           
-           IF WQ-NO
-              DISPLAY "Saisie incorrecte."
-              GO TO START-USER-INPUT-WQ
-           END-IF.
+           PERFORM START-CHECK-HANDLE-WQ THRU END-CHECK-HANDLE-WQ.
+
+           EVALUATE CHECK-WQ-INPUT
+               WHEN "COL"
+                  DISPLAY "Colonne de la reine blanche incorrecte."
+                  GO TO START-USER-INPUT-WQ
+               WHEN "ROW"
+                  DISPLAY "Ligne de la reine blanche incorrecte."
+                  GO TO START-USER-INPUT-WQ
+              WHEN "OK"
+                  CONTINUE
+               WHEN OTHER
+                  DISPLAY "Erreur imprévue."
+                  GO TO START-USER-INPUT-WQ
+           END-EVALUATE.
        END-USER-INPUT-WQ.
            EXIT.
 
@@ -87,54 +164,101 @@
       *    noire et appel le paragraphe CHECK-HANDLE-INPUT.            *
       ******************************************************************
        START-USER-INPUT-BQ.
+           PERFORM START-PRINT-CHESSBOARD THRU END-PRINT-CHESSBOARD.
+
            INITIALIZE BQ-ROW.
+           INITIALIZE BQ-COLUMN.
+           INITIALIZE BQ-POS.
+           DISPLAY SPACE.
            DISPLAY "Position de la reine noire :" 
            SPACE WITH NO ADVANCING.
            ACCEPT BQ-POS.
 
-           PERFORM START-CHECK-HANDLE-INPUT THRU END-CHECK-HANDLE-INPUT.
-           
-           IF BQ-NO
-              DISPLAY "Saisie incorrecte."
-              GO TO START-USER-INPUT-BQ
-           END-IF.
+           PERFORM START-CHECK-HANDLE-BQ THRU END-CHECK-HANDLE-BQ.
+
+           EVALUATE CHECK-BQ-INPUT
+               WHEN "COL"
+                  DISPLAY "Colonne de la reine noire incorrecte."
+                  GO TO START-USER-INPUT-BQ
+               WHEN "ROW"
+                  DISPLAY "Ligne de la reine noire incorrecte."
+                  GO TO START-USER-INPUT-BQ
+               WHEN "EQU"
+                  DISPLAY "La reine blanche est sur cette case."
+                  GO TO START-USER-INPUT-BQ
+               WHEN "OK"
+                  CONTINUE
+               WHEN OTHER
+                  DISPLAY "Erreur imprévue."
+                  GO TO START-USER-INPUT-BQ
+           END-EVALUATE.
        END-USER-INPUT-BQ.
            EXIT.
 
       ******************************************************************
-      *    Vérifie si la saisie de l'utilisateur est correct, si oui   *
-      *    insére le numéro de colonne et de ligne en fonction de la   *
-      *    position renseignée par l'utilisateur.                      *
+      *    Vérifie si la position de la reine blanche est correct,     *
+      *    si oui insère le numéro de colonne et de ligne en fonction  *
+      *    de la position renseignée par l'utilisateur.                *
       ******************************************************************
-       START-CHECK-HANDLE-INPUT.
+       START-CHECK-HANDLE-WQ.
+           INITIALIZE CHECK-WQ-INPUT.
+           INITIALIZE A-IDX.
            INITIALIZE WQ-ROW.
-           INITIALIZE BQ-ROW.
+
            MOVE WQ-POS(2:9) TO WQ-ROW.
+
+           IF WQ-ROW > 0 AND WQ-ROW < 9 
+              PERFORM VARYING A-IDX FROM 1 BY 1 UNTIL A-IDX > 8
+                 IF WS-ALPHABET(A-IDX:1) EQUAL WQ-POS(1:1)
+                    MOVE A-IDX TO WQ-COLUMN
+                    MOVE WQ-POS(2:1) TO WQ-ROW
+                    MOVE "W" TO CB-SQUARE(WQ-ROW, WQ-COLUMN)
+                    SET WQ-OK TO TRUE
+                    GO TO END-CHECK-HANDLE-WQ
+                 ELSE
+                    SET WQ-ERR-COL TO TRUE 
+                 END-IF
+              END-PERFORM
+           ELSE 
+              SET WQ-ERR-ROW TO TRUE
+           END-IF.
+       END-CHECK-HANDLE-WQ.
+           EXIT.
+              
+      ******************************************************************
+      *    Vérifie si la position de la reine noire est correct,       *
+      *    si oui insère le numéro de colonne et de ligne en fonction  *
+      *    de la position renseignée par l'utilisateur.                *
+      ******************************************************************
+       START-CHECK-HANDLE-BQ.
+           INITIALIZE CHECK-WQ-INPUT.
+           INITIALIZE A-IDX.
+           INITIALIZE BQ-ROW.
+
            MOVE BQ-POS(2:9) TO BQ-ROW.
 
-           SET WQ-NO TO TRUE.
-           SET BQ-NO TO TRUE.
-
-           PERFORM VARYING A-IDX FROM 1 BY 1 UNTIL A-IDX > 8
-              IF WS-ALPHABET(A-IDX:1) EQUAL WQ-POS(1:1)
-                 AND WQ-ROW > 0
-                 AND WQ-ROW < 9
-
-                 MOVE A-IDX TO WQ-COLUMN
-                 MOVE WQ-POS(2:1) TO WQ-ROW
-                 SET WQ-OK TO TRUE
-              END-IF
-              
-              IF WS-ALPHABET(A-IDX:1) EQUAL BQ-POS(1:1)
-                 AND BQ-ROW > 0
-                 AND BQ-ROW < 9
-
-                 MOVE A-IDX TO BQ-COLUMN
-                 MOVE BQ-POS(2:1) TO BQ-ROW
-                 SET BQ-OK TO TRUE
-              END-IF
-           END-PERFORM.
-       END-CHECK-HANDLE-INPUT.
+           IF BQ-ROW > 0 AND BQ-ROW < 9 
+              PERFORM VARYING A-IDX FROM 1 BY 1 UNTIL A-IDX > 8
+                 IF WS-ALPHABET(A-IDX:1) EQUAL BQ-POS(1:1)
+                    MOVE A-IDX TO BQ-COLUMN
+                    MOVE BQ-POS(2:1) TO BQ-ROW
+                       IF BQ-ROW EQUAL WQ-ROW 
+                          AND BQ-COLUMN EQUAL WQ-COLUMN
+                          SET BQ-ERR-EQU TO TRUE
+                          GO TO END-CHECK-HANDLE-BQ
+                       ELSE
+                          MOVE "B" TO CB-SQUARE(BQ-ROW, BQ-COLUMN)
+                          SET BQ-OK TO TRUE
+                          GO TO END-CHECK-HANDLE-BQ
+                       END-IF
+                 ELSE
+                    SET BQ-ERR-COL TO TRUE 
+                 END-IF
+              END-PERFORM
+           ELSE 
+              SET BQ-ERR-ROW TO TRUE
+           END-IF.
+       END-CHECK-HANDLE-BQ.
            EXIT.
 
       ******************************************************************
@@ -142,7 +266,8 @@
       *    de si elles sont sur la même colonne, ligne ou diagonale.   *
       ******************************************************************
        START-CHECK-QUEEN-ATTACK.
-           DISPLAY SPACE.
+           PERFORM START-PRINT-CHESSBOARD THRU END-PRINT-CHESSBOARD.
+
            IF WQ-COLUMN EQUAL BQ-COLUMN
               OR WQ-ROW EQUAl BQ-ROW 
               OR WQ-COLUMN - BQ-COLUMN = WQ-ROW - BQ-ROW
