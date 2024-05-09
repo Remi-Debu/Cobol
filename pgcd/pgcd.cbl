@@ -8,6 +8,7 @@
 
       ******************************************************************
        DATA DIVISION.
+      ******************************************************************
        WORKING-STORAGE SECTION.
        01  WS-NUM-GROUPE.        
            03 WS-NUM1 PIC 9(10).
@@ -34,24 +35,19 @@
 
       ******************************************************************
        PROCEDURE DIVISION.
-           PERFORM 0000-MAIN THRU 0000-MAIN-END.
-           STOP RUN.
-
-      ******************************************************************
-      *    Appel 
       ******************************************************************
        0000-MAIN.
            PERFORM 1000-AFFICHAGE-BIENVENUE 
               THRU 1000-AFFICHAGE-BIENVENUE-END.
-
-           PERFORM 1000-BOUCLE 
-              THRU 1000-BOUCLE-END.
-
-           PERFORM 1000-AFFICHER-FIN 
-              THRU 1000-AFFICHER-FIN-END.
+           PERFORM 1000-BOUCLE THRU 1000-BOUCLE-END.
+           PERFORM 1000-AFFICHER-FIN THRU 1000-AFFICHER-FIN-END.
        0000-MAIN-END.
-           EXIT.
-
+           STOP RUN.
+      
+      ******************************************************************
+      *    Appel les différents paragraphe qui vont permettre de       *
+      *    calculer le pgcd.                                           *
+      ******************************************************************
        1000-BOUCLE.
            PERFORM UNTIL WS-NON
            
@@ -74,6 +70,9 @@
        1000-BOUCLE-END.
            EXIT.
 
+      ******************************************************************
+      *    Affiche un message pour le lancement de programme.          *
+      ******************************************************************
        1000-AFFICHAGE-BIENVENUE.
            MOVE ALL "*" TO WS-AST.
 
@@ -84,6 +83,9 @@
        1000-AFFICHAGE-BIENVENUE-END.
            EXIT.
 
+      ******************************************************************
+      *    Demande à l'utilisateur de saisir 2 entier positif.         *
+      ******************************************************************
        1000-AFFICHAGE-SAISI.
            MOVE "Saisir un nombre entier positif :" TO WS-MESSAGE-NUM.
 
@@ -95,11 +97,13 @@
        1000-AFFICHAGE-SAISI-END.
            EXIT.
 
+      ******************************************************************
       *    Contrôle si les 2 saisis sont des numériques.
       *    sinon affiche un message d'erreur et redirige l'utilisateur
       *    vers la demande de saisi d'un nombre.
       *    Les conditions seront fausses s'il y a dans la saisie 
       *    des symboles tels que (-, +, ., etc) ou des lettres
+      ******************************************************************
        2000-SAISIE-CONTROLE.
       *    Contrôle de la 1ere saisi
            IF FUNCTION TRIM(WS-SAISIE-NUM1) IS NUMERIC
@@ -127,8 +131,10 @@
        2000-SAISIE-CONTROLE-END.
            EXIT.
 
+      ******************************************************************
       *    Inverse les valeurs WS-NUM1 et WS-NUM2,
       *    si WS-NUM1 est plus petit que WS-NUM2
+      ******************************************************************
        2000-INVERSER-NUM.
            IF WS-NUM1 < WS-NUM2
                MOVE WS-NUM1 TO WS-TEMP
@@ -138,6 +144,10 @@
        2000-INVERSER-NUM-END.
            EXIT.
 
+      ******************************************************************
+      *    Effectue une division avec les entiers saisis par           *
+      *    l'utilisateur.                                              *
+      ******************************************************************
        2000-DIVISION.
            DIVIDE    WS-NUM1
            BY        WS-NUM2
@@ -146,10 +156,12 @@
        2000-DIVISION-END.
            EXIT.
 
-      *    Boucle jusqu'à ce que le reste soit inférieur ou égal à 0,
-      *    remplace les valeurs WS-NUM1 et WS-NUM2
-      *    par les valeurs WS-NUM2 et WS-REST
-      *    pour ensuite refaire la division
+      ******************************************************************
+      *    Boucle jusqu'à ce que le reste soit inférieur ou égal à 0,  *
+      *    remplace les valeurs WS-NUM1 et WS-NUM2                     *
+      *    par les valeurs WS-NUM2 et WS-REST                          *
+      *    pour ensuite refaire la division.                           *
+      ******************************************************************
        2000-CALCUL-PGCD.
            PERFORM UNTIL WS-REST <= 0
                MOVE WS-NUM2 TO WS-NUM1
@@ -160,6 +172,9 @@
        2000-CALCUL-PGCD-END.
            EXIT.
 
+      ******************************************************************
+      *    Affiche le PGCD.                                            *
+      ******************************************************************
        1000-AFFICHAGE-PGCD.    
            IF WS-REST <= 0
               MOVE WS-NUM2 TO WS-PGCD
@@ -169,10 +184,12 @@
        1000-AFFICHAGE-PGCD-END.
            EXIT.
 
-      *    Demande à l'utilisateur s'il souhaite continuer en fonction 
-      *    de sa saisi (OUI / NON).
-      *    Saisi non sensible à la casse
-      *    et affiche un message d'erreur pour une saisie incorrecte
+      ******************************************************************
+      *    Demande à l'utilisateur s'il souhaite continuer en fonction * 
+      *    de sa saisi (OUI / NON).                                    *
+      *    Saisi non sensible à la casse                               *
+      *    et affiche un message d'erreur pour une saisie incorrecte   *
+      ******************************************************************
        1000-CONTINUER.
            DISPLAY SPACE.
            DISPLAY "Souhaitez-vous continuer ? (OUI / NON)" SPACE 
@@ -196,6 +213,9 @@
        1000-CONTINUER-END.
            EXIT.
 
+      ******************************************************************
+      *    Affiche le message pour la fin d'éxecution du programme.    *
+      ******************************************************************
        1000-AFFICHER-FIN.
            DISPLAY SPACE.
            DISPLAY WS-AST.
