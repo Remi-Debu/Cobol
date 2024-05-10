@@ -3,15 +3,32 @@
        PROGRAM-ID. ptrois.
        AUTHOR        Rémi.
 
+      ******************************************************************
+       ENVIRONMENT DIVISION.
+      ******************************************************************
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT F-RAPPORT ASSIGN TO "rapport.txt"
+           ORGANIZATION IS LINE SEQUENTIAL
+           ACCESS MODE IS SEQUENTIAL
+           FILE STATUS IS FS-RAPPORT.
+
       ****************************************************************** 
        DATA DIVISION.
       ****************************************************************** 
-       WORKING-STORAGE SECTION.
+       FILE SECTION.
+       FD  F-RAPPORT
+           RECORD CONTAINS 100 CHARACTERS
+           RECORDING MODE IS F.
+       01  R-RAPPORT PIC X(100).
 
-OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
-       01  DBNAME                    PIC  X(30) VALUE 'dgse'.
-       01  USERNAME                  PIC  X(30) VALUE 'cobol'.
-       01  PASSWD                    PIC  X(10) VALUE 'cbl85'.
+       WORKING-STORAGE SECTION.
+       01  FS-RAPPORT PIC X(02).
+           88 FS-RAPPOT-OK VALUE "00".
+
+       01  PRINT.
+           03 PNT-AST PIC X(50).
+           03 PNT-BLANK PIC X(20).
 
        01  GROUP-AGE.
            03  GAGE-MAX PIC 9(10).
@@ -29,23 +46,11 @@ OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
            03 GD-AVG-MALE        PIC X(05).
            03 GD-AVG-NONBINARY   PIC X(05).
            03 GD-AVG-POLYGENDER  PIC X(05).
- 
-       01  SQL-PHRASE. 
-           03 P-ID                   PIC X(40).
-           03 P-FIRSTNAME            PIC X(50).
-           03 P-PHRASE               PIC X(50).
 
-       01  SQL-DATABANK.
-           03 DBK-ID                 PIC X(40).
-           03 DBK-FIRSTNAME          PIC X(50).
-           03 DBK-LASTNAME           PIC X(50).
-           03 DBK-EMAIL              PIC X(50).
-           03 DBK-GENDER             PIC X(50).
-           03 DBK-AGE                PIC 9(10).
-           03 DBK-SPOKEN             PIC X(50).
-           03 DBK-COUNTRY            PIC X(50).
-           03 DBK-COUNTRY-CODE       PIC X(50).
-           03 DBK-INFO-MOBILEPHONE   PIC X(50).
+OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
+       01  DBNAME   PIC  X(30) VALUE 'dgse'.
+       01  USERNAME PIC  X(30) VALUE 'cobol'.
+       01  PASSWD   PIC  X(10) VALUE 'cbl85'.
 OCESQL*EXEC SQL END DECLARE SECTION END-EXEC.
 
 OCESQL*EXEC SQL INCLUDE SQLCA END-EXEC.
@@ -331,16 +336,7 @@ OCESQL     END-CALL
 
                EVALUATE SQLCODE
                    WHEN ZERO
-                       DISPLAY GD-COUNTRY
-                       SPACE "|" SPACE GD-TOTAL
-                       SPACE "|" SPACE GD-AVG-AGENDER 
-                       SPACE "|" SPACE GD-AVG-BIGENDER
-                       SPACE "|" SPACE GD-AVG-FEMALE
-                       SPACE "|" SPACE GD-AVG-GENDERFLUID
-                       SPACE "|" SPACE GD-AVG-GENDERQUEER
-                       SPACE "|" SPACE GD-AVG-MALE
-                       SPACE "|" SPACE GD-AVG-NONBINARY
-                       SPACE "|" SPACE GD-AVG-POLYGENDER
+                       PERFORM START-RAPPORT THRU END-RAPPORT
                    WHEN 100
                        DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER
@@ -368,5 +364,20 @@ OCESQL    .
            END-EVALUATE.
        END-AVG-GENDER.
            EXIT.
+
+       START-RAPPORT.
+           DISPLAY GD-COUNTRY
+           SPACE "|" SPACE GD-TOTAL
+           SPACE "|" SPACE GD-AVG-AGENDER 
+           SPACE "|" SPACE GD-AVG-BIGENDER
+           SPACE "|" SPACE GD-AVG-FEMALE
+           SPACE "|" SPACE GD-AVG-GENDERFLUID
+           SPACE "|" SPACE GD-AVG-GENDERQUEER
+           SPACE "|" SPACE GD-AVG-MALE
+           SPACE "|" SPACE GD-AVG-NONBINARY
+           SPACE "|" SPACE GD-AVG-POLYGENDER.
+       END-RAPPORT.
            EXIT.
-           EXIT.
+
+
+

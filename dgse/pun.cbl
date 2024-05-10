@@ -7,40 +7,32 @@
        DATA DIVISION.
       ****************************************************************** 
        WORKING-STORAGE SECTION.
-
        EXEC SQL BEGIN DECLARE SECTION END-EXEC.
-       01  DBNAME                    PIC  X(30) VALUE 'dgse'.
-       01  USERNAME                  PIC  X(30) VALUE 'cobol'.
-       01  PASSWD                    PIC  X(10) VALUE 'cbl85'.
+       01  DBNAME   PIC  X(30) VALUE 'dgse'.
+       01  USERNAME PIC  X(30) VALUE 'cobol'.
+       01  PASSWD   PIC  X(10) VALUE 'cbl85'.
 
        01  GROUP-AGE.
-           03  GAGE-MAX     PIC 9(10).
-           03  GAGE-MIN     PIC 9(10).
-           03  GAGE-GRP-AGE PIC 9(10).
-           03  GAGE-NB-IND  PIC 9(10).
-
-       01  GROUP-BE.
-           03 GBE-FN   PIC X(50). 
-           03 GBE-LN   PIC X(50). 
-           03 GBE-MAIL PIC X(50). 
-           03 GBE-PH   PIC X(50).
+           03 AGE-MAX   PIC 9(10).
+           03 AGE-MIN   PIC 9(10).
+           03 AGE-COUNT PIC 9(10).
  
        01  SQL-PHRASE. 
-           03 P-ID                   PIC X(40).
-           03 P-FIRSTNAME            PIC X(50).
-           03 P-PHRASE               PIC X(50).
+           03 P-ID        PIC X(40).
+           03 P-FIRSTNAME PIC X(50).
+           03 P-PHRASE    PIC X(50).
 
        01  SQL-DATABANK.
-           03 DBK-ID                 PIC X(40).
-           03 DBK-FIRSTNAME          PIC X(50).
-           03 DBK-LASTNAME           PIC X(50).
-           03 DBK-EMAIL              PIC X(50).
-           03 DBK-GENDER             PIC X(50).
-           03 DBK-AGE                PIC 9(10).
-           03 DBK-SPOKEN             PIC X(50).
-           03 DBK-COUNTRY            PIC X(50).
-           03 DBK-COUNTRY-CODE       PIC X(50).
-           03 DBK-INFO-MOBILEPHONE   PIC X(50).
+           03 DBK-ID               PIC X(40).
+           03 DBK-FIRSTNAME        PIC X(50).
+           03 DBK-LASTNAME         PIC X(50).
+           03 DBK-EMAIL            PIC X(50).
+           03 DBK-GENDER           PIC X(50).
+           03 DBK-AGE              PIC 9(10).
+           03 DBK-SPOKEN           PIC X(50).
+           03 DBK-COUNTRY          PIC X(50).
+           03 DBK-COUNTRY-CODE     PIC X(50).
+           03 DBK-INFO-MOBILEPHONE PIC X(50).
        EXEC SQL END DECLARE SECTION END-EXEC.
 
        EXEC SQL INCLUDE SQLCA END-EXEC.
@@ -94,10 +86,10 @@
       ******************************************************************
        START-SQL-REQUEST.
            EXEC SQL
-               SELECT MAX(age) INTO :GAGE-MAX FROM databank
+               SELECT MAX(age) INTO :AGE-MAX FROM databank
            END-EXEC.
            EXEC SQL
-               SELECT MIN(age) INTO :GAGE-MIN FROM databank
+               SELECT MIN(age) INTO :AGE-MIN FROM databank
            END-EXEC.
            EXEC SQL
                DECLARE CRSAGE CURSOR FOR
@@ -111,15 +103,15 @@
                SELECT db.first_name, db.last_name, db.email, ph.phrase
                FROM databank AS db
                JOIN phrase AS ph ON db.country_code = ph.country_code
-               WHERE db.country = 'Belgium'
+               WHERE db.country = 'BELGIUM'
            END-EXEC.
        END-SQL-REQUEST.
            EXIT. 
 
       ******************************************************************
        START-PRINT.
-           DISPLAY "Age maximum :" SPACE GAGE-MAX.
-           DISPLAY "Age minimum :" SPACE GAGE-MIN.
+           DISPLAY "Age maximum :" SPACE AGE-MAX.
+           DISPLAY "Age minimum :" SPACE AGE-MIN.
            DISPLAY SPACE.
            PERFORM START-N-INDIVIDU THRU END-N-INDIVIDU.
            PERFORM START-BE THRU END-BE.
@@ -147,12 +139,12 @@
            PERFORM UNTIL SQLCODE = 100
                EXEC SQL
                    FETCH CRSAGE
-                   INTO :GAGE-GRP-AGE, :GAGE-NB-IND
+                   INTO :DBK-AGE, :AGE-COUNT
                END-EXEC
 
                EVALUATE SQLCODE
                    WHEN ZERO
-                       DISPLAY GAGE-GRP-AGE SPACE "|" SPACE GAGE-NB-IND
+                       DISPLAY DBK-AGE SPACE "|" SPACE AGE-COUNT
                    WHEN 100
                        DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER
@@ -197,15 +189,16 @@
            PERFORM UNTIL SQLCODE = 100
                EXEC SQL
                    FETCH CRSBE
-                   INTO :GBE-FN, :GBE-LN, :GBE-MAIL, :GBE-PH
+                   INTO :DBK-FIRSTNAME, :DBK-LASTNAME, :DBK-EMAIL, 
+                   :P-PHRASE
                END-EXEC
 
                EVALUATE SQLCODE
                    WHEN ZERO
-                       DISPLAY FUNCTION TRIM(GBE-FN) 
-                       SPACE "|" SPACE FUNCTION TRIM(GBE-FN)
-                       SPACE "|" SPACE FUNCTION TRIM(GBE-MAIL)
-                       SPACE "|" SPACE FUNCTION TRIM(GBE-PH)
+                       DISPLAY FUNCTION TRIM(DBK-FIRSTNAME) 
+                       SPACE "|" SPACE FUNCTION TRIM(DBK-LASTNAME)
+                       SPACE "|" SPACE FUNCTION TRIM(DBK-EMAIL)
+                       SPACE "|" SPACE FUNCTION TRIM(P-PHRASE)
                    WHEN 100
                        DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER

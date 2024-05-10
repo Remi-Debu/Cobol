@@ -1,5 +1,0 @@
-export COB_LDFLAGS=-Wl,--no-as-needed
-export COBCPY=./Copybook
-ocesql prog.cbl prog.cob
-cobc -locesql -x -o run prog.cob 
-./run

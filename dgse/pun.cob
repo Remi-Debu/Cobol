@@ -7,40 +7,32 @@
        DATA DIVISION.
       ****************************************************************** 
        WORKING-STORAGE SECTION.
-
 OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
-       01  DBNAME                    PIC  X(30) VALUE 'dgse'.
-       01  USERNAME                  PIC  X(30) VALUE 'cobol'.
-       01  PASSWD                    PIC  X(10) VALUE 'cbl85'.
+       01  DBNAME   PIC  X(30) VALUE 'dgse'.
+       01  USERNAME PIC  X(30) VALUE 'cobol'.
+       01  PASSWD   PIC  X(10) VALUE 'cbl85'.
 
        01  GROUP-AGE.
-           03  GAGE-MAX     PIC 9(10).
-           03  GAGE-MIN     PIC 9(10).
-           03  GAGE-GRP-AGE PIC 9(10).
-           03  GAGE-NB-IND  PIC 9(10).
-
-       01  GROUP-BE.
-           03 GBE-FN   PIC X(50). 
-           03 GBE-LN   PIC X(50). 
-           03 GBE-MAIL PIC X(50). 
-           03 GBE-PH   PIC X(50).
+           03 AGE-MAX   PIC 9(10).
+           03 AGE-MIN   PIC 9(10).
+           03 AGE-COUNT PIC 9(10).
  
        01  SQL-PHRASE. 
-           03 P-ID                   PIC X(40).
-           03 P-FIRSTNAME            PIC X(50).
-           03 P-PHRASE               PIC X(50).
+           03 P-ID        PIC X(40).
+           03 P-FIRSTNAME PIC X(50).
+           03 P-PHRASE    PIC X(50).
 
        01  SQL-DATABANK.
-           03 DBK-ID                 PIC X(40).
-           03 DBK-FIRSTNAME          PIC X(50).
-           03 DBK-LASTNAME           PIC X(50).
-           03 DBK-EMAIL              PIC X(50).
-           03 DBK-GENDER             PIC X(50).
-           03 DBK-AGE                PIC 9(10).
-           03 DBK-SPOKEN             PIC X(50).
-           03 DBK-COUNTRY            PIC X(50).
-           03 DBK-COUNTRY-CODE       PIC X(50).
-           03 DBK-INFO-MOBILEPHONE   PIC X(50).
+           03 DBK-ID               PIC X(40).
+           03 DBK-FIRSTNAME        PIC X(50).
+           03 DBK-LASTNAME         PIC X(50).
+           03 DBK-EMAIL            PIC X(50).
+           03 DBK-GENDER           PIC X(50).
+           03 DBK-AGE              PIC 9(10).
+           03 DBK-SPOKEN           PIC X(50).
+           03 DBK-COUNTRY          PIC X(50).
+           03 DBK-COUNTRY-CODE     PIC X(50).
+           03 DBK-INFO-MOBILEPHONE PIC X(50).
 OCESQL*EXEC SQL END DECLARE SECTION END-EXEC.
 
 OCESQL*EXEC SQL INCLUDE SQLCA END-EXEC.
@@ -69,7 +61,7 @@ OCESQL 01  SQ0005.
 OCESQL     02  FILLER PIC X(159) VALUE "SELECT db.first_name, db.last_"
 OCESQL  &  "name, db.email, ph.phrase FROM databank AS db JOIN phrase "
 OCESQL  &  "AS ph ON db.country_code = ph.country_code WHERE db.countr"
-OCESQL  &  "y = 'Belgium'".
+OCESQL  &  "y = 'BELGIUM'".
 OCESQL     02  FILLER PIC X(1) VALUE X"00".
 OCESQL*
        PROCEDURE DIVISION.
@@ -148,7 +140,7 @@ OCESQL     END-CALL
       ******************************************************************
        START-SQL-REQUEST.
 OCESQL*    EXEC SQL
-OCESQL*        SELECT MAX(age) INTO :GAGE-MAX FROM databank
+OCESQL*        SELECT MAX(age) INTO :AGE-MAX FROM databank
 OCESQL*    END-EXEC.
 OCESQL     CALL "OCESQLStartSQL"
 OCESQL     END-CALL
@@ -156,7 +148,7 @@ OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 1
 OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GAGE-MAX
+OCESQL          BY REFERENCE AGE-MAX
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLExecSelectIntoOne" USING
 OCESQL          BY REFERENCE SQLCA
@@ -167,7 +159,7 @@ OCESQL     END-CALL
 OCESQL     CALL "OCESQLEndSQL"
 OCESQL     END-CALL.
 OCESQL*    EXEC SQL
-OCESQL*        SELECT MIN(age) INTO :GAGE-MIN FROM databank
+OCESQL*        SELECT MIN(age) INTO :AGE-MIN FROM databank
 OCESQL*    END-EXEC.
 OCESQL     CALL "OCESQLStartSQL"
 OCESQL     END-CALL
@@ -175,7 +167,7 @@ OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 1
 OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GAGE-MIN
+OCESQL          BY REFERENCE AGE-MIN
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLExecSelectIntoOne" USING
 OCESQL          BY REFERENCE SQLCA
@@ -202,7 +194,7 @@ OCESQL*        DECLARE CRSBE CURSOR FOR
 OCESQL*        SELECT db.first_name, db.last_name, db.email, ph.phrase
 OCESQL*        FROM databank AS db
 OCESQL*        JOIN phrase AS ph ON db.country_code = ph.country_code
-OCESQL*        WHERE db.country = 'Belgium'
+OCESQL*        WHERE db.country = 'BELGIUM'
 OCESQL*    END-EXEC.
 OCESQL     CALL "OCESQLCursorDeclare" USING
 OCESQL          BY REFERENCE SQLCA
@@ -214,8 +206,8 @@ OCESQL     END-CALL.
 
       ******************************************************************
        START-PRINT.
-           DISPLAY "Age maximum :" SPACE GAGE-MAX.
-           DISPLAY "Age minimum :" SPACE GAGE-MIN.
+           DISPLAY "Age maximum :" SPACE AGE-MAX.
+           DISPLAY "Age minimum :" SPACE AGE-MIN.
            DISPLAY SPACE.
            PERFORM START-N-INDIVIDU THRU END-N-INDIVIDU.
            PERFORM START-BE THRU END-BE.
@@ -247,7 +239,7 @@ OCESQL     END-CALL.
            PERFORM UNTIL SQLCODE = 100
 OCESQL*        EXEC SQL
 OCESQL*            FETCH CRSAGE
-OCESQL*            INTO :GAGE-GRP-AGE, :GAGE-NB-IND
+OCESQL*            INTO :DBK-AGE, :AGE-COUNT
 OCESQL*        END-EXEC
 OCESQL     CALL "OCESQLStartSQL"
 OCESQL     END-CALL
@@ -255,13 +247,13 @@ OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 1
 OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GAGE-GRP-AGE
+OCESQL          BY REFERENCE DBK-AGE
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 1
 OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GAGE-NB-IND
+OCESQL          BY REFERENCE AGE-COUNT
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLCursorFetchOne" USING
 OCESQL          BY REFERENCE SQLCA
@@ -272,7 +264,7 @@ OCESQL     END-CALL
 
                EVALUATE SQLCODE
                    WHEN ZERO
-                       DISPLAY GAGE-GRP-AGE SPACE "|" SPACE GAGE-NB-IND
+                       DISPLAY DBK-AGE SPACE "|" SPACE AGE-COUNT
                    WHEN 100
                        DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER
@@ -326,7 +318,8 @@ OCESQL     END-CALL.
            PERFORM UNTIL SQLCODE = 100
 OCESQL*        EXEC SQL
 OCESQL*            FETCH CRSBE
-OCESQL*            INTO :GBE-FN, :GBE-LN, :GBE-MAIL, :GBE-PH
+OCESQL*            INTO :DBK-FIRSTNAME, :DBK-LASTNAME, :DBK-EMAIL, 
+OCESQL*            :P-PHRASE
 OCESQL*        END-EXEC
 OCESQL     CALL "OCESQLStartSQL"
 OCESQL     END-CALL
@@ -334,25 +327,25 @@ OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
 OCESQL          BY VALUE 50
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GBE-FN
+OCESQL          BY REFERENCE DBK-FIRSTNAME
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
 OCESQL          BY VALUE 50
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GBE-LN
+OCESQL          BY REFERENCE DBK-LASTNAME
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
 OCESQL          BY VALUE 50
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GBE-MAIL
+OCESQL          BY REFERENCE DBK-EMAIL
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
 OCESQL          BY VALUE 50
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GBE-PH
+OCESQL          BY REFERENCE P-PHRASE
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLCursorFetchOne" USING
 OCESQL          BY REFERENCE SQLCA
@@ -363,10 +356,10 @@ OCESQL     END-CALL
 
                EVALUATE SQLCODE
                    WHEN ZERO
-                       DISPLAY FUNCTION TRIM(GBE-FN) 
-                       SPACE "|" SPACE FUNCTION TRIM(GBE-FN)
-                       SPACE "|" SPACE FUNCTION TRIM(GBE-MAIL)
-                       SPACE "|" SPACE FUNCTION TRIM(GBE-PH)
+                       DISPLAY FUNCTION TRIM(DBK-FIRSTNAME) 
+                       SPACE "|" SPACE FUNCTION TRIM(DBK-LASTNAME)
+                       SPACE "|" SPACE FUNCTION TRIM(DBK-EMAIL)
+                       SPACE "|" SPACE FUNCTION TRIM(P-PHRASE)
                    WHEN 100
                        DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER
