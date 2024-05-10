@@ -31,9 +31,9 @@
            03 PNT-BLANK PIC X(20).
 
        01  GROUP-AGE.
-           03 GAGE-MAX PIC 9(10).
-           03 GAGE-MIN PIC 9(10).
-           03 GAGE-MED PIC 9(10).
+           03 AGE-MAX PIC 9(10).
+           03 AGE-MIN PIC 9(10).
+           03 AGE-MED PIC 9(10).
 
        01  GROUP-AVG-GENDER.
            03 GD-COUNTRY         PIC X(50).
@@ -106,7 +106,7 @@
            EXEC SQL
                SELECT MAX(age), MIN(age), 
                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY age) 
-               INTO :GAGE-MAX, :GAGE-MIN, :GAGE-MED 
+               INTO :AGE-MAX, :AGE-MIN, :AGE-MED 
                FROM databank
            END-EXEC.
            EXEC SQL
@@ -136,9 +136,9 @@
 
       ******************************************************************
        START-PRINT.
-           DISPLAY "Age maximum :" SPACE GAGE-MAX.
-           DISPLAY "Age minimum :" SPACE GAGE-MIN.
-           DISPLAY "Age median :"  SPACE GAGE-MED.
+           DISPLAY "Age maximum :" SPACE AGE-MAX.
+           DISPLAY "Age minimum :" SPACE AGE-MIN.
+           DISPLAY "Age median :"  SPACE AGE-MED.
            DISPLAY SPACE.
            PERFORM START-AVG-GENDER THRU END-AVG-GENDER.
        END-PRINT.
