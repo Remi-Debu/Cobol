@@ -57,7 +57,7 @@
                PERFORM ERROR-RTN-START THRU ERROR-RTN-END
            END-IF.
                
-           PERFORM START-SQL-TBL-DATABANK THRU END-SQL-TBL-DATABANK.
+           PERFORM START-SQL-REQUEST THRU END-SQL-REQUEST.
            PERFORM START-PRINT THRU END-PRINT.
 
        MAIN-END.
@@ -92,7 +92,7 @@
            EXIT. 
 
       ******************************************************************
-       START-SQL-TBL-DATABANK.
+       START-SQL-REQUEST.
            EXEC SQL
                SELECT MAX(age) INTO :GAGE-MAX FROM databank
            END-EXEC.
@@ -109,11 +109,11 @@
            EXEC SQL
                DECLARE CRSBE CURSOR FOR
                SELECT db.first_name, db.last_name, db.email, ph.phrase
-               FROM databank as db
-               JOIN phrase as ph ON db.country_code = ph.country_code
-               WHERE db.country = "Belgium"
+               FROM databank AS db
+               JOIN phrase AS ph ON db.country_code = ph.country_code
+               WHERE db.country = 'Belgium'
            END-EXEC.
-       END-SQL-TBL-DATABANK.
+       END-SQL-REQUEST.
            EXIT. 
 
       ******************************************************************
@@ -121,8 +121,16 @@
            DISPLAY "Age maximum :" SPACE GAGE-MAX.
            DISPLAY "Age minimum :" SPACE GAGE-MIN.
            DISPLAY SPACE.
+           PERFORM START-N-INDIVIDU THRU END-N-INDIVIDU.
+           PERFORM START-BE THRU END-BE.
+       END-PRINT.
+           EXIT.
 
-      *****
+
+      ******************************************************************
+      *    Affiche le nombre d’individus par âge.                      *
+      ******************************************************************
+       START-N-INDIVIDU.
            DISPLAY "Age" SPACE "|" SPACE "Nombre d'individus".
 
            EXEC SQL  
@@ -133,7 +141,7 @@
            WHEN ZERO
               CONTINUE
            WHEN OTHER
-              DISPLAY "ERROR OPENING CURSOR CRSAGE"
+              DISPLAY "ERROR OPENING CURSOR CRSAGE :" SPACE SQLCODE
            END-EVALUATE.
 
            PERFORM UNTIL SQLCODE = 100
@@ -146,9 +154,10 @@
                    WHEN ZERO
                        DISPLAY GAGE-GRP-AGE SPACE "|" SPACE GAGE-NB-IND
                    WHEN 100
-                       DISPLAY 'NO MORE ROWS IN CURSOR RESULT SET'
+                       DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER
-                       DISPLAY 'ERROR FETCHING CURSOR CRSAGE'
+                       DISPLAY "ERROR FETCHING CURSOR CRSAGE :"
+                       SPACE SQLCODE
                END-EVALUATE
            END-PERFORM.
 
@@ -161,11 +170,19 @@
                WHEN ZERO
                    CONTINUE
                WHEN OTHER
-                   DISPLAY 'ERROR CLOSING CURSOR CRSAGE'
+                   DISPLAY "ERROR CLOSING CURSOR CRSAGE :"
+                   SPACE SQLCODE
            END-EVALUATE.
+       END-N-INDIVIDU.
+           EXIT.
 
-      *****
-           DISPLAY SPACE
+      ******************************************************************
+      *    Affiche le le nom, prénom, email et citation pour           *
+      *    les individus de Belgique.                                  *
+      ******************************************************************
+       START-BE.
+           DISPLAY SPACE.
+           DISPLAY "Prenom | Nom | Email | Phrase"
            EXEC SQL  
                OPEN CRSBE    
            END-EXEC.
@@ -174,7 +191,7 @@
            WHEN ZERO
               CONTINUE
            WHEN OTHER
-              DISPLAY "ERROR OPENING CURSOR CRSBE"
+              DISPLAY "ERROR OPENING CURSOR CRSBE :" SPACE SQLCODE
            END-EVALUATE.
 
            PERFORM UNTIL SQLCODE = 100
@@ -185,15 +202,15 @@
 
                EVALUATE SQLCODE
                    WHEN ZERO
-                       DISPLAY GBE-FN 
-                       SPACE "|" SPACE GBE-FN
-                       SPACE "|" SPACE GBE-MAIL
-                       SPACE "|" SPACE GBE-PH
-
+                       DISPLAY FUNCTION TRIM(GBE-FN) 
+                       SPACE "|" SPACE FUNCTION TRIM(GBE-FN)
+                       SPACE "|" SPACE FUNCTION TRIM(GBE-MAIL)
+                       SPACE "|" SPACE FUNCTION TRIM(GBE-PH)
                    WHEN 100
-                       DISPLAY 'NO MORE ROWS IN CURSOR RESULT SET'
+                       DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER
-                       DISPLAY 'ERROR FETCHING CURSOR CRSBE'
+                       DISPLAY "ERROR FETCHING CURSOR CRSBE :" 
+                       SPACE SQLCODE
                END-EVALUATE
            END-PERFORM.
 
@@ -206,8 +223,9 @@
                WHEN ZERO
                    CONTINUE
                WHEN OTHER
-                   DISPLAY 'ERROR CLOSING CURSOR CRSBE'
+                   DISPLAY "ERROR CLOSING CURSOR CRSBE :"
+                   SPACE SQLCODE
            END-EVALUATE.
-       END-PRINT.
+       END-BE.
            EXIT.
 
