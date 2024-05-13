@@ -12,23 +12,6 @@ OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
        01  DBNAME                    PIC  X(30) VALUE 'dgse'.
        01  USERNAME                  PIC  X(30) VALUE 'cobol'.
        01  PASSWD                    PIC  X(10) VALUE 'cbl85'.
- 
-       01  SQL-PHRASE. 
-           03 P-ID                   PIC X(40).
-           03 P-FIRSTNAME            PIC X(50).
-           03 P-PHRASE               PIC X(50).
-
-       01  SQL-DATABANK.
-           03 DBK-ID                 PIC X(40).
-           03 DBK-FIRSTNAME          PIC X(50).
-           03 DBK-LASTNAME           PIC X(50).
-           03 DBK-EMAIL              PIC X(50).
-           03 DBK-GENDER             PIC X(50).
-           03 DBK-AGE                PIC 9(10).
-           03 DBK-SPOKEN             PIC X(50).
-           03 DBK-COUNTRY            PIC X(50).
-           03 DBK-COUNTRY-CODE       PIC X(50).
-           03 DBK-INFO-MOBILEPHONE   PIC X(50).
 OCESQL*EXEC SQL END DECLARE SECTION END-EXEC.
 
 OCESQL*EXEC SQL INCLUDE SQLCA END-EXEC.

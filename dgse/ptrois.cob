@@ -20,32 +20,45 @@
        FD  F-RAPPORT
            RECORD CONTAINS 100 CHARACTERS
            RECORDING MODE IS F.
-       01  R-RAPPORT PIC X(100).
+       01  R-RAPPORT PIC X(200).
 
        WORKING-STORAGE SECTION.
        01  FS-RAPPORT PIC X(02).
            88 FS-RAPPOT-OK VALUE "00".
 
        01  PRINT.
-           03 PNT-AST PIC X(50).
-           03 PNT-BLANK PIC X(20).
+           03 PNT-AST   PIC X(134) VALUE ALL "*".
+           03 PNT-BLANK PIC X(51).
+           03 PNT-TITLE PIC X(31) 
+           VALUE "PROPORTIONS DES GENRES PAR PAYS".
+           03 PNT-NUM   PIC Z(09)9.
 
        01  GROUP-AGE.
-           03  GAGE-MAX PIC 9(10).
-           03  GAGE-MIN PIC 9(10).
-           03  GAGE-MED PIC 9(10).
+           03 AGE-MAX PIC 9(10).
+           03 AGE-MIN PIC 9(10).
+           03 AGE-MED PIC 9(10).
 
        01  GROUP-AVG-GENDER.
-           03 GD-COUNTRY         PIC X(50).
-           03 GD-TOTAL           PIC X(05).
-           03 GD-AVG-AGENDER     PIC X(05).
-           03 GD-AVG-BIGENDER    PIC X(05).
-           03 GD-AVG-FEMALE      PIC X(05).
-           03 GD-AVG-GENDERFLUID PIC X(05).
-           03 GD-AVG-GENDERQUEER PIC X(05).
-           03 GD-AVG-MALE        PIC X(05).
-           03 GD-AVG-NONBINARY   PIC X(05).
-           03 GD-AVG-POLYGENDER  PIC X(05).
+           03 GD-COUNTRY         PIC X(20) VALUE "------COUNTRY-------".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-TOTAL           PIC X(07) VALUE "-TOTAL-".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-AGENDER     PIC X(09) VALUE "-AGENDER-".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-BIGENDER    PIC X(10) VALUE "-BIGENDER-".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-FEMALE      PIC X(08) VALUE "-FEMALE-".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-GENDERFLUID PIC X(14) VALUE "-GENDER-FLUID-".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-GENDERQUEER PIC X(14) VALUE "-GENDER-QUEER-".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-MALE        PIC X(07) VALUE "-MALE--".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-NONBINARY   PIC X(12) VALUE "-NON-BINARY-".
+           03 FILLER             PIC X(02) VALUE "||".
+           03 GD-AVG-POLYGENDER  PIC X(13) VALUE "-POLY-GENDER-".
+           03 FILLER             PIC X(02) VALUE "||".
 
 OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
        01  DBNAME   PIC  X(30) VALUE 'dgse'.
@@ -107,7 +120,9 @@ OCESQL     END-CALL.
            END-IF.
                
            PERFORM START-SQL-REQUEST THRU END-SQL-REQUEST.
-           PERFORM START-PRINT THRU END-PRINT.
+           PERFORM START-RAPPORT-HEADER THRU END-RAPPORT-HEADER.
+           PERFORM START-AVG-GENDER THRU END-AVG-GENDER.
+           PERFORM START-RAPPORT-FOOTER THRU END-RAPPORT-FOOTER.
 
        MAIN-END.
 OCESQL*    EXEC SQL COMMIT WORK END-EXEC.
@@ -164,7 +179,7 @@ OCESQL     END-CALL
 OCESQL*    EXEC SQL
 OCESQL*        SELECT MAX(age), MIN(age), 
 OCESQL*        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY age) 
-OCESQL*        INTO :GAGE-MAX, :GAGE-MIN, :GAGE-MED 
+OCESQL*        INTO :AGE-MAX, :AGE-MIN, :AGE-MED 
 OCESQL*        FROM databank
 OCESQL*    END-EXEC.
 OCESQL     CALL "OCESQLStartSQL"
@@ -173,19 +188,19 @@ OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 1
 OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GAGE-MAX
+OCESQL          BY REFERENCE AGE-MAX
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 1
 OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GAGE-MIN
+OCESQL          BY REFERENCE AGE-MIN
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 1
 OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
-OCESQL          BY REFERENCE GAGE-MED
+OCESQL          BY REFERENCE AGE-MED
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLExecSelectIntoOne" USING
 OCESQL          BY REFERENCE SQLCA
@@ -227,11 +242,10 @@ OCESQL     END-CALL.
 
       ******************************************************************
        START-PRINT.
-           DISPLAY "Age maximum :" SPACE GAGE-MAX.
-           DISPLAY "Age minimum :" SPACE GAGE-MIN.
-           DISPLAY "Age median :"  SPACE GAGE-MED.
+           DISPLAY "Age maximum :" SPACE AGE-MAX.
+           DISPLAY "Age minimum :" SPACE AGE-MIN.
+           DISPLAY "Age median :"  SPACE AGE-MED.
            DISPLAY SPACE.
-           PERFORM START-AVG-GENDER THRU END-AVG-GENDER.
        END-PRINT.
            EXIT.
 
@@ -239,8 +253,6 @@ OCESQL     END-CALL.
       *    Affiche le pourcentage de genre par pays.                   *
       ******************************************************************
        START-AVG-GENDER.
-      *     DISPLAY "Age" SPACE "|" SPACE "Nombre d'individus".
-
 OCESQL*    EXEC SQL  
 OCESQL*        OPEN CRGENDER    
 OCESQL*    END-EXEC.
@@ -269,61 +281,61 @@ OCESQL     CALL "OCESQLStartSQL"
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 50
+OCESQL          BY VALUE 20
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-COUNTRY
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 7
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-TOTAL
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 9
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-AGENDER
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 10
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-BIGENDER
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 8
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-FEMALE
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 14
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-GENDERFLUID
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 14
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-GENDERQUEER
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 7
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-MALE
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 12
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-NONBINARY
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetResultParams" USING
 OCESQL          BY VALUE 16
-OCESQL          BY VALUE 5
+OCESQL          BY VALUE 13
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE GD-AVG-POLYGENDER
 OCESQL     END-CALL
@@ -336,7 +348,7 @@ OCESQL     END-CALL
 
                EVALUATE SQLCODE
                    WHEN ZERO
-                       PERFORM START-RAPPORT THRU END-RAPPORT
+                       PERFORM START-RAPPORT-BODY THRU END-RAPPORT-BODY
                    WHEN 100
                        DISPLAY "NO MORE ROWS IN CURSOR RESULT SET"
                    WHEN OTHER
@@ -365,18 +377,67 @@ OCESQL    .
        END-AVG-GENDER.
            EXIT.
 
-       START-RAPPORT.
-           DISPLAY GD-COUNTRY
-           SPACE "|" SPACE GD-TOTAL
-           SPACE "|" SPACE GD-AVG-AGENDER 
-           SPACE "|" SPACE GD-AVG-BIGENDER
-           SPACE "|" SPACE GD-AVG-FEMALE
-           SPACE "|" SPACE GD-AVG-GENDERFLUID
-           SPACE "|" SPACE GD-AVG-GENDERQUEER
-           SPACE "|" SPACE GD-AVG-MALE
-           SPACE "|" SPACE GD-AVG-NONBINARY
-           SPACE "|" SPACE GD-AVG-POLYGENDER.
-       END-RAPPORT.
+      ******************************************************************
+       START-RAPPORT-HEADER.
+           OPEN OUTPUT F-RAPPORT.
+           WRITE R-RAPPORT FROM PNT-AST.
+
+           INITIALIZE R-RAPPORT.
+           STRING PNT-BLANK PNT-TITLE DELIMITED BY SIZE INTO R-RAPPORT.
+           WRITE R-RAPPORT.
+
+           WRITE R-RAPPORT FROM PNT-AST.
+           WRITE R-RAPPORT FROM PNT-BLANK.
+
+           WRITE R-RAPPORT FROM GROUP-AVG-GENDER.
+
+           CLOSE F-RAPPORT.
+       END-RAPPORT-HEADER.
+           EXIT.
+
+      ****************************************************************** 
+       START-RAPPORT-BODY.
+           INITIALIZE R-RAPPORT.
+           OPEN EXTEND F-RAPPORT.
+           MOVE GROUP-AVG-GENDER TO R-RAPPORT.
+           WRITE R-RAPPORT.
+           CLOSE F-RAPPORT.
+       END-RAPPORT-BODY.
+           EXIT.
+
+      ******************************************************************
+       START-RAPPORT-FOOTER.
+           OPEN EXTEND F-RAPPORT.
+           WRITE R-RAPPORT FROM PNT-BLANK.
+           WRITE R-RAPPORT FROM PNT-AST.
+
+           INITIALIZE R-RAPPORT.
+           INITIALIZE PNT-NUM.
+           MOVE AGE-MAX TO PNT-NUM.
+           STRING "Age maximum :" SPACE FUNCTION TRIM(PNT-NUM) 
+           DELIMITED BY SIZE
+           INTO R-RAPPORT.
+           WRITE R-RAPPORT.
+
+           INITIALIZE R-RAPPORT.
+           INITIALIZE PNT-NUM.
+           MOVE AGE-MIN TO PNT-NUM.
+           STRING "Age minimum :" SPACE FUNCTION TRIM(PNT-NUM) 
+           DELIMITED BY SIZE
+           INTO R-RAPPORT.
+           WRITE R-RAPPORT.
+
+           INITIALIZE R-RAPPORT.
+           INITIALIZE PNT-NUM.
+           MOVE AGE-MED TO PNT-NUM.
+           STRING "Age median  :"  SPACE FUNCTION TRIM(PNT-NUM) 
+           DELIMITED BY SIZE
+           INTO R-RAPPORT.
+           WRITE R-RAPPORT.
+
+           WRITE R-RAPPORT FROM PNT-AST.
+           CLOSE F-RAPPORT.
+       END-RAPPORT-FOOTER.
            EXIT.
 
 
