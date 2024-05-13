@@ -241,15 +241,6 @@ OCESQL     END-CALL.
            EXIT. 
 
       ******************************************************************
-       START-PRINT.
-           DISPLAY "Age maximum :" SPACE AGE-MAX.
-           DISPLAY "Age minimum :" SPACE AGE-MIN.
-           DISPLAY "Age median :"  SPACE AGE-MED.
-           DISPLAY SPACE.
-       END-PRINT.
-           EXIT.
-
-      ******************************************************************
       *    Affiche le pourcentage de genre par pays.                   *
       ******************************************************************
        START-AVG-GENDER.
