@@ -45,21 +45,24 @@
            88 FS-INPUT-EOF VALUE '10'.
 
 OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
-       01  DBNAME   PIC  X(30) VALUE 'school'.
-       01  USERNAME PIC  X(30) VALUE 'cobol'.
-       01  PASSWD   PIC  X(10) VALUE 'cbl85'.
+       01  DBNAME              PIC  X(30) VALUE 'school'.
+       01  USERNAME            PIC  X(30) VALUE 'cobol'.
+       01  PASSWD              PIC  X(10) VALUE 'cbl85'.
 
        01  SQL-STUDENT.
-           05  SQL-S-LASTNAME           PIC X(07).
-           05  SQL-S-FIRSTNAME          PIC X(06).
-           05  SQL-S-AGE                PIC 9(03).
+           03 SQL-S-LASTNAME   PIC X(07).
+           03 SQL-S-FIRSTNAME  PIC X(06).
+           03 SQL-S-AGE        PIC 9(02).
        
        01  SQL-COURSE.
-           05  SQL-C-LABEL              PIC X(35).
-           05  SQL-C-COEF               PIC 9V9.
+           05 SQL-C-LABEL      PIC X(21).
+           05 SQL-C-COEF       PIC 9V9.
 
+       01  SQL-GRADE.
+           03 SQL-G-STUDENT-ID PIC 9.
+           03 SQL-G-COURSE-ID  PIC 9.
+           03 SQL-G-GRADE      PIC 99V99.
 OCESQL*EXEC SQL END DECLARE SECTION END-EXEC.
-
 OCESQL*EXEC SQL INCLUDE SQLCA END-EXEC.
 OCESQL     copy "sqlca.cbl".
 
@@ -70,36 +73,34 @@ OCESQL     02  FILLER PIC X(014) VALUE "DISCONNECT ALL".
 OCESQL     02  FILLER PIC X(1) VALUE X"00".
 OCESQL*
 OCESQL 01  SQ0002.
-OCESQL     02  FILLER PIC X(028) VALUE "DROP TABLE IF EXISTS STUDENT".
-OCESQL     02  FILLER PIC X(1) VALUE X"00".
-OCESQL*
-OCESQL 01  SQ0003.
-OCESQL     02  FILLER PIC X(212) VALUE "CREATE TABLE STUDENT ( ID SERI"
-OCESQL  &  "AL, LASTNAME CHAR(35) NOT NULL DEFAULT 'DUPOND', FIRSTNAME"
-OCESQL  &  " CHAR(35) NOT NULL DEFAULT 'MonsieurMadame', AGE SMALLINT("
-OCESQL  &  "3) NOT NULL DEFAULT 99, CONSTRAINT STUDENT_ID_0 PRIMARY KE"
-OCESQL  &  "Y (ID) )".
-OCESQL     02  FILLER PIC X(1) VALUE X"00".
-OCESQL*
-OCESQL 01  SQ0004.
-OCESQL     02  FILLER PIC X(027) VALUE "DROP TABLE IF EXISTS COURSE".
-OCESQL     02  FILLER PIC X(1) VALUE X"00".
-OCESQL*
-OCESQL 01  SQ0005.
-OCESQL     02  FILLER PIC X(157) VALUE "CREATE TABLE COURSE ( ID SERIA"
-OCESQL  &  "L, LABEL CHAR(35) NOT NULL DEFAULT 'Manquant', COEF NUMERI"
-OCESQL  &  "C(3, 1) NOT NULL DEFAULT 1, CONSTRAINT COURSE_ID_0 PRIMARY"
-OCESQL  &  " KEY (ID) )".
-OCESQL     02  FILLER PIC X(1) VALUE X"00".
-OCESQL*
-OCESQL 01  SQ0006.
 OCESQL     02  FILLER PIC X(068) VALUE "INSERT INTO STUDENT (LASTNAME,"
 OCESQL  &  " FIRSTNAME, AGE) VALUES ( $1, $2, $3 )".
 OCESQL     02  FILLER PIC X(1) VALUE X"00".
 OCESQL*
+OCESQL 01  SQ0003.
+OCESQL     02  FILLER PIC X(105) VALUE "INSERT INTO COURSE (LABEL, COE"
+OCESQL  &  "F) SELECT $1, $2 WHERE NOT EXISTS ( SELECT 1 FROM COURSE W"
+OCESQL  &  "HERE LABEL = $3 )".
+OCESQL     02  FILLER PIC X(1) VALUE X"00".
+OCESQL*
+OCESQL 01  SQ0004.
+OCESQL     02  FILLER PIC X(069) VALUE "SELECT STUDENT.ID FROM STUDENT"
+OCESQL  &  " WHERE LASTNAME = $1 AND FIRSTNAME = $2".
+OCESQL     02  FILLER PIC X(1) VALUE X"00".
+OCESQL*
+OCESQL 01  SQ0005.
+OCESQL     02  FILLER PIC X(045) VALUE "SELECT COURSE.ID FROM COURSE W"
+OCESQL  &  "HERE LABEL = $1".
+OCESQL     02  FILLER PIC X(1) VALUE X"00".
+OCESQL*
+OCESQL 01  SQ0006.
+OCESQL     02  FILLER PIC X(070) VALUE "INSERT INTO GRADE (STUDENT_ID,"
+OCESQL  &  " COURSE_ID, GRADE) VALUES ( $1, $2, $3 )".
+OCESQL     02  FILLER PIC X(1) VALUE X"00".
+OCESQL*
        PROCEDURE DIVISION.
       ******************************************************************
-       1000-MAIN-START.
+       0000-MAIN-START.
 OCESQL*    EXEC SQL
 OCESQL*        CONNECT :USERNAME IDENTIFIED BY :PASSWD USING :DBNAME 
 OCESQL*    END-EXEC.
@@ -113,18 +114,15 @@ OCESQL          BY REFERENCE DBNAME
 OCESQL          BY VALUE 30
 OCESQL     END-CALL.
 
-           IF  SQLCODE NOT = ZERO 
-               PERFORM 1001-ERROR-RTN-START
-                   THRU 1001-ERROR-RTN-END
+           IF SQLCODE NOT = ZERO 
+               PERFORM 1000-START-ERROR-RTN
+                  THRU END-1000-ERROR-RTN
            END-IF.
            
-           PERFORM 3001-SQL-TBL-CREATION-START
-               THRU 3001-SQL-TBL-CREATION-END.
-           
-           PERFORM 7001-FILE-READ-START
-               THRU 7001-FILE-READ-END.
+           PERFORM 2000-START-FILE-READ
+              THRU END-2000-FILE-READ.
 
-       1000-MAIN-END.
+       END-0000-MAIN.
 OCESQL*    EXEC SQL COMMIT WORK END-EXEC.
 OCESQL     CALL "OCESQLStartSQL"
 OCESQL     END-CALL
@@ -141,7 +139,7 @@ OCESQL     END-CALL.
            STOP RUN. 
 
       ******************************************************************
-       1001-ERROR-RTN-START.
+       1000-START-ERROR-RTN.
            DISPLAY "*** SQL ERROR ***".
            DISPLAY "SQLCODE: " SQLCODE SPACE.
            EVALUATE SQLCODE
@@ -171,83 +169,43 @@ OCESQL     END-CALL
                  DISPLAY "ERRCODE:" SPACE SQLSTATE
                  DISPLAY SQLERRMC
            END-EVALUATE.
-       1001-ERROR-RTN-END.
+       END-1000-ERROR-RTN.
            STOP RUN. 
 
       ******************************************************************
-       3001-SQL-TBL-CREATION-START.
-OCESQL*    EXEC SQL 
-OCESQL*        DROP TABLE IF EXISTS STUDENT
-OCESQL*    END-EXEC.
-OCESQL     CALL "OCESQLExec" USING
-OCESQL          BY REFERENCE SQLCA
-OCESQL          BY REFERENCE SQ0002
-OCESQL     END-CALL.
-OCESQL*    EXEC SQL 
-OCESQL*        CREATE TABLE STUDENT
-OCESQL*        (
-OCESQL*            ID        SERIAL,
-OCESQL*            LASTNAME  CHAR(35) NOT NULL DEFAULT 'DUPOND',
-OCESQL*            FIRSTNAME CHAR(35) NOT NULL DEFAULT 'MonsieurMadame',
-OCESQL*            AGE       SMALLINT(3) NOT NULL DEFAULT 99,
-OCESQL*            CONSTRAINT STUDENT_ID_0 PRIMARY KEY (ID)
-OCESQL*        )               
-OCESQL*    END-EXEC.
-OCESQL     CALL "OCESQLExec" USING
-OCESQL          BY REFERENCE SQLCA
-OCESQL          BY REFERENCE SQ0003
-OCESQL     END-CALL.
-OCESQL*    EXEC SQL 
-OCESQL*        DROP TABLE IF EXISTS COURSE
-OCESQL*    END-EXEC.
-OCESQL     CALL "OCESQLExec" USING
-OCESQL          BY REFERENCE SQLCA
-OCESQL          BY REFERENCE SQ0004
-OCESQL     END-CALL.
-OCESQL*    EXEC SQL 
-OCESQL*        CREATE TABLE COURSE
-OCESQL*        (
-OCESQL*            ID        SERIAL,
-OCESQL*            LABEL     CHAR(35) NOT NULL DEFAULT 'Manquant',
-OCESQL*            COEF      NUMERIC(3,1) NOT NULL DEFAULT 1,
-OCESQL*            CONSTRAINT COURSE_ID_0 PRIMARY KEY (ID)
-OCESQL*        )               
-OCESQL*    END-EXEC.
-OCESQL     CALL "OCESQLExec" USING
-OCESQL          BY REFERENCE SQLCA
-OCESQL          BY REFERENCE SQ0005
-OCESQL     END-CALL.
-
-       3001-SQL-TBL-CREATION-END.
-
-      ******************************************************************
-       7001-FILE-READ-START.
+       2000-START-FILE-READ.
            OPEN INPUT F-INPUT.
            IF NOT FS-INPUT-OK
                DISPLAY 'ABORT POPULATING TABLE'
-               GO TO 7001-FILE-READ-END
+               GO TO END-2000-FILE-READ
            END-IF.
            
            PERFORM UNTIL FS-INPUT-EOF
                READ F-INPUT
                EVALUATE REC-F-INPUT-2
                    WHEN '01'
-                       PERFORM 7101-FILE-HANDLE-STUDENT-START
-                           THRU 7101-FILE-HANDLE-STUDENT-END
+                       PERFORM 2100-START-HANDLE-STUDENT
+                           THRU END-2100-HANDLE-STUDENT
+                   WHEN "02"
+                       PERFORM 2100-START-HANDLE-COURSE 
+                          THRU END-2100-HANDLE-COURSE
+                   PERFORM 2100-START-HANDLE-GRADE 
+                          THRU END-2100-HANDLE-GRADE
                    WHEN OTHER
                        CONTINUE
                END-EVALUATE
            END-PERFORM.
-       7001-FILE-READ-END.
+       END-2000-FILE-READ.
            CLOSE F-INPUT.
+           EXIT.
 
       ******************************************************************
-       7101-FILE-HANDLE-STUDENT-START.
-           MOVE R-S-LASTNAME TO SQL-S-LASTNAME.
+       2100-START-HANDLE-STUDENT.
+           MOVE R-S-LASTNAME  TO SQL-S-LASTNAME.
            MOVE R-S-FIRSTNAME TO SQL-S-FIRSTNAME.
-           MOVE R-S-AGE TO SQL-S-AGE.
-           DISPLAY SQL-S-AGE.
+           MOVE R-S-AGE       TO SQL-S-AGE.
 
+      *    Ajoute un nouveau étudiant.
 OCESQL*    EXEC SQL
 OCESQL*        INSERT INTO STUDENT (LASTNAME,FIRSTNAME,AGE) 
 OCESQL*        VALUES (
@@ -272,9 +230,169 @@ OCESQL          BY REFERENCE SQL-S-FIRSTNAME
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetSQLParams" USING
 OCESQL          BY VALUE 1
-OCESQL          BY VALUE 3
+OCESQL          BY VALUE 2
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE SQL-S-AGE
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLExecParams" USING
+OCESQL          BY REFERENCE SQLCA
+OCESQL          BY REFERENCE SQ0002
+OCESQL          BY VALUE 3
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLEndSQL"
+OCESQL     END-CALL.
+       END-2100-HANDLE-STUDENT.
+           EXIT.
+
+      ******************************************************************
+       2100-START-HANDLE-COURSE.
+           MOVE R-C-LABEL TO SQL-C-LABEL.
+           MOVE R-C-COEF  TO SQL-C-COEF.
+           
+      *    Ajoute un nouveau cours si le label n'existe pas
+OCESQL*    EXEC SQL
+OCESQL*        INSERT INTO COURSE (LABEL, COEF)
+OCESQL*        SELECT :SQL-C-LABEL, :SQL-C-COEF
+OCESQL*        WHERE NOT EXISTS (
+OCESQL*            SELECT 1
+OCESQL*            FROM COURSE
+OCESQL*            WHERE LABEL = :SQL-C-LABEL
+OCESQL*            )
+OCESQL*    END-EXEC.
+OCESQL     CALL "OCESQLStartSQL"
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 16
+OCESQL          BY VALUE 21
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-C-LABEL
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 2
+OCESQL          BY VALUE -1
+OCESQL          BY REFERENCE SQL-C-COEF
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 16
+OCESQL          BY VALUE 21
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-C-LABEL
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLExecParams" USING
+OCESQL          BY REFERENCE SQLCA
+OCESQL          BY REFERENCE SQ0003
+OCESQL          BY VALUE 3
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLEndSQL"
+OCESQL     END-CALL.
+       END-2100-HANDLE-COURSE.
+           EXIT.
+
+      ******************************************************************
+      *    Ajoute une note à la table GRADE avec l'ID de l'étudiant et *
+      *    l'ID du cours qui sont associés à la note.                  *
+      ******************************************************************
+       2100-START-HANDLE-GRADE.
+      *    Récupère l'ID d'un étudiant spécifique basé sur 
+      *    son nom et prénom, 
+      *    et stock cette valeur dans SQL-G-STUDENT-ID
+OCESQL*    EXEC SQL
+OCESQL*           SELECT STUDENT.ID INTO :SQL-G-STUDENT-ID FROM STUDENT
+OCESQL*           WHERE LASTNAME = :SQL-S-LASTNAME 
+OCESQL*           AND FIRSTNAME = :SQL-S-FIRSTNAME
+OCESQL*    END-EXEC.
+OCESQL     CALL "OCESQLStartSQL"
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetResultParams" USING
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-G-STUDENT-ID
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 16
+OCESQL          BY VALUE 7
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-S-LASTNAME
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 16
+OCESQL          BY VALUE 6
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-S-FIRSTNAME
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLExecSelectIntoOne" USING
+OCESQL          BY REFERENCE SQLCA
+OCESQL          BY REFERENCE SQ0004
+OCESQL          BY VALUE 2
+OCESQL          BY VALUE 1
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLEndSQL"
+OCESQL     END-CALL.
+           DISPLAY SQLCODE.
+
+      *    Récupère l'ID d'un cours spécifique basé sur son label, 
+      *    et stock cette valeur dans SQL-G-COURSE-ID
+           MOVE R-C-LABEL TO SQL-C-LABEL.
+OCESQL*    EXEC SQL
+OCESQL*           SELECT COURSE.ID INTO :SQL-G-COURSE-ID FROM COURSE
+OCESQL*           WHERE LABEL = :SQL-C-LABEL
+OCESQL*    END-EXEC.
+OCESQL     CALL "OCESQLStartSQL"
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetResultParams" USING
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-G-COURSE-ID
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 16
+OCESQL          BY VALUE 21
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-C-LABEL
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLExecSelectIntoOne" USING
+OCESQL          BY REFERENCE SQLCA
+OCESQL          BY REFERENCE SQ0005
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 1
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLEndSQL"
+OCESQL     END-CALL.
+
+      *    Ajoute une GRADE en utilisant 
+      *    ID de l'étudiant et du cours récupérés précédemment, 
+      *    ainsi que la note spécifiée.
+           MOVE R-C-GRADE TO SQL-G-GRADE.
+OCESQL*    EXEC SQL
+OCESQL*           INSERT INTO GRADE (STUDENT_ID,COURSE_ID,GRADE) 
+OCESQL*           VALUES (
+OCESQL*               :SQL-G-STUDENT-ID, 
+OCESQL*               :SQL-G-COURSE-ID,
+OCESQL*               :SQL-G-GRADE
+OCESQL*               )
+OCESQL*    END-EXEC.
+OCESQL     CALL "OCESQLStartSQL"
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-G-STUDENT-ID
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 0
+OCESQL          BY REFERENCE SQL-G-COURSE-ID
+OCESQL     END-CALL
+OCESQL     CALL "OCESQLSetSQLParams" USING
+OCESQL          BY VALUE 1
+OCESQL          BY VALUE 4
+OCESQL          BY VALUE -2
+OCESQL          BY REFERENCE SQL-G-GRADE
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLExecParams" USING
 OCESQL          BY REFERENCE SQLCA
@@ -283,7 +401,7 @@ OCESQL          BY VALUE 3
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLEndSQL"
 OCESQL     END-CALL.
-       7101-FILE-HANDLE-STUDENT-END.
-           EXIT.
-
-                            
+       END-2100-HANDLE-GRADE.
+               EXIT.
+               EXIT.
+               EXIT.

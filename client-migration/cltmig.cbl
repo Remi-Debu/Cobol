@@ -45,48 +45,49 @@
            88 FS-INPUT-EOF VALUE '10'.
 
        EXEC SQL BEGIN DECLARE SECTION END-EXEC.
-       01  DBNAME   PIC  X(30) VALUE 'school'.
-       01  USERNAME PIC  X(30) VALUE 'cobol'.
-       01  PASSWD   PIC  X(10) VALUE 'cbl85'.
+       01  DBNAME              PIC  X(30) VALUE 'school'.
+       01  USERNAME            PIC  X(30) VALUE 'cobol'.
+       01  PASSWD              PIC  X(10) VALUE 'cbl85'.
 
        01  SQL-STUDENT.
-           05  SQL-S-LASTNAME           PIC X(07).
-           05  SQL-S-FIRSTNAME          PIC X(06).
-           05  SQL-S-AGE                PIC 9(03).
+           03 SQL-S-LASTNAME   PIC X(07).
+           03 SQL-S-FIRSTNAME  PIC X(06).
+           03 SQL-S-AGE        PIC 9(02).
        
        01  SQL-COURSE.
-           05  SQL-C-LABEL              PIC X(35).
-           05  SQL-C-COEF               PIC 9V9.
-       EXEC SQL END DECLARE SECTION END-EXEC.
+           05 SQL-C-LABEL      PIC X(21).
+           05 SQL-C-COEF       PIC 9V9.
 
+       01  SQL-GRADE.
+           03 SQL-G-STUDENT-ID PIC 9.
+           03 SQL-G-COURSE-ID  PIC 9.
+           03 SQL-G-GRADE      PIC 99V99.
+       EXEC SQL END DECLARE SECTION END-EXEC.
        EXEC SQL INCLUDE SQLCA END-EXEC.
 
       ******************************************************************
        PROCEDURE DIVISION.
       ******************************************************************
-       1000-MAIN-START.
+       0000-MAIN-START.
            EXEC SQL
                CONNECT :USERNAME IDENTIFIED BY :PASSWD USING :DBNAME 
            END-EXEC.
 
            IF SQLCODE NOT = ZERO 
-               PERFORM 1001-ERROR-RTN-START
-                  THRU 1001-ERROR-RTN-END
+               PERFORM 1000-START-ERROR-RTN
+                  THRU END-1000-ERROR-RTN
            END-IF.
            
-           PERFORM 3001-SQL-TBL-CREATION-START
-              THRU 3001-SQL-TBL-CREATION-END.
-           
-           PERFORM 7001-FILE-READ-START
-              THRU 7001-FILE-READ-END.
+           PERFORM 2000-START-FILE-READ
+              THRU END-2000-FILE-READ.
 
-       1000-MAIN-END.
+       END-0000-MAIN.
            EXEC SQL COMMIT WORK END-EXEC.
            EXEC SQL DISCONNECT ALL END-EXEC.  
            STOP RUN. 
 
       ******************************************************************
-       1001-ERROR-RTN-START.
+       1000-START-ERROR-RTN.
            DISPLAY "*** SQL ERROR ***".
            DISPLAY "SQLCODE: " SQLCODE SPACE.
            EVALUATE SQLCODE
@@ -108,66 +109,43 @@
                  DISPLAY "ERRCODE:" SPACE SQLSTATE
                  DISPLAY SQLERRMC
            END-EVALUATE.
-       1001-ERROR-RTN-END.
+       END-1000-ERROR-RTN.
            STOP RUN. 
 
       ******************************************************************
-       3001-SQL-TBL-CREATION-START.
-           EXEC SQL 
-               DROP TABLE IF EXISTS STUDENT
-           END-EXEC.
-           EXEC SQL 
-               CREATE TABLE STUDENT
-               (
-                   ID        SERIAL,
-                   LASTNAME  CHAR(35) NOT NULL DEFAULT 'DUPOND',
-                   FIRSTNAME CHAR(35) NOT NULL DEFAULT 'MonsieurMadame',
-                   AGE       NUMERIC(3) NOT NULL DEFAULT 99,
-                   CONSTRAINT STUDENT_ID_0 PRIMARY KEY (ID)
-               )               
-           END-EXEC.
-           EXEC SQL 
-               DROP TABLE IF EXISTS COURSE
-           END-EXEC.
-           EXEC SQL 
-               CREATE TABLE COURSE
-               (
-                   ID        SERIAL,
-                   LABEL     CHAR(35) NOT NULL DEFAULT 'Manquant',
-                   COEF      NUMERIC(3,1) NOT NULL DEFAULT 1,
-                   CONSTRAINT COURSE_ID_0 PRIMARY KEY (ID)
-               )               
-           END-EXEC.
-       3001-SQL-TBL-CREATION-END.
-
-      ******************************************************************
-       7001-FILE-READ-START.
+       2000-START-FILE-READ.
            OPEN INPUT F-INPUT.
            IF NOT FS-INPUT-OK
                DISPLAY 'ABORT POPULATING TABLE'
-               GO TO 7001-FILE-READ-END
+               GO TO END-2000-FILE-READ
            END-IF.
            
            PERFORM UNTIL FS-INPUT-EOF
                READ F-INPUT
                EVALUATE REC-F-INPUT-2
                    WHEN '01'
-                       PERFORM 7101-FILE-HANDLE-STUDENT-START
-                           THRU 7101-FILE-HANDLE-STUDENT-END
+                       PERFORM 2100-START-HANDLE-STUDENT
+                           THRU END-2100-HANDLE-STUDENT
+                   WHEN "02"
+                       PERFORM 2100-START-HANDLE-COURSE 
+                          THRU END-2100-HANDLE-COURSE
+                   PERFORM 2100-START-HANDLE-GRADE 
+                          THRU END-2100-HANDLE-GRADE
                    WHEN OTHER
                        CONTINUE
                END-EVALUATE
            END-PERFORM.
-       7001-FILE-READ-END.
+       END-2000-FILE-READ.
            CLOSE F-INPUT.
+           EXIT.
 
       ******************************************************************
-       7101-FILE-HANDLE-STUDENT-START.
-           MOVE R-S-LASTNAME TO SQL-S-LASTNAME.
+       2100-START-HANDLE-STUDENT.
+           MOVE R-S-LASTNAME  TO SQL-S-LASTNAME.
            MOVE R-S-FIRSTNAME TO SQL-S-FIRSTNAME.
-           MOVE R-S-AGE TO SQL-S-AGE.
-           DISPLAY SQL-S-AGE.
+           MOVE R-S-AGE       TO SQL-S-AGE.
 
+      *    Ajoute un nouveau étudiant.
            EXEC SQL
                INSERT INTO STUDENT (LASTNAME,FIRSTNAME,AGE) 
                VALUES (
@@ -176,7 +154,61 @@
                    :SQL-S-AGE
                    )
            END-EXEC.
-       7101-FILE-HANDLE-STUDENT-END.
+       END-2100-HANDLE-STUDENT.
            EXIT.
 
-       
+      ******************************************************************
+       2100-START-HANDLE-COURSE.
+           MOVE R-C-LABEL TO SQL-C-LABEL.
+           MOVE R-C-COEF  TO SQL-C-COEF.
+           
+      *    Ajoute un nouveau cours si le label n'existe pas
+           EXEC SQL
+               INSERT INTO COURSE (LABEL, COEF)
+               SELECT :SQL-C-LABEL, :SQL-C-COEF
+               WHERE NOT EXISTS (
+                   SELECT 1
+                   FROM COURSE
+                   WHERE LABEL = :SQL-C-LABEL
+                   )
+           END-EXEC.
+       END-2100-HANDLE-COURSE.
+           EXIT.
+
+      ******************************************************************
+      *    Ajoute une note à la table GRADE avec l'ID de l'étudiant et *
+      *    l'ID du cours qui sont associés à la note.                  *
+      ******************************************************************
+       2100-START-HANDLE-GRADE.
+      *    Récupère l'ID d'un étudiant spécifique basé sur 
+      *    son nom et prénom, 
+      *    et stock cette valeur dans SQL-G-STUDENT-ID
+           EXEC SQL
+                  SELECT STUDENT.ID INTO :SQL-G-STUDENT-ID FROM STUDENT
+                  WHERE LASTNAME = :SQL-S-LASTNAME 
+                  AND FIRSTNAME = :SQL-S-FIRSTNAME
+           END-EXEC.
+           DISPLAY SQLCODE.
+
+      *    Récupère l'ID d'un cours spécifique basé sur son label, 
+      *    et stock cette valeur dans SQL-G-COURSE-ID
+           MOVE R-C-LABEL TO SQL-C-LABEL.
+           EXEC SQL
+                  SELECT COURSE.ID INTO :SQL-G-COURSE-ID FROM COURSE
+                  WHERE LABEL = :SQL-C-LABEL
+           END-EXEC.
+
+      *    Ajoute une GRADE en utilisant 
+      *    ID de l'étudiant et du cours récupérés précédemment, 
+      *    ainsi que la note spécifiée.
+           MOVE R-C-GRADE TO SQL-G-GRADE.
+           EXEC SQL
+                  INSERT INTO GRADE (STUDENT_ID,COURSE_ID,GRADE) 
+                  VALUES (
+                      :SQL-G-STUDENT-ID, 
+                      :SQL-G-COURSE-ID,
+                      :SQL-G-GRADE
+                      )
+           END-EXEC.
+       END-2100-HANDLE-GRADE.
+               EXIT.
