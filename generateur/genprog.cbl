@@ -32,6 +32,10 @@
        01  PRINT.
            03 PNT-BLANK-6   PIC X(06) VALUE ALL SPACES.
            03 PNT-BLANK-7   PIC X(07) VALUE ALL SPACES.
+           03 PNT-BLANK-11  PIC X(11) VALUE ALL SPACES.
+           03 PNT-BLANK-14  PIC X(14) VALUE ALL SPACES.
+           03 PNT-BLANK-17  PIC X(17) VALUE ALL SPACES.
+           03 PNT-BLANK-20  PIC X(20) VALUE ALL SPACES.
            03 PNT-AST       PIC X(66) VALUE ALL "*".
            03 PNT-BLANK-AST PIC X(72).
 
@@ -57,6 +61,10 @@
 
        01  NAME-ENVIRONMENT.
            03 READ-FILE-NAME  PIC X(20).
+
+       01  NAME-DATA.
+           03 RECORD-LENGTH  PIC ZZZZ9.
+           03 RECORDING-MODE PIC X(01).
 
        SCREEN SECTION.
        01  SCREEN-OPTIONS.
@@ -109,7 +117,16 @@
            03 LINE 02 COL 02 VALUE "GENERATEUR DE PROGRAMME".
            03 LINE 04 COL 02 VALUE "ENVIRONMENT DIVISION :".
            03 LINE 05 COL 05 VALUE "READ-FILE-NAME :".
-           03 LINE 05 COL 17 PIC X(22) TO READ-FILE-NAME.
+           03 LINE 05 COL 22 PIC X(22) TO READ-FILE-NAME.
+
+       01  SCREEN-DATA.
+           03 BLANK SCREEN.
+           03 LINE 02 COL 02 VALUE "GENERATEUR DE PROGRAMME".
+           03 LINE 04 COL 02 VALUE "FILE SECTION :".
+           03 LINE 05 COL 05 VALUE "RECORD LENGTH :".
+           03 LINE 06 COL 05 VALUE "RECORDING MODE :".
+           03 LINE 05 COL 22 PIC X(05) TO RECORD-LENGTH.
+           03 LINE 06 COL 22 PIC X(01) TO RECORDING-MODE.
 
       ****************************************************************** 
 
@@ -125,6 +142,15 @@
                PERFORM 3000-START-ENVIRONMENT 
                   THRU END-3000-ENVIRONMENT
            END-IF.
+
+           PERFORM 3000-START-FILE-SECTION
+              THRU END-3000-FILE-SECTION.
+
+           PERFORM 4000-START-WS 
+              THRU END-4000-WS.
+
+           PERFORM 5000-START-PROCEDURE
+              THRU END-5000-PROCEDURE.
        END-0000-MAIN.
            STOP RUN.
 
@@ -144,8 +170,7 @@
            OPEN OUTPUT F-OUTPUT.
 
            STRING PNT-BLANK-6 PNT-AST
-           DELIMITED BY SIZE
-           INTO PNT-BLANK-AST.
+           DELIMITED BY SIZE INTO PNT-BLANK-AST.
 
            WRITE R-OUTPUT FROM PNT-BLANK-AST.
            WRITE R-OUTPUT FROM PNT-BLANK-AST.
@@ -153,22 +178,19 @@
 
            INITIALIZE R-OUTPUT.
            STRING PNT-BLANK-7 "IDENTIFICATION DIVISION."
-           DELIMITED BY SIZE
-           INTO R-OUTPUT.
+           DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
 
            INITIALIZE R-OUTPUT.
            STRING PNT-BLANK-7 "PROGRAM-ID." SPACE 
            FUNCTION TRIM(PROGRAM-ID-NAME) "."
-           DELIMITED BY SIZE
-           INTO R-OUTPUT.
+           DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
        
            INITIALIZE R-OUTPUT.
            STRING PNT-BLANK-7 "AUTHOR." SPACE 
            FUNCTION TRIM(AUTHOR-NAME) "."
-           DELIMITED BY SIZE
-           INTO R-OUTPUT.
+           DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
 
            INITIALIZE R-OUTPUT.
@@ -187,20 +209,17 @@
 
            INITIALIZE R-OUTPUT.
            STRING PNT-BLANK-7 "ENVIRONMENT DIVISION."
-           DELIMITED BY SIZE
-           INTO R-OUTPUT.
+           DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
 
            INITIALIZE R-OUTPUT.
            STRING PNT-BLANK-7 "INPUT-OUTPUT SECTION."
-           DELIMITED BY SIZE
-           INTO R-OUTPUT.
+           DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
 
            INITIALIZE R-OUTPUT.
            STRING PNT-BLANK-7 "FILE-CONTROL."
-           DELIMITED BY SIZE
-           INTO R-OUTPUT.
+           DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
 
            IF OPTION-1 EQUAL 1
@@ -208,28 +227,24 @@
                ACCEPT SCREEN-ENVIRONMENT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-7 'SELECT F-OUTPUT ASSIGN TO "'
+               STRING PNT-BLANK-11 'SELECT F-INPUT ASSIGN TO "'
                FUNCTION TRIM(READ-FILE-NAME) '"'
-               DELIMITED BY SIZE
-               INTO R-OUTPUT
+               DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-7 "ORGANIZATION IS LINE SEQUENTIAL"
-               DELIMITED BY SIZE
-               INTO R-OUTPUT
+               STRING PNT-BLANK-11 "ORGANIZATION IS LINE SEQUENTIAL"
+               DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-7 "ACCESS MODE IS SEQUENTIAL"
-               DELIMITED BY SIZE
-               INTO R-OUTPUT
+               STRING PNT-BLANK-11 "ACCESS MODE IS SEQUENTIAL"
+               DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-7 "FILE STATUS IS FS-OUTPUT."
-               DELIMITED BY SIZE
-               INTO R-OUTPUT
+               STRING PNT-BLANK-11 "FILE STATUS IS FS-INPUT."
+               DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
            END-IF.
 
@@ -240,5 +255,219 @@
        END-3000-ENVIRONMENT.
            EXIT.
 
-
+      ******************************************************************
+       3000-START-FILE-SECTION.
+           OPEN EXTEND F-OUTPUT.
            
+           WRITE R-OUTPUT FROM PNT-BLANK-AST.
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-7 "DATA DIVISION."
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           IF OPTION-1 EQUAL 1
+               DISPLAY SCREEN-DATA
+               ACCEPT SCREEN-DATA
+           
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "FILE SECTION."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "FD F-INPUT"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "RECORD CONTAINS" SPACE 
+               FUNCTION TRIM(RECORD-LENGTH) SPACE "CHARACTERS"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "RECORDING MODE IS" SPACE 
+               RECORDING-MODE "."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "01  R-INPUT PIC X(" 
+               FUNCTION TRIM(RECORD-LENGTH) ")."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+           END-IF.
+
+           CLOSE F-OUTPUT.    
+       END-3000-FILE-SECTION.
+
+      ******************************************************************
+       4000-START-WS.
+           OPEN EXTEND F-OUTPUT.
+
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-7 "WORKING-STORAGE SECTION."
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           IF OPTION-1 EQUAL 1
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "01  FS-INPUT PIC X(02)."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 '88 FS-INPUT-OK VALUE "00".'
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 '88 FS-INPUT-EOF VALUE "10".'
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+           END-IF.
+
+           CLOSE F-OUTPUT.
+       END-4000-WS.
+
+      ******************************************************************
+       5000-START-PROCEDURE.
+           OPEN EXTEND F-OUTPUT.
+           
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+           WRITE R-OUTPUT FROM PNT-BLANK-AST.
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-7 "PROCEDURE DIVISION."
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-7 "0000-START-MAIN."
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           IF OPTION-13 EQUAL 13
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 'DISPLAY "HELLO COBOL".'
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+           END-IF.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-7 "END-0000-MAIN."
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-11 "STOP RUN."
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           IF OPTION-1 EQUAL 1
+               INITIALIZE R-OUTPUT
+               WRITE R-OUTPUT FROM PNT-BLANK-6
+               WRITE R-OUTPUT FROM PNT-BLANK-AST
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "START-READ-INPUT."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "OPEN INPUT F-INPUT."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 'IF FS-INPUT EQUAL "00"'
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-14 "SET FS-INPUT-OK TO TRUE"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               WRITE R-OUTPUT FROM PNT-BLANK-6
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-14 "PERFORM UNTIL FS-INPUT-EOF"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-17 "READ F-INPUT"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-17 "AT END"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-20 "SET FS-INPUT-EOF TO TRUE"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-17 "NOT AT END"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-6 "*" PNT-BLANK-11 SPACE
+               SPACE "Traitement..."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-17 "END-READ"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-14 "END-PERFORM"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "ELSE"
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-14 'DISPLAY "ERROR :" SPACE FS-INPUT'
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "END-IF."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "CLOSE F-INPUT."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "END-READ-INPUT."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "EXIT."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+           END-IF.
+
+           CLOSE F-OUTPUT.
+       END-5000-PROCEDURE.
