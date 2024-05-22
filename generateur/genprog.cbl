@@ -55,78 +55,140 @@
            03 OPTION-13 PIC 9(02).
            03 OPTION-14 PIC 9(02).
 
-       01  NAME-IDENTIFICATION.
+       01  VAR-IDENTIFICATION.
            03 PROGRAM-ID-NAME PIC X(08).
            03 AUTHOR-NAME     PIC X(20).
 
-       01  NAME-ENVIRONMENT.
-           03 READ-FILE-NAME  PIC X(20).
+       01  VAR-ENVIRONMENT.
+           03 LOGICAL-FILE-NAME PIC X(10).
+           03 READ-FILE-NAME    PIC X(20).
+           03 ENV-ORGANIZATION  PIC X(15).
+           03 ENV-ACCESS-MODE   PIC X(10).
 
-       01  NAME-DATA.
+       01  VAR-DATA.
            03 RECORD-LENGTH  PIC ZZZZ9.
            03 RECORDING-MODE PIC X(01).
 
+       01  VAR-PARAGRAPHS.
+           03 PARAGRAPH-NUM  PIC X(04).
+           03 PARAGRAPH-NAME PIC X(20).
+
+       01  AGAIN PIC X(01).
+           88 AGAIN-Y VALUE "Y".
+           88 AGAIN-N VALUE "N".
+
        SCREEN SECTION.
-       01  SCREEN-OPTIONS.
-           03 LINE 02 COL 02 VALUE "GENERATEUR DE PROGRAMME".
+       01  SCREEN-OPTIONS FOREGROUND-COLOR 2.
+           03 LINE 02 COL 02 
+              VALUE "PROGRAM GENERATOR" FOREGROUND-COLOR 3.
            03 LINE 04 COL 02 VALUE "PARTIE FICHIER :".
            03 LINE 05 COL 05 VALUE "01. Lire un fichier.".
+           03 LINE 05 COL 02 PIC X(02) TO k1 FOREGROUND-COLOR 7.
            03 LINE 06 COL 05 VALUE "02. Ecrire un fichier.".
+           03 LINE 06 COL 02 PIC X(02) TO OPTION-2 FOREGROUND-COLOR 7.
            03 LINE 07 COL 05 VALUE "03. Trier un fichier.".
+           03 LINE 07 COL 02 PIC X(02) TO OPTION-3 FOREGROUND-COLOR 7.
            03 LINE 08 COL 05 VALUE "04. Fusionner plusieurs fichiers.".
+           03 LINE 08 COL 02 PIC X(02) TO OPTION-4 FOREGROUND-COLOR 7.
            03 LINE 10 COL 02 VALUE "PARTIE SQL :".
            03 LINE 11 COL 05 VALUE "05. Acceder a une BDD.".
+           03 LINE 11 COL 02 PIC X(02) TO OPTION-5 FOREGROUND-COLOR 7.
            03 LINE 12 COL 05 VALUE "06. Generer une requete COUNT(*).".
+           03 LINE 12 COL 02 PIC X(02) TO OPTION-6 FOREGROUND-COLOR 7.
            03 LINE 13 COL 05 VALUE "07. Generer un curseur.".
+           03 LINE 13 COL 02 PIC X(02) TO OPTION-7 FOREGROUND-COLOR 7.
            03 LINE 14 COL 05 VALUE "08. Generer une requete UPDATE.".
+           03 LINE 14 COL 02 PIC X(02) TO OPTION-8 FOREGROUND-COLOR 7.
            03 LINE 16 COL 02 VALUE "PARTIE SOUS-ROUTINES :".
            03 LINE 17 COL 05 VALUE "09. Creer une sous-routine.".
+           03 LINE 17 COL 02 PIC X(02) TO OPTION-9 FOREGROUND-COLOR 7.
            03 LINE 18 COL 05 VALUE "10. Integrer un appel type.".
+           03 LINE 18 COL 02 PIC X(02) TO OPTION-10 FOREGROUND-COLOR 7.
            03 LINE 20 COL 02 VALUE "PARTIE WORKING-STORAGE :".
            03 LINE 21 COL 05 VALUE "11. Preparer un Copybook.".
+           03 LINE 21 COL 02 PIC X(02) TO OPTION-11 FOREGROUND-COLOR 7.
            03 LINE 22 COL 05 VALUE "12. Integrer un Copybook.".
+           03 LINE 22 COL 02 PIC X(02) TO OPTION-12 FOREGROUND-COLOR 7.
            03 LINE 24 COL 02 VALUE "PARTIE PROCEDURE :".
            03 LINE 25 COL 05 VALUE "13. Ajouter un Hello Cobol.".
+           03 LINE 25 COL 02 PIC X(02) TO OPTION-13 FOREGROUND-COLOR 7.
            03 LINE 26 COL 05 VALUE "14. Integrer des paragraphes.".
-           03 LINE 05 COL 02 PIC X(02) TO OPTION-1.
-           03 LINE 06 COL 02 PIC X(02) TO OPTION-2.
-           03 LINE 07 COL 02 PIC X(02) TO OPTION-3.
-           03 LINE 08 COL 02 PIC X(02) TO OPTION-4.
-           03 LINE 11 COL 02 PIC X(02) TO OPTION-5.
-           03 LINE 12 COL 02 PIC X(02) TO OPTION-6.
-           03 LINE 13 COL 02 PIC X(02) TO OPTION-7.
-           03 LINE 14 COL 02 PIC X(02) TO OPTION-8.
-           03 LINE 17 COL 02 PIC X(02) TO OPTION-9.
-           03 LINE 18 COL 02 PIC X(02) TO OPTION-10.
-           03 LINE 21 COL 02 PIC X(02) TO OPTION-11.
-           03 LINE 22 COL 02 PIC X(02) TO OPTION-12.
-           03 LINE 25 COL 02 PIC X(02) TO OPTION-13.
-           03 LINE 26 COL 02 PIC X(02) TO OPTION-14.
+           03 LINE 26 COL 02 PIC X(02) TO OPTION-14 FOREGROUND-COLOR 7.
 
-       01  SCREEN-IDENTIFICATION.
+       01  SCREEN-IDENTIFICATION FOREGROUND-COLOR 2.
            03 BLANK SCREEN.
-           03 LINE 02 COL 02 VALUE "GENERATEUR DE PROGRAMME".
-           03 LINE 04 COL 02 VALUE "IDENTIFICATION DIVISION :".
+           03 LINE 02 COL 02 
+              VALUE "IDENTIFICATION GENERATOR" FOREGROUND-COLOR 3.
+           03 LINE 04 COL 02 VALUE "IDENTIFICATION DIVISION.".
            03 LINE 05 COL 05 VALUE "PROGRAM-ID.".
            03 LINE 06 COL 05 VALUE "AUTHOR.".
-           03 LINE 05 COL 17 PIC X(08) TO PROGRAM-ID-NAME.
-           03 LINE 06 COL 13 PIC X(20) TO AUTHOR-NAME.
+           03 LINE 05 COL 17 PIC X(08) 
+                             TO PROGRAM-ID-NAME FOREGROUND-COLOR 7.
+           03 LINE 06 COL 17 PIC X(20) 
+                             TO AUTHOR-NAME FOREGROUND-COLOR 7.
 
-       01  SCREEN-ENVIRONMENT.
+       01  SCREEN-ENVIRONMENT FOREGROUND-COLOR 2.
+           03 LINE 04 COL 02 VALUE "ENVIRONMENT DIVISION.". 
+           03 LINE 05 COL 02 VALUE "INPUT-OUTPUT SECTION.".
+           03 LINE 06 COL 02 VALUE "FILE-CONTROL.".
+           03 LINE 07 COL 05 VALUE "LOGICAL FILE NAME : F-".
+           03 LINE 08 COL 05 VALUE "READ FILE NAME    :".
+           03 LINE 09 COL 05 VALUE "ORGANIZATION      :".
+           03 LINE 10 COL 05 VALUE "ACCESS MODE       :".
+           03 LINE 07 COL 27 PIC X(10) 
+                             TO LOGICAL-FILE-NAME FOREGROUND-COLOR 7.
+           03 LINE 08 COL 25 PIC X(20) 
+                             TO READ-FILE-NAME FOREGROUND-COLOR 7.
+           03 LINE 09 COL 25 PIC X(15) 
+                             TO ENV-ORGANIZATION FOREGROUND-COLOR 7.
+           03 LINE 10 COL 25 PIC X(10) 
+                             TO ENV-ACCESS-MODE FOREGROUND-COLOR 7.
+       
+       01  SCREEN-ENVIRONMENT-READ.
            03 BLANK SCREEN.
-           03 LINE 02 COL 02 VALUE "GENERATEUR DE PROGRAMME".
-           03 LINE 04 COL 02 VALUE "ENVIRONMENT DIVISION :".
-           03 LINE 05 COL 05 VALUE "READ-FILE-NAME :".
-           03 LINE 05 COL 22 PIC X(22) TO READ-FILE-NAME.
+           03 LINE 02 COL 02 
+              VALUE "READ FILE GENERATOR" FOREGROUND-COLOR 3.
 
-       01  SCREEN-DATA.
+       01  SCREEN-ENVIRONMENT-WRITE.
            03 BLANK SCREEN.
-           03 LINE 02 COL 02 VALUE "GENERATEUR DE PROGRAMME".
+           03 LINE 02 COL 02 
+              VALUE "WRITE FILE GENERATOR" FOREGROUND-COLOR 3.
+
+       01  SCREEN-ENVIRONMENT-SORT.
+           03 BLANK SCREEN.
+           03 LINE 02 COL 02 
+              VALUE "SORT FILE GENERATOR" FOREGROUND-COLOR 3.
+
+       01  SCREEN-FILE-SECTION FOREGROUND-COLOR 2.
+           03 BLANK SCREEN.
+           03 LINE 02 COL 02 
+              VALUE "FILE SECTION GENERATOR" FOREGROUND-COLOR 3.
            03 LINE 04 COL 02 VALUE "FILE SECTION :".
-           03 LINE 05 COL 05 VALUE "RECORD LENGTH :".
+           03 LINE 05 COL 05 VALUE "RECORD LENGTH  :".
            03 LINE 06 COL 05 VALUE "RECORDING MODE :".
-           03 LINE 05 COL 22 PIC X(05) TO RECORD-LENGTH.
-           03 LINE 06 COL 22 PIC X(01) TO RECORDING-MODE.
+           03 LINE 05 COL 22 PIC X(05) 
+                             TO RECORD-LENGTH FOREGROUND-COLOR 7.
+           03 LINE 06 COL 22 PIC X(01) 
+                             TO RECORDING-MODE FOREGROUND-COLOR 7.
+
+       01  SCREEN-PARAGRAPH FOREGROUND-COLOR 2.
+           03 BLANK SCREEN.
+           03 LINE 02 COL 02 
+              VALUE "PARAGRAPH GENERATOR" FOREGROUND-COLOR 3.
+           03 LINE 04 COL 02 VALUE "PARAGRAPH :".
+           03 LINE 05 COL 05 VALUE "PARAGRAPH NUMBER :".
+           03 LINE 06 COL 05 VALUE "PARAGRAPH NAME   :".
+           03 LINE 05 COL 24 PIC X(04) 
+                             TO PARAGRAPH-NUM FOREGROUND-COLOR 7.
+           03 LINE 06 COL 24 PIC X(20) 
+                             TO PARAGRAPH-NAME FOREGROUND-COLOR 7.
+
+       01  SCREEN-AGAIN FOREGROUND-COLOR 2.
+           03 BLANK SCREEN.
+           03 LINE 02 COL 02 
+              VALUE "PROGRAM GENERATOR" FOREGROUND-COLOR 3.
+           03 LINE 04 COL 02 VALUE "ADD A NEW PARAGRAPH (Y/N) :".
+           03 LINE 04 COL 30 PIC X(01) TO AGAIN FOREGROUND-COLOR 7.
 
       ****************************************************************** 
 
@@ -143,8 +205,8 @@
                   THRU END-3000-ENVIRONMENT
            END-IF.
 
-           PERFORM 3000-START-FILE-SECTION
-              THRU END-3000-FILE-SECTION.
+           PERFORM 4000-START-FILE-SECTION
+              THRU END-4000-FILE-SECTION.
 
            PERFORM 4000-START-WS 
               THRU END-4000-WS.
@@ -156,15 +218,12 @@
 
       ******************************************************************
        1000-START-OPTIONS.
-           DISPLAY SCREEN-OPTIONS.
            ACCEPT SCREEN-OPTIONS.
-           DISPLAY OPTIONS-NUM.
        END-1000-OPTIONS.
            EXIT.
 
       ******************************************************************
        2000-START-IDENTIFICATION.
-           DISPLAY SCREEN-IDENTIFICATION.
            ACCEPT SCREEN-IDENTIFICATION.
            
            OPEN OUTPUT F-OUTPUT.
@@ -223,29 +282,26 @@
            WRITE R-OUTPUT.
 
            IF OPTION-1 EQUAL 1
-               DISPLAY SCREEN-ENVIRONMENT
-               ACCEPT SCREEN-ENVIRONMENT
+               DISPLAY SCREEN-ENVIRONMENT-READ
+               PERFORM 3100-START-FILE-CONTROL 
+               THRU END-3100-FILE-CONTROL
+           END-IF.
 
-               INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-11 'SELECT F-INPUT ASSIGN TO "'
-               FUNCTION TRIM(READ-FILE-NAME) '"'
-               DELIMITED BY SIZE INTO R-OUTPUT
-               WRITE R-OUTPUT
+           IF OPTION-2 EQUAL 2
+               DISPLAY SCREEN-ENVIRONMENT-WRITE
+               PERFORM 3100-START-FILE-CONTROL 
+               THRU END-3100-FILE-CONTROL
+           END-IF.
 
-               INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-11 "ORGANIZATION IS LINE SEQUENTIAL"
-               DELIMITED BY SIZE INTO R-OUTPUT
-               WRITE R-OUTPUT
+           IF OPTION-3 EQUAL 3
+               DISPLAY SCREEN-ENVIRONMENT-SORT
+               PERFORM 3100-START-FILE-CONTROL 
+               THRU END-3100-FILE-CONTROL
+           END-IF.
 
-               INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-11 "ACCESS MODE IS SEQUENTIAL"
-               DELIMITED BY SIZE INTO R-OUTPUT
-               WRITE R-OUTPUT
-
-               INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-11 "FILE STATUS IS FS-INPUT."
-               DELIMITED BY SIZE INTO R-OUTPUT
-               WRITE R-OUTPUT
+           IF OPTION-4 EQUAL 4
+               PERFORM 3100-START-FILE-CONTROL 
+               THRU END-3100-FILE-CONTROL
            END-IF.
 
            INITIALIZE R-OUTPUT.
@@ -256,7 +312,49 @@
            EXIT.
 
       ******************************************************************
-       3000-START-FILE-SECTION.
+       3100-START-FILE-CONTROL.
+           ACCEPT SCREEN-ENVIRONMENT.
+
+           MOVE FUNCTION UPPER-CASE(LOGICAL-FILE-NAME) 
+           TO LOGICAL-FILE-NAME.
+           MOVE FUNCTION UPPER-CASE(ENV-ORGANIZATION) 
+           TO ENV-ORGANIZATION.
+           MOVE FUNCTION UPPER-CASE(ENV-ACCESS-MODE) 
+           TO ENV-ACCESS-MODE.
+
+           INITIALIZE R-OUTPUT.
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-11 "SELECT F-" 
+           FUNCTION TRIM(LOGICAL-FILE-NAME)
+           SPACE 'ASSIGN TO "'
+           FUNCTION TRIM(READ-FILE-NAME) '"'
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-11 "ORGANIZATION IS" SPACE 
+           FUNCTION TRIM(ENV-ORGANIZATION)
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-11 "ACCESS MODE IS" SPACE 
+           FUNCTION TRIM(ENV-ACCESS-MODE)
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING PNT-BLANK-11 "FILE STATUS IS FS-" 
+           FUNCTION TRIM(LOGICAL-FILE-NAME) "."
+           DELIMITED BY SIZE INTO R-OUTPUT.
+           WRITE R-OUTPUT.
+       END-3100-FILE-CONTROL.
+           EXIT.
+
+      ******************************************************************
+       4000-START-FILE-SECTION.
            OPEN EXTEND F-OUTPUT.
            
            WRITE R-OUTPUT FROM PNT-BLANK-AST.
@@ -268,8 +366,7 @@
            WRITE R-OUTPUT.
 
            IF OPTION-1 EQUAL 1
-               DISPLAY SCREEN-DATA
-               ACCEPT SCREEN-DATA
+               ACCEPT SCREEN-FILE-SECTION
            
                INITIALIZE R-OUTPUT
                STRING PNT-BLANK-7 "FILE SECTION."
@@ -277,7 +374,8 @@
                WRITE R-OUTPUT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-7 "FD F-INPUT"
+               STRING PNT-BLANK-7 "FD F-" 
+               FUNCTION TRIM(LOGICAL-FILE-NAME)
                DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
 
@@ -294,14 +392,16 @@
                WRITE R-OUTPUT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-7 "01  R-INPUT PIC X(" 
+               STRING PNT-BLANK-7 "01  R-"
+               FUNCTION TRIM(LOGICAL-FILE-NAME)
+               SPACE "PIC X(" 
                FUNCTION TRIM(RECORD-LENGTH) ")."
                DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
            END-IF.
 
            CLOSE F-OUTPUT.    
-       END-3000-FILE-SECTION.
+       END-4000-FILE-SECTION.
 
       ******************************************************************
        4000-START-WS.
@@ -316,17 +416,23 @@
 
            IF OPTION-1 EQUAL 1
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-7 "01  FS-INPUT PIC X(02)."
+               STRING PNT-BLANK-7 "01  FS-"
+               FUNCTION TRIM(LOGICAL-FILE-NAME) SPACE
+               "PIC X(02)."
                DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-11 '88 FS-INPUT-OK VALUE "00".'
+               STRING PNT-BLANK-11 "88 FS-"
+               FUNCTION TRIM(LOGICAL-FILE-NAME)
+               '-OK VALUE "00".'
                DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
 
                INITIALIZE R-OUTPUT
-               STRING PNT-BLANK-11 '88 FS-INPUT-EOF VALUE "10".'
+               STRING PNT-BLANK-11 "88 FS-"
+               FUNCTION TRIM(LOGICAL-FILE-NAME)
+               '-EOF VALUE "10".'
                DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
            END-IF.
@@ -467,6 +573,48 @@
                STRING PNT-BLANK-11 "EXIT."
                DELIMITED BY SIZE INTO R-OUTPUT
                WRITE R-OUTPUT
+           END-IF.
+
+           IF OPTION-14 EQUAL 14
+               PERFORM UNTIL AGAIN-N
+                   INITIALIZE PARAGRAPH-NUM
+                   INITIALIZE PARAGRAPH-NAME
+                   INITIALIZE AGAIN
+                   
+                   ACCEPT SCREEN-PARAGRAPH
+
+                   MOVE FUNCTION UPPER-CASE(PARAGRAPH-NAME) 
+                   TO PARAGRAPH-NAME
+      
+                   INITIALIZE R-OUTPUT
+                   WRITE R-OUTPUT FROM PNT-BLANK-6
+                   WRITE R-OUTPUT FROM PNT-BLANK-AST
+      
+                   INITIALIZE R-OUTPUT
+                   STRING PNT-BLANK-7 PARAGRAPH-NUM "-START-" 
+                   FUNCTION TRIM(PARAGRAPH-NAME) "."
+                   DELIMITED BY SIZE INTO R-OUTPUT
+                   WRITE R-OUTPUT
+
+                   INITIALIZE R-OUTPUT
+                   STRING PNT-BLANK-6 "*    Paragraphe..." 
+                   DELIMITED BY SIZE INTO R-OUTPUT
+                   WRITE R-OUTPUT
+      
+                   INITIALIZE R-OUTPUT
+                   STRING PNT-BLANK-7 "END-" PARAGRAPH-NUM "-" 
+                   FUNCTION TRIM(PARAGRAPH-NAME) "."
+                   DELIMITED BY SIZE INTO R-OUTPUT
+                   WRITE R-OUTPUT
+      
+                   INITIALIZE R-OUTPUT
+                   STRING PNT-BLANK-11 "EXIT."
+                   DELIMITED BY SIZE INTO R-OUTPUT
+                   WRITE R-OUTPUT
+
+                   DISPLAY SCREEN-AGAIN
+                   ACCEPT SCREEN-AGAIN
+               END-PERFORM
            END-IF.
 
            CLOSE F-OUTPUT.
