@@ -203,8 +203,11 @@ OCESQL     END-CALL
            STOP RUN. 
 
       ******************************************************************
+      *    Requêtes SQL.                                               *
       ******************************************************************
        2000-START-SQL-REQUEST.
+      *    Récupère les informations des étudiants ID, nom, prénom, âge 
+      *    et la moyenne pondérée de ses notes.
 OCESQL*    EXEC SQL
 OCESQL*        DECLARE CRSSTUDENT CURSOR FOR
 OCESQL*        SELECT s.id, s.lastname, s.firstname, s.age,
@@ -221,6 +224,8 @@ OCESQL          BY REFERENCE SQLCA
 OCESQL          BY REFERENCE "sclrep_CRSSTUDENT" & x"00"
 OCESQL          BY REFERENCE SQ0002
 OCESQL     END-CALL.
+      *    Récupère les informations des cours ID, label, coefficient
+      *    et la moyenne des notes pour chaque cours.
 OCESQL*    EXEC SQL 
 OCESQL*        DECLARE CRSCOURSE CURSOR FOR
 OCESQL*        SELECT c.id, c.label, c.coef, ROUND(AVG(g.grade), 2)
@@ -234,6 +239,8 @@ OCESQL          BY REFERENCE SQLCA
 OCESQL          BY REFERENCE "sclrep_CRSCOURSE" & x"00"
 OCESQL          BY REFERENCE SQ0003
 OCESQL     END-CALL.
+      *    Récupère toutes les informations des notes, en les triant 
+      *    par ID d'étudiant et ID de cours (Tri ascendant).
 OCESQL*    EXEC SQL
 OCESQL*        DECLARE CRSGRADE CURSOR FOR
 OCESQL*        SELECT student_id, course_id, grade FROM grade
@@ -248,6 +255,7 @@ OCESQL     END-CALL.
            EXIT.
 
       ******************************************************************
+      *    Appel les différents paragraphe "HANDLE".                   *
       ******************************************************************
        3000-START-HANDLE.
            PERFORM 3100-START-HANDLE-STUDENT 
@@ -260,6 +268,8 @@ OCESQL     END-CALL.
            EXIT.
 
       ******************************************************************
+      *    Récupère les données d'un étudiant grâce au curseur         *
+      *    "CRSSTUDENT" et l'insère dans la table STUDENT.             *
       ******************************************************************
        3100-START-HANDLE-STUDENT.
 OCESQL*    EXEC SQL 
@@ -343,6 +353,8 @@ OCESQL    .
            EXIT.
 
       ******************************************************************
+      *    Récupère les données d'un cours grâce au curseur            *
+      *    "CRSCOURSE" et l'insère dans la table COURSE.               *
       ******************************************************************
        3200-START-HANDLE-COURSE.
 OCESQL*    EXEC SQL 
@@ -422,6 +434,8 @@ OCESQL    .
            EXIT.
 
       ******************************************************************
+      *    Récupère les données d'une note grâce au curseur            *
+      *    "CRSGRADE" et l'insère dans la table GRADE.                 *
       ******************************************************************
        3300-START-HANDLE-GRADE.
 OCESQL*    EXEC SQL 
@@ -594,21 +608,24 @@ OCESQL    .
        START-TABLE-DETAILS-C.
            SET WS-STRING-POS TO 33.
            PERFORM VARYING G-IDX FROM 1 BY 1 UNTIL G-IDX > G-CNT
-              DISPLAY WS-STRING-POS 
-              STRING " N/A"
+               STRING " N/A"
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(WS-STRING-POS:20)
 
               IF G-S-ID(G-IDX) EQUAL S-ID(S-IDX)
-              INITIALIZE WS-PNT-GRADE
-              MOVE G-GRADE(G-IDX) TO WS-PNT-GRADE
+                 INITIALIZE WS-PNT-GRADE
+                 MOVE G-GRADE(G-IDX) TO WS-PNT-GRADE
+   
+                 STRING WS-PNT-GRADE
+                 DELIMITED BY SIZE
+                 INTO WS-PNT-STRING(WS-STRING-POS:20)
+   
+                 ADD 10 TO WS-STRING-POS
+              END-IF
 
-              STRING WS-PNT-GRADE
+              STRING " N/A"
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(WS-STRING-POS:20)
-
-              ADD 10 TO WS-STRING-POS
-              END-IF
            END-PERFORM.
        END-TABLE-DETAILS-C.
            EXIT.
