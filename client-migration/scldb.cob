@@ -1,12 +1,17 @@
       ******************************************************************
+      *    Le programme insère dans la DB "school" les données        *
+      *    provenant du fichier "input.dat".                           *
+      *    Les données sont des informations sur des étudiants, leurs  *
+      *    cours et leurs notes.                                       *
       ******************************************************************
+
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. cltmig.
-       AUTHOR.       Rémi.
+       PROGRAM-ID. scldb.
+       AUTHOR.      Rémi.
 
       ******************************************************************
+
        ENVIRONMENT DIVISION.
-      ******************************************************************
        CONFIGURATION SECTION.
        SPECIAL-NAMES.
            DECIMAL-POINT IS COMMA.
@@ -19,8 +24,8 @@
            FILE STATUS IS FS-INPUT.
 
       ******************************************************************
+
        DATA DIVISION.
-      ******************************************************************
        FILE SECTION.
        FD  F-INPUT
            RECORD CONTAINS 2 TO 1000 CHARACTERS 
@@ -52,7 +57,7 @@ OCESQL*EXEC SQL BEGIN DECLARE SECTION END-EXEC.
        01  SQL-STUDENT.
            03 SQL-S-LASTNAME   PIC X(07).
            03 SQL-S-FIRSTNAME  PIC X(06).
-           03 SQL-S-AGE        PIC 9(02).
+           03 SQL-S-AGE        PIC 9(03).
        
        01  SQL-COURSE.
            05 SQL-C-LABEL      PIC X(21).
@@ -67,6 +72,7 @@ OCESQL*EXEC SQL INCLUDE SQLCA END-EXEC.
 OCESQL     copy "sqlca.cbl".
 
       ******************************************************************
+
 OCESQL*
 OCESQL 01  SQ0001.
 OCESQL     02  FILLER PIC X(014) VALUE "DISCONNECT ALL".
@@ -99,7 +105,6 @@ OCESQL  &  " COURSE_ID, GRADE) VALUES ( $1, $2, $3 )".
 OCESQL     02  FILLER PIC X(1) VALUE X"00".
 OCESQL*
        PROCEDURE DIVISION.
-      ******************************************************************
        0000-MAIN-START.
 OCESQL*    EXEC SQL
 OCESQL*        CONNECT :USERNAME IDENTIFIED BY :PASSWD USING :DBNAME 
@@ -115,12 +120,10 @@ OCESQL          BY VALUE 30
 OCESQL     END-CALL.
 
            IF SQLCODE NOT = ZERO 
-               PERFORM 1000-START-ERROR-RTN
-                  THRU END-1000-ERROR-RTN
+               PERFORM 1000-START-ERROR-RTN THRU END-1000-ERROR-RTN
+           ELSE
+               PERFORM 2000-START-FILE-READ THRU END-2000-FILE-READ
            END-IF.
-           
-           PERFORM 2000-START-FILE-READ
-              THRU END-2000-FILE-READ.
 
        END-0000-MAIN.
 OCESQL*    EXEC SQL COMMIT WORK END-EXEC.
@@ -138,6 +141,8 @@ OCESQL          BY REFERENCE SQLCA
 OCESQL     END-CALL.
            STOP RUN. 
 
+      ******************************************************************
+      *    Gestion des erreurs.                                        *
       ******************************************************************
        1000-START-ERROR-RTN.
            DISPLAY "*** SQL ERROR ***".
@@ -173,8 +178,12 @@ OCESQL     END-CALL
            STOP RUN. 
 
       ******************************************************************
+      *    Lecture du fichier "input.dat", appel différents paragraphes*
+      *    selon les 2 premiers caractères du fichier.                 *
+      ******************************************************************
        2000-START-FILE-READ.
            OPEN INPUT F-INPUT.
+
            IF NOT FS-INPUT-OK
                DISPLAY 'ABORT POPULATING TABLE'
                GO TO END-2000-FILE-READ
@@ -195,17 +204,20 @@ OCESQL     END-CALL
                        CONTINUE
                END-EVALUATE
            END-PERFORM.
-       END-2000-FILE-READ.
+
            CLOSE F-INPUT.
+       END-2000-FILE-READ.
            EXIT.
 
+      ******************************************************************
+      *    Ajoute un étudiant dans la DB par rapport au RECORD du      *
+      *    fichier lu.                                                 *
       ******************************************************************
        2100-START-HANDLE-STUDENT.
            MOVE R-S-LASTNAME  TO SQL-S-LASTNAME.
            MOVE R-S-FIRSTNAME TO SQL-S-FIRSTNAME.
            MOVE R-S-AGE       TO SQL-S-AGE.
-
-      *    Ajoute un nouveau étudiant.
+           
 OCESQL*    EXEC SQL
 OCESQL*        INSERT INTO STUDENT (LASTNAME,FIRSTNAME,AGE) 
 OCESQL*        VALUES (
@@ -230,7 +242,7 @@ OCESQL          BY REFERENCE SQL-S-FIRSTNAME
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLSetSQLParams" USING
 OCESQL          BY VALUE 1
-OCESQL          BY VALUE 2
+OCESQL          BY VALUE 3
 OCESQL          BY VALUE 0
 OCESQL          BY REFERENCE SQL-S-AGE
 OCESQL     END-CALL
@@ -244,6 +256,9 @@ OCESQL     END-CALL.
        END-2100-HANDLE-STUDENT.
            EXIT.
 
+      ******************************************************************
+      *    Ajoute un cours dans la DB par rapport au RECORD du         *
+      *    fichier lu.                                                 *
       ******************************************************************
        2100-START-HANDLE-COURSE.
            MOVE R-C-LABEL TO SQL-C-LABEL.
@@ -290,7 +305,7 @@ OCESQL     END-CALL.
            EXIT.
 
       ******************************************************************
-      *    Ajoute une note à la table GRADE avec l'ID de l'étudiant et *
+      *    Ajoute une note dans la DB avec l'ID de l'étudiant et       *
       *    l'ID du cours qui sont associés à la note.                  *
       ******************************************************************
        2100-START-HANDLE-GRADE.
@@ -330,7 +345,6 @@ OCESQL          BY VALUE 1
 OCESQL     END-CALL
 OCESQL     CALL "OCESQLEndSQL"
 OCESQL     END-CALL.
-           DISPLAY SQLCODE.
 
       *    Récupère l'ID d'un cours spécifique basé sur son label, 
       *    et stock cette valeur dans SQL-G-COURSE-ID

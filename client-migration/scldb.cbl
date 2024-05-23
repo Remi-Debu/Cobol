@@ -1,12 +1,17 @@
       ******************************************************************
+      *    Le programme insère dans la DB "school" les données        *
+      *    provenant du fichier "input.dat".                           *
+      *    Les données sont des informations sur des étudiants, leurs  *
+      *    cours et leurs notes.                                       *
       ******************************************************************
+
        IDENTIFICATION DIVISION.
-       PROGRAM-ID. cltmig.
-       AUTHOR.       Rémi.
+       PROGRAM-ID. scldb.
+       AUTHOR.      Rémi.
 
       ******************************************************************
+
        ENVIRONMENT DIVISION.
-      ******************************************************************
        CONFIGURATION SECTION.
        SPECIAL-NAMES.
            DECIMAL-POINT IS COMMA.
@@ -19,8 +24,8 @@
            FILE STATUS IS FS-INPUT.
 
       ******************************************************************
+
        DATA DIVISION.
-      ******************************************************************
        FILE SECTION.
        FD  F-INPUT
            RECORD CONTAINS 2 TO 1000 CHARACTERS 
@@ -52,7 +57,7 @@
        01  SQL-STUDENT.
            03 SQL-S-LASTNAME   PIC X(07).
            03 SQL-S-FIRSTNAME  PIC X(06).
-           03 SQL-S-AGE        PIC 9(02).
+           03 SQL-S-AGE        PIC 9(03).
        
        01  SQL-COURSE.
            05 SQL-C-LABEL      PIC X(21).
@@ -66,26 +71,26 @@
        EXEC SQL INCLUDE SQLCA END-EXEC.
 
       ******************************************************************
+
        PROCEDURE DIVISION.
-      ******************************************************************
        0000-MAIN-START.
            EXEC SQL
                CONNECT :USERNAME IDENTIFIED BY :PASSWD USING :DBNAME 
            END-EXEC.
 
            IF SQLCODE NOT = ZERO 
-               PERFORM 1000-START-ERROR-RTN
-                  THRU END-1000-ERROR-RTN
+               PERFORM 1000-START-ERROR-RTN THRU END-1000-ERROR-RTN
+           ELSE
+               PERFORM 2000-START-FILE-READ THRU END-2000-FILE-READ
            END-IF.
-           
-           PERFORM 2000-START-FILE-READ
-              THRU END-2000-FILE-READ.
 
        END-0000-MAIN.
            EXEC SQL COMMIT WORK END-EXEC.
            EXEC SQL DISCONNECT ALL END-EXEC.  
            STOP RUN. 
 
+      ******************************************************************
+      *    Gestion des erreurs.                                        *
       ******************************************************************
        1000-START-ERROR-RTN.
            DISPLAY "*** SQL ERROR ***".
@@ -113,8 +118,12 @@
            STOP RUN. 
 
       ******************************************************************
+      *    Lecture du fichier "input.dat", appel différents paragraphes*
+      *    selon les 2 premiers caractères du fichier.                 *
+      ******************************************************************
        2000-START-FILE-READ.
            OPEN INPUT F-INPUT.
+
            IF NOT FS-INPUT-OK
                DISPLAY 'ABORT POPULATING TABLE'
                GO TO END-2000-FILE-READ
@@ -135,17 +144,20 @@
                        CONTINUE
                END-EVALUATE
            END-PERFORM.
-       END-2000-FILE-READ.
+
            CLOSE F-INPUT.
+       END-2000-FILE-READ.
            EXIT.
 
+      ******************************************************************
+      *    Ajoute un étudiant dans la DB par rapport au RECORD du      *
+      *    fichier lu.                                                 *
       ******************************************************************
        2100-START-HANDLE-STUDENT.
            MOVE R-S-LASTNAME  TO SQL-S-LASTNAME.
            MOVE R-S-FIRSTNAME TO SQL-S-FIRSTNAME.
            MOVE R-S-AGE       TO SQL-S-AGE.
-
-      *    Ajoute un nouveau étudiant.
+           
            EXEC SQL
                INSERT INTO STUDENT (LASTNAME,FIRSTNAME,AGE) 
                VALUES (
@@ -157,6 +169,9 @@
        END-2100-HANDLE-STUDENT.
            EXIT.
 
+      ******************************************************************
+      *    Ajoute un cours dans la DB par rapport au RECORD du         *
+      *    fichier lu.                                                 *
       ******************************************************************
        2100-START-HANDLE-COURSE.
            MOVE R-C-LABEL TO SQL-C-LABEL.
@@ -176,7 +191,7 @@
            EXIT.
 
       ******************************************************************
-      *    Ajoute une note à la table GRADE avec l'ID de l'étudiant et *
+      *    Ajoute une note dans la DB avec l'ID de l'étudiant et       *
       *    l'ID du cours qui sont associés à la note.                  *
       ******************************************************************
        2100-START-HANDLE-GRADE.
@@ -188,7 +203,6 @@
                   WHERE LASTNAME = :SQL-S-LASTNAME 
                   AND FIRSTNAME = :SQL-S-FIRSTNAME
            END-EXEC.
-           DISPLAY SQLCODE.
 
       *    Récupère l'ID d'un cours spécifique basé sur son label, 
       *    et stock cette valeur dans SQL-G-COURSE-ID
