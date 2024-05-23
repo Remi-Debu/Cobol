@@ -184,26 +184,28 @@ OCESQL     END-CALL
        2000-START-FILE-READ.
            OPEN INPUT F-INPUT.
 
-           IF NOT FS-INPUT-OK
-               DISPLAY 'ABORT POPULATING TABLE'
-               GO TO END-2000-FILE-READ
+           IF FS-INPUT EQUAL "00"
+              SET FS-INPUT-OK TO TRUE
+
+              PERFORM UNTIL FS-INPUT-EOF
+                 READ F-INPUT 
+                 AT END 
+                    SET FS-INPUT-EOF TO TRUE
+                 NOT AT END 
+                    EVALUATE REC-F-INPUT-2
+                       WHEN '01'
+                          PERFORM 2100-START-HANDLE-STUDENT
+                              THRU END-2100-HANDLE-STUDENT
+                       WHEN "02"
+                          PERFORM 2100-START-HANDLE-COURSE 
+                             THRU END-2100-HANDLE-COURSE
+                          PERFORM 2100-START-HANDLE-GRADE 
+                              THRU END-2100-HANDLE-GRADE
+                       WHEN OTHER
+                          CONTINUE
+                    END-EVALUATE
+              END-PERFORM
            END-IF.
-           
-           PERFORM UNTIL FS-INPUT-EOF
-               READ F-INPUT
-               EVALUATE REC-F-INPUT-2
-                   WHEN '01'
-                       PERFORM 2100-START-HANDLE-STUDENT
-                           THRU END-2100-HANDLE-STUDENT
-                   WHEN "02"
-                       PERFORM 2100-START-HANDLE-COURSE 
-                          THRU END-2100-HANDLE-COURSE
-                   PERFORM 2100-START-HANDLE-GRADE 
-                          THRU END-2100-HANDLE-GRADE
-                   WHEN OTHER
-                       CONTINUE
-               END-EVALUATE
-           END-PERFORM.
 
            CLOSE F-INPUT.
        END-2000-FILE-READ.

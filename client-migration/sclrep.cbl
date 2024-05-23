@@ -10,6 +10,10 @@
       ******************************************************************
 
        ENVIRONMENT DIVISION.
+      *CONFIGURATION SECTION.
+      *SPECIAL-NAMES.
+      *    DECIMAL-POINT IS COMMA.
+
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
            SELECT F-OUTPUT ASSIGN TO 'output.dat'
@@ -32,17 +36,15 @@
 
        01  WS-PRINT.
            03 WS-PNT-NBR    PIC Z9.
-           03 WS-PNT-GRADE  PIC Z9,99.
-           03 WS-PNT-COEF   PIC 9,9.
-           03 WS-PNT-AST    PIC X(87) VALUE ALL "*".
-           03 WS-PNT-BLANK  PIC X(35) VALUE SPACES.
+           03 WS-PNT-GRADE  PIC Z9.99.
+           03 WS-PNT-COEF   PIC 9.9.
+           03 WS-PNT-AST    PIC X(97) VALUE ALL "*".
+           03 WS-PNT-BLANK  PIC X(40) VALUE SPACES.
            03 WS-PNT-EMPTY  PIC X     VALUE SPACE.
-           03 WS-PNT-STRING PIC X(87).
+           03 WS-PNT-STRING PIC X(97).
 
        01  WS-STRING-POS    PIC 9(03) VALUE 1.
        01  WS-NUM-TEMP      PIC 9(03)V9(02).
-       01  WS-FULLNAME-TEMP PIC X(30).
-       01  WS-SUM-COEF      PIC 9(10)V9.
        01  WS-SUM-AV-GRADE  PIC 9(10)V9(02).  
 
        01  TABLE-STUDENT.
@@ -172,6 +174,7 @@
            EXEC SQL
                DECLARE CRSGRADE CURSOR FOR
                SELECT student_id, course_id, grade FROM grade
+               ORDER BY student_id, course_id ASC
            END-EXEC.
        END-2000-SQL-REQUEST.
            EXIT.
@@ -245,7 +248,7 @@
                        MOVE SQL-C-LABEL     TO C-LABEL(C-CNT)
                        MOVE SQL-C-COEF      TO C-COEF(C-CNT)
                        MOVE SQL-C-AV-COURSE TO C-AV-GRADE(C-CNT)
-
+                       
                        STRING "C" SQL-C-ID DELIMITED BY SIZE 
                        INTO C-ID-NAME(C-CNT)
                    WHEN 100
@@ -301,12 +304,14 @@
       *    rapport "output.dat".                                       *
       ******************************************************************
        4000-START-WRITE.
+           OPEN OUTPUT F-OUTPUT.
            PERFORM START-HEADER THRU END-HEADER.
            PERFORM START-TABLE-HEADER THRU END-TABLE-HEADER.
            PERFORM START-TABLE-DETAILS THRU END-TABLE-DETAILS.
            PERFORM START-TABLE-FOOTER THRU END-TABLE-FOOTER.
            PERFORM START-LEXIQUE THRU END-LEXIQUE.
            PERFORM START-FOOTER THRU END-FOOTER.
+           CLOSE F-OUTPUT.
        END-4000-WRITE.
            EXIT.
 
@@ -314,7 +319,6 @@
       *    Ecris l'en-tête du rapport.                                 *
       ******************************************************************
        START-HEADER.
-           OPEN OUTPUT F-OUTPUT.
            INITIALIZE WS-PNT-STRING.
 
            WRITE R-OUTPUT FROM WS-PNT-AST.
@@ -325,7 +329,6 @@
 
            WRITE R-OUTPUT FROM WS-PNT-STRING.
            WRITE R-OUTPUT FROM WS-PNT-AST.
-           CLOSE F-OUTPUT.
        END-HEADER.
            EXIT.
 
@@ -334,14 +337,13 @@
       *    (NOM, PRENOM, MOYENNE, C1, C2, ...)                         *
       ******************************************************************
        START-TABLE-HEADER.
-           OPEN EXTEND F-OUTPUT.
            INITIALIZE WS-PNT-STRING.
 
-           STRING "NOM"
+           STRING "PRENOM"
            DELIMITED BY SIZE
            INTO WS-PNT-STRING.
 
-           STRING "PRENOM"
+           STRING "NOM"
            DELIMITED BY SIZE
            INTO WS-PNT-STRING(12:10).
 
@@ -353,24 +355,15 @@
            PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX > C-CNT
               INITIALIZE WS-PNT-NBR
 
-              MOVE C-IDX TO C-ID(C-IDX)
-              MOVE C-ID(C-IDX) TO WS-PNT-NBR
-
-              STRING "C" FUNCTION TRIM(WS-PNT-NBR) 
-              DELIMITED BY SIZE
-              INTO C-ID-NAME(C-IDX)
-
               STRING C-ID-NAME(C-IDX)
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(WS-STRING-POS:29)
 
-              ADD C-COEF(C-IDX) TO WS-SUM-COEF
               ADD 10 TO WS-STRING-POS
            END-PERFORM.
            
            WRITE R-OUTPUT FROM WS-PNT-STRING.
            WRITE R-OUTPUT FROM WS-PNT-EMPTY.
-           CLOSE F-OUTPUT.
        END-TABLE-HEADER.
            EXIT.
 
@@ -379,30 +372,17 @@
       *    correspondent au nom des colonnes.                          *
       ******************************************************************
        START-TABLE-DETAILS.
-           OPEN EXTEND F-OUTPUT.
-
            PERFORM VARYING S-IDX FROM 1 BY 1 UNTIL S-IDX > S-CNT
-              INITIALIZE WS-FULLNAME-TEMP
               INITIALIZE WS-PNT-STRING
 
-              STRING FUNCTION TRIM(S-LASTNAME(S-IDX)) 
-              SPACE FUNCTION TRIM(S-FIRSTNAME(S-IDX))
-              DELIMITED BY SIZE
-              INTO WS-FULLNAME-TEMP 
-
-              STRING S-LASTNAME(S-IDX) SPACE S-FIRSTNAME(S-IDX)
+              STRING S-FIRSTNAME(S-IDX) SPACE S-LASTNAME(S-IDX)
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(1:20) 
               
               PERFORM START-TABLE-DETAILS-C THRU END-TABLE-DETAILS-C
-
-      *       Calcul la moyenne générale d'un élève. 
-              DIVIDE S-SUM-GRADE-COEF(S-IDX) BY WS-SUM-COEF 
-              GIVING S-AV-GRADE(S-IDX) ROUNDED
               
       *       Effectue la somme des moyennes générales de chaque élève.
               ADD S-AV-GRADE(S-IDX) TO WS-SUM-AV-GRADE
-
               INITIALIZE WS-PNT-GRADE
               MOVE S-AV-GRADE(S-IDX) TO WS-PNT-GRADE
 
@@ -412,8 +392,6 @@
 
               WRITE R-OUTPUT FROM WS-PNT-STRING
            END-PERFORM.
-
-           CLOSE F-OUTPUT.
        END-TABLE-DETAILS.
            EXIT.
       
@@ -425,19 +403,18 @@
        START-TABLE-DETAILS-C.
            SET WS-STRING-POS TO 33.
            PERFORM VARYING G-IDX FROM 1 BY 1 UNTIL G-IDX > G-CNT
-              IF G-S-FULLNAME(G-IDX) EQUAL WS-FULLNAME-TEMP
+              DISPLAY WS-STRING-POS 
+              STRING " N/A"
+              DELIMITED BY SIZE
+              INTO WS-PNT-STRING(WS-STRING-POS:20)
+
+              IF G-S-ID(G-IDX) EQUAL S-ID(S-IDX)
               INITIALIZE WS-PNT-GRADE
               MOVE G-GRADE(G-IDX) TO WS-PNT-GRADE
 
               STRING WS-PNT-GRADE
               DELIMITED BY SIZE
               INTO WS-PNT-STRING(WS-STRING-POS:20)
-
-      *       Effectue la somme des notes avec le coefficient de la
-      *       matière pris en compte pour un élève.
-              MULTIPLY G-GRADE(G-IDX) BY G-COEF(G-IDX) 
-              GIVING WS-NUM-TEMP
-              ADD WS-NUM-TEMP TO S-SUM-GRADE-COEF(S-IDX)
 
               ADD 10 TO WS-STRING-POS
               END-IF
@@ -451,7 +428,6 @@
       *    chaque cours.                                               *
       ******************************************************************
        START-TABLE-FOOTER.
-           OPEN EXTEND F-OUTPUT.
            INITIALIZE WS-PNT-STRING.
 
            STRING "CLASSE"
@@ -470,18 +446,6 @@
            PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX > C-CNT
                INITIALIZE WS-PNT-GRADE
 
-               PERFORM VARYING G-IDX FROM 1 BY 1 UNTIL G-IDX > G-CNT
-                   IF G-C-ID(G-IDX) EQUAL C-ID(C-IDX)
-      *               Effectue la somme des notes des élèves pour une 
-      *               matière.
-                      ADD G-GRADE(G-IDX) TO C-SUM-GRADE(C-IDX)
-                   END-IF
-               END-PERFORM
-
-      *        Calcul la moyenne de la classe dans une matiere       
-               COMPUTE C-AV-GRADE(C-IDX) = C-SUM-GRADE(C-IDX) /
-               (S-CNT)
-
                MOVE C-AV-GRADE(C-IDX) TO WS-PNT-GRADE
 
                STRING WS-PNT-GRADE
@@ -493,7 +457,6 @@
 
            WRITE R-OUTPUT FROM WS-PNT-EMPTY.
            WRITE R-OUTPUT FROM WS-PNT-STRING.
-           CLOSE F-OUTPUT.
        END-TABLE-FOOTER.
            EXIT.
 
@@ -501,8 +464,6 @@
       *    Ecris le lexique de la signification de C1, C2, ...         *
       ******************************************************************
        START-LEXIQUE.
-           OPEN EXTEND F-OUTPUT.
-
            WRITE R-OUTPUT FROM WS-PNT-AST.
 
            PERFORM VARYING C-IDX FROM 1 BY 1 UNTIL C-IDX > C-CNT
@@ -520,8 +481,6 @@
 
                WRITE R-OUTPUT FROM WS-PNT-STRING
            END-PERFORM.
-
-           CLOSE F-OUTPUT.
        END-LEXIQUE.
            EXIT.
 
@@ -531,8 +490,6 @@
       *    fin du rapport                                              *
       ******************************************************************
        START-FOOTER.
-           OPEN EXTEND F-OUTPUT.
-
       *    Nombre d'élèves
            WRITE R-OUTPUT FROM WS-PNT-AST.
 
@@ -599,7 +556,6 @@
            INTO WS-PNT-STRING.
 
            WRITE R-OUTPUT FROM WS-PNT-STRING.
-           CLOSE F-OUTPUT.
        END-FOOTER.
            EXIT.
            
