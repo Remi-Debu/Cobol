@@ -1,4 +1,7 @@
       ******************************************************************
+      *    Le programme génére un programme COBOL qui contient divers  *
+      *    éléments en fonction des options que l'utilisateur a choisi *
+      *    (interface utilisateur SCREEN SECTION).                     *
       ****************************************************************** 
 
        IDENTIFICATION DIVISION.
@@ -55,35 +58,13 @@
            03 OPTION-13 PIC 9(02).
            03 OPTION-14 PIC 9(02).
 
-       01  VAR-IDENTIFICATION.
-           03 PROGRAM-ID-NAME PIC X(08).
-           03 AUTHOR-NAME     PIC X(20).
-
-       01  VAR-ENVIRONMENT.
-           03 LOGICAL-FILE-NAME PIC X(10).
-           03 READ-FILE-NAME    PIC X(20).
-           03 ENV-ORGANIZATION  PIC X(15).
-           03 ENV-ACCESS-MODE   PIC X(10).
-
-       01  VAR-DATA.
-           03 RECORD-LENGTH  PIC ZZZZ9.
-           03 RECORDING-MODE PIC X(01).
-
-       01  VAR-PARAGRAPHS.
-           03 PARAGRAPH-NUM  PIC X(04).
-           03 PARAGRAPH-NAME PIC X(20).
-
-       01  AGAIN PIC X(01).
-           88 AGAIN-Y VALUE "Y".
-           88 AGAIN-N VALUE "N".
-
        SCREEN SECTION.
        01  SCREEN-OPTIONS FOREGROUND-COLOR 2.
            03 LINE 02 COL 02 
               VALUE "PROGRAM GENERATOR" FOREGROUND-COLOR 3.
            03 LINE 04 COL 02 VALUE "PARTIE FICHIER :".
            03 LINE 05 COL 05 VALUE "01. Lire un fichier.".
-           03 LINE 05 COL 02 PIC X(02) TO k1 FOREGROUND-COLOR 7.
+           03 LINE 05 COL 02 PIC X(02) TO OPTION-1 FOREGROUND-COLOR 7.
            03 LINE 06 COL 05 VALUE "02. Ecrire un fichier.".
            03 LINE 06 COL 02 PIC X(02) TO OPTION-2 FOREGROUND-COLOR 7.
            03 LINE 07 COL 05 VALUE "03. Trier un fichier.".
@@ -114,18 +95,6 @@
            03 LINE 25 COL 02 PIC X(02) TO OPTION-13 FOREGROUND-COLOR 7.
            03 LINE 26 COL 05 VALUE "14. Integrer des paragraphes.".
            03 LINE 26 COL 02 PIC X(02) TO OPTION-14 FOREGROUND-COLOR 7.
-
-       01  SCREEN-IDENTIFICATION FOREGROUND-COLOR 2.
-           03 BLANK SCREEN.
-           03 LINE 02 COL 02 
-              VALUE "IDENTIFICATION GENERATOR" FOREGROUND-COLOR 3.
-           03 LINE 04 COL 02 VALUE "IDENTIFICATION DIVISION.".
-           03 LINE 05 COL 05 VALUE "PROGRAM-ID.".
-           03 LINE 06 COL 05 VALUE "AUTHOR.".
-           03 LINE 05 COL 17 PIC X(08) 
-                             TO PROGRAM-ID-NAME FOREGROUND-COLOR 7.
-           03 LINE 06 COL 17 PIC X(20) 
-                             TO AUTHOR-NAME FOREGROUND-COLOR 7.
 
        01  SCREEN-ENVIRONMENT FOREGROUND-COLOR 2.
            03 LINE 04 COL 02 VALUE "ENVIRONMENT DIVISION.". 
@@ -171,25 +140,6 @@
            03 LINE 06 COL 22 PIC X(01) 
                              TO RECORDING-MODE FOREGROUND-COLOR 7.
 
-       01  SCREEN-PARAGRAPH FOREGROUND-COLOR 2.
-           03 BLANK SCREEN.
-           03 LINE 02 COL 02 
-              VALUE "PARAGRAPH GENERATOR" FOREGROUND-COLOR 3.
-           03 LINE 04 COL 02 VALUE "PARAGRAPH :".
-           03 LINE 05 COL 05 VALUE "PARAGRAPH NUMBER :".
-           03 LINE 06 COL 05 VALUE "PARAGRAPH NAME   :".
-           03 LINE 05 COL 24 PIC X(04) 
-                             TO PARAGRAPH-NUM FOREGROUND-COLOR 7.
-           03 LINE 06 COL 24 PIC X(20) 
-                             TO PARAGRAPH-NAME FOREGROUND-COLOR 7.
-
-       01  SCREEN-AGAIN FOREGROUND-COLOR 2.
-           03 BLANK SCREEN.
-           03 LINE 02 COL 02 
-              VALUE "PROGRAM GENERATOR" FOREGROUND-COLOR 3.
-           03 LINE 04 COL 02 VALUE "ADD A NEW PARAGRAPH (Y/N) :".
-           03 LINE 04 COL 30 PIC X(01) TO AGAIN FOREGROUND-COLOR 7.
-
       ****************************************************************** 
 
        PROCEDURE DIVISION.
@@ -224,8 +174,6 @@
 
       ******************************************************************
        2000-START-IDENTIFICATION.
-           ACCEPT SCREEN-IDENTIFICATION.
-           
            OPEN OUTPUT F-OUTPUT.
 
            STRING PNT-BLANK-6 PNT-AST
@@ -241,14 +189,12 @@
            WRITE R-OUTPUT.
 
            INITIALIZE R-OUTPUT.
-           STRING PNT-BLANK-7 "PROGRAM-ID." SPACE 
-           FUNCTION TRIM(PROGRAM-ID-NAME) "."
+           STRING PNT-BLANK-7 "PROGRAM-ID. myprog.cbl."
            DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
        
            INITIALIZE R-OUTPUT.
-           STRING PNT-BLANK-7 "AUTHOR." SPACE 
-           FUNCTION TRIM(AUTHOR-NAME) "."
+           STRING PNT-BLANK-7 "AUTHOR. YourName."
            DELIMITED BY SIZE INTO R-OUTPUT.
            WRITE R-OUTPUT.
 
@@ -576,45 +522,29 @@
            END-IF.
 
            IF OPTION-14 EQUAL 14
-               PERFORM UNTIL AGAIN-N
-                   INITIALIZE PARAGRAPH-NUM
-                   INITIALIZE PARAGRAPH-NAME
-                   INITIALIZE AGAIN
-                   
-                   ACCEPT SCREEN-PARAGRAPH
+               INITIALIZE R-OUTPUT
+               WRITE R-OUTPUT FROM PNT-BLANK-6
+               WRITE R-OUTPUT FROM PNT-BLANK-AST
 
-                   MOVE FUNCTION UPPER-CASE(PARAGRAPH-NAME) 
-                   TO PARAGRAPH-NAME
-      
-                   INITIALIZE R-OUTPUT
-                   WRITE R-OUTPUT FROM PNT-BLANK-6
-                   WRITE R-OUTPUT FROM PNT-BLANK-AST
-      
-                   INITIALIZE R-OUTPUT
-                   STRING PNT-BLANK-7 PARAGRAPH-NUM "-START-" 
-                   FUNCTION TRIM(PARAGRAPH-NAME) "."
-                   DELIMITED BY SIZE INTO R-OUTPUT
-                   WRITE R-OUTPUT
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "1000-START-NAME."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
 
-                   INITIALIZE R-OUTPUT
-                   STRING PNT-BLANK-6 "*    Paragraphe..." 
-                   DELIMITED BY SIZE INTO R-OUTPUT
-                   WRITE R-OUTPUT
-      
-                   INITIALIZE R-OUTPUT
-                   STRING PNT-BLANK-7 "END-" PARAGRAPH-NUM "-" 
-                   FUNCTION TRIM(PARAGRAPH-NAME) "."
-                   DELIMITED BY SIZE INTO R-OUTPUT
-                   WRITE R-OUTPUT
-      
-                   INITIALIZE R-OUTPUT
-                   STRING PNT-BLANK-11 "EXIT."
-                   DELIMITED BY SIZE INTO R-OUTPUT
-                   WRITE R-OUTPUT
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-6 "*    Paragraphe..." 
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
 
-                   DISPLAY SCREEN-AGAIN
-                   ACCEPT SCREEN-AGAIN
-               END-PERFORM
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-7 "END-1000-NAME."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
+
+               INITIALIZE R-OUTPUT
+               STRING PNT-BLANK-11 "EXIT."
+               DELIMITED BY SIZE INTO R-OUTPUT
+               WRITE R-OUTPUT
            END-IF.
 
            CLOSE F-OUTPUT.
