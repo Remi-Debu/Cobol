@@ -131,6 +131,35 @@
            END-STRING.
            WRITE R-OUTPUT.
 
+           PERFORM 1100-START-READ THRU END-1100-READ.
+           PERFORM 1200-START-PARAGRAPH THRU END-1200-PARAGRAPH.
+
+       END-1000-PROCEDURE.
+           EXIT.
+
+      ******************************************************************
+      *    Ecris :                                                     * 
+      *        START-READ-INPUT.                                       *
+      *            OPEN INPUT F-INPUT.                                 *
+      *            IF FS-INPUT EQUAL "00"                              *
+      *                SET FS-INPUT-OK TO TRUE                         *
+      *                                                                *
+      *                PERFORM UNTIL FS-INPUT-EOF                      *
+      *                  READ F-INPUT                                  *
+      *                  AT END                                        *
+      *                     SET FS-INPUT-EOF TO TRUE                   *
+      *                  NOT AT END                                    *
+      *                     Traitement...                              *
+      *                  END-READ                                      *
+      *                END-PERFORM                                     *
+      *            ELSE                                                *
+      *                DISPLAY "ERROR READ FILE :" SPACE FS-INPUT      *
+      *            END-IF.                                             *
+      *            CLOSE F-INPUT.                                      *
+      *        END-READ-INPUT.                                         *
+      *        EXIT.                                                   *
+      ******************************************************************
+       1100-START-READ.
            IF LK-OPTION-1 EQUAL 1
                INITIALIZE R-OUTPUT
                WRITE R-OUTPUT FROM PNT-BLANK-6
@@ -285,7 +314,17 @@
                END-STRING
                WRITE R-OUTPUT
            END-IF.
+       END-1100-READ.
+           EXIT.
 
+      ******************************************************************
+      *    Ecris :                                                     * 
+      *        1000-START-NAME.                                        *
+      *            Paragraphe...                                       *
+      *        END-1000-NAME.                                          *
+      *        EXIT.                                                   *
+      ******************************************************************
+       1200-START-PARAGRAPH.
            IF LK-OPTION-14 EQUAL 14
                INITIALIZE R-OUTPUT
                WRITE R-OUTPUT FROM PNT-BLANK-6
@@ -323,5 +362,5 @@
                END-STRING
                WRITE R-OUTPUT
            END-IF.
-       END-1000-PROCEDURE.
+       END-1200-PARAGRAPH.
            EXIT.
