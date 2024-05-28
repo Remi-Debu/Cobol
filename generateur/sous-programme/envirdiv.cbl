@@ -120,19 +120,15 @@
                END-IF
       
                IF LK-OPTION-3 EQUAL 3
-                   MOVE "INPUT-SORT"  TO WS-FILE-NAME
-                   PERFORM 1100-START-FILE-ORGA THRU END-1100-FILE-ORGA
-                   MOVE "OUTPUT-SORT" TO WS-FILE-NAME
-                   PERFORM 1100-START-FILE-ORGA THRU END-1100-FILE-ORGA
-                   MOVE "WORK-SORT"   TO WS-FILE-NAME
+                   MOVE "SORT" TO WS-FILE-NAME
                    PERFORM 1100-START-FILE-ORGA THRU END-1100-FILE-ORGA
                END-IF
       
                IF LK-OPTION-4 EQUAL 4
+                   MOVE "MERGE" TO WS-FILE-NAME
                    PERFORM 1100-START-FILE-ORGA THRU END-1100-FILE-ORGA
                END-IF
       
-               INITIALIZE R-OUTPUT
                WRITE R-OUTPUT FROM PNT-BLANK-6
            END-IF.
        END-1000-ENVIRONMENT.

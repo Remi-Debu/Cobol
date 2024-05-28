@@ -1,6 +1,6 @@
       ******************************************************************
       *    Sous programme de "genprog.cbl" qui permet d'écrire         *
-      *    la PROCEDURE DIVISION du fichier "myprog.cbl".             *
+      *    la PROCEDURE DIVISION du fichier "myprog.cbl".              *
       ****************************************************************** 
 
        IDENTIFICATION DIVISION.
@@ -71,6 +71,14 @@
            GOBACK.
 
       ******************************************************************
+      *    Ecris :                                                     * 
+      *        PROCEDURE DIVISION.                                     *
+      *        0000-START-MAIN.                                        *
+      *           Main paragraphe...                                   *
+      *        END-0000-MAIN.                                          *
+      *           STOP RUN.                                            *
+      *                                                                *
+      *    Appel les paragraphes "READ" et "PARAGRAPH"                 *
       ******************************************************************
        1000-START-PROCEDURE.
            STRING PNT-BLANK-6 PNT-AST 
@@ -98,17 +106,48 @@
            END-STRING.
            WRITE R-OUTPUT.
 
-           INITIALIZE R-OUTPUT.
-           IF LK-OPTION-13 EQUAL 13
+           IF LK-OPTION-5 EQUAL 5
+              INITIALIZE R-OUTPUT 
+              STRING 
+                   PNT-BLANK-11 "EXEC SQL"
+                   DELIMITED BY SIZE 
+                   INTO R-OUTPUT
+               END-STRING
+               WRITE R-OUTPUT 
+           
+               INITIALIZE R-OUTPUT
                STRING 
-                   PNT-BLANK-11 'DISPLAY "HELLO COBOL".'
+                   PNT-BLANK-11 
+                   "   CONNECT :USERNAME IDENTIFIED" 
+                   "BY :PASSWD USING :DBNAME"
+                   DELIMITED BY SIZE 
+                   INTO R-OUTPUT
+               END-STRING
+               WRITE R-OUTPUT 
+
+               INITIALIZE R-OUTPUT
+               STRING 
+                   PNT-BLANK-11 "END-EXEC."
+                   DELIMITED BY SIZE 
+                   INTO R-OUTPUT
+               END-STRING
+               WRITE R-OUTPUT 
+           END-IF.
+
+           IF LK-OPTION-10 EQUAL 10
+               INITIALIZE R-OUTPUT
+               STRING 
+                   PNT-BLANK-11 'CALL "yourSubprogramName".'
                    DELIMITED BY SIZE 
                    INTO R-OUTPUT
                END-STRING
                WRITE R-OUTPUT
-           ELSE
+           END-IF.
+
+           IF LK-OPTION-13 EQUAL 13
+               INITIALIZE R-OUTPUT
                STRING 
-                   PNT-BLANK-6 "*    Main paragraphe..."
+                   PNT-BLANK-11 'DISPLAY "HELLO COBOL".'
                    DELIMITED BY SIZE 
                    INTO R-OUTPUT
                END-STRING
@@ -123,16 +162,41 @@
            END-STRING.
            WRITE R-OUTPUT.
 
-           INITIALIZE R-OUTPUT.
-           STRING 
-               PNT-BLANK-11 "STOP RUN."
-               DELIMITED BY SIZE 
-               INTO R-OUTPUT
-           END-STRING.
-           WRITE R-OUTPUT.
+           IF LK-OPTION-5 EQUAL 5
+              INITIALIZE R-OUTPUT
+              STRING 
+                 PNT-BLANK-11 "EXEC SQL DISCONNECT ALL END-EXEC."
+                 DELIMITED BY SIZE 
+                 INTO R-OUTPUT
+              END-STRING
+              WRITE R-OUTPUT
+           END-IF.
 
-           PERFORM 1100-START-READ THRU END-1100-READ.
-           PERFORM 1200-START-PARAGRAPH THRU END-1200-PARAGRAPH.
+           IF LK-OPTION-9 EQUAL 9
+               INITIALIZE R-OUTPUT
+               STRING 
+                   PNT-BLANK-11 "GOBACK."
+                   DELIMITED BY SIZE 
+                   INTO R-OUTPUT
+               END-STRING
+               WRITE R-OUTPUT
+           ELSE
+               INITIALIZE R-OUTPUT
+               STRING 
+                   PNT-BLANK-11 "STOP RUN."
+                   DELIMITED BY SIZE 
+                   INTO R-OUTPUT
+               END-STRING
+               WRITE R-OUTPUT
+           END-IF.
+
+           IF LK-OPTION-1 EQUAL 1
+               PERFORM 1100-START-READ THRU END-1100-READ
+           END-IF.
+
+           IF LK-OPTION-14 EQUAL 14
+               PERFORM 1200-START-PARAGRAPH THRU END-1200-PARAGRAPH
+           END-IF.
 
        END-1000-PROCEDURE.
            EXIT.
@@ -160,160 +224,158 @@
       *        EXIT.                                                   *
       ******************************************************************
        1100-START-READ.
-           IF LK-OPTION-1 EQUAL 1
-               INITIALIZE R-OUTPUT
-               WRITE R-OUTPUT FROM PNT-BLANK-6
-               WRITE R-OUTPUT FROM PNT-BLANK-AST
+           INITIALIZE R-OUTPUT.
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+           WRITE R-OUTPUT FROM PNT-BLANK-AST.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-7 "START-READ-INPUT."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 "START-READ-INPUT."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-11 "OPEN INPUT F-INPUT."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-11 "OPEN INPUT F-INPUT."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-11 'IF FS-INPUT EQUAL "00"'
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-11 'IF FS-INPUT EQUAL "00"'
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-14 "SET FS-INPUT-OK TO TRUE"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-14 "SET FS-INPUT-OK TO TRUE"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               WRITE R-OUTPUT FROM PNT-BLANK-6
+           INITIALIZE R-OUTPUT.
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-14 "PERFORM UNTIL FS-INPUT-EOF"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-14 "PERFORM UNTIL FS-INPUT-EOF"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-17 "READ F-INPUT"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-17 "READ F-INPUT"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-17 "AT END"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-17 "AT END"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-20 "SET FS-INPUT-EOF TO TRUE"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-20 "SET FS-INPUT-EOF TO TRUE"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-17 "NOT AT END"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-17 "NOT AT END"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-6 "*" PNT-BLANK-11 SPACE
-                   SPACE "Traitement..."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-6 "*" PNT-BLANK-11 SPACE
+               SPACE "Traitement..."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-17 "END-READ"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-17 "END-READ"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-14 "END-PERFORM"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-14 "END-PERFORM"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-11 "ELSE"
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-11 "ELSE"
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-14 
-                   'DISPLAY "ERROR READ FILE :" SPACE FS-INPUT'
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-14 
+               'DISPLAY "ERROR READ FILE :" SPACE FS-INPUT'
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-11 "END-IF."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-11 "END-IF."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-11 "CLOSE F-INPUT."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-11 "CLOSE F-INPUT."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-7 "END-READ-INPUT."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 "END-READ-INPUT."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-11 "EXIT."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
-           END-IF.
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-11 "EXIT."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
        END-1100-READ.
            EXIT.
 
@@ -325,42 +387,40 @@
       *        EXIT.                                                   *
       ******************************************************************
        1200-START-PARAGRAPH.
-           IF LK-OPTION-14 EQUAL 14
-               INITIALIZE R-OUTPUT
-               WRITE R-OUTPUT FROM PNT-BLANK-6
-               WRITE R-OUTPUT FROM PNT-BLANK-AST
+           INITIALIZE R-OUTPUT.
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+           WRITE R-OUTPUT FROM PNT-BLANK-AST.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-7 "1000-START-NAME."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 "1000-START-NAME."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-6 "*    Paragraphe..." 
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-6 "*    Paragraphe..." 
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-7 "END-1000-NAME."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 "END-1000-NAME."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
 
-               INITIALIZE R-OUTPUT
-               STRING 
-                   PNT-BLANK-11 "EXIT."
-                   DELIMITED BY SIZE 
-                   INTO R-OUTPUT
-               END-STRING
-               WRITE R-OUTPUT
-           END-IF.
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-11 "EXIT."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
        END-1200-PARAGRAPH.
            EXIT.

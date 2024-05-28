@@ -71,7 +71,7 @@
       *        DATA DIVISION.                                          * 
       *        FILE SECTION.                                           *
       *    Puis appel le paragraphe "FILE SECTION"                     *
-      *    Ecris :                                                     *
+      *                                                                *
       *        WORKING-STORAGE SECTION.                                *
       *    Puis appel les paragraphes "FS-INPUT" et "FS-OUTPUT"        *
       ******************************************************************
@@ -82,16 +82,22 @@
                INTO PNT-BLANK-AST
            END-STRING.
 
-           WRITE R-OUTPUT FROM PNT-BLANK-AST.
-           WRITE R-OUTPUT FROM PNT-BLANK-6.
+           IF LK-OPTION-1 EQUAL 1 OR LK-OPTION-2 EQUAL 2 
+           OR LK-OPTION-3 EQUAL 4 OR LK-OPTION-4 EQUAL 4
+           OR LK-OPTION-3 EQUAL 5 OR LK-OPTION-4 EQUAL 6
+           OR LK-OPTION-3 EQUAL 7 OR LK-OPTION-4 EQUAL 8
 
-           INITIALIZE R-OUTPUT.
-           STRING 
-               PNT-BLANK-7 "DATA DIVISION."
-               DELIMITED BY SIZE 
-               INTO R-OUTPUT
-           END-STRING.
-           WRITE R-OUTPUT.
+           WRITE R-OUTPUT FROM PNT-BLANK-AST
+           WRITE R-OUTPUT FROM PNT-BLANK-6
+
+               INITIALIZE R-OUTPUT
+               STRING 
+                   PNT-BLANK-7 "DATA DIVISION."
+                   DELIMITED BY SIZE 
+                   INTO R-OUTPUT
+               END-STRING
+               WRITE R-OUTPUT
+           END-IF.
 
            IF LK-OPTION-1 EQUAL 1 OR LK-OPTION-2 EQUAL 2 
            OR LK-OPTION-3 EQUAL 4 OR LK-OPTION-4 EQUAL 4
@@ -117,30 +123,28 @@
            END-IF.
 
            IF LK-OPTION-3 EQUAL 3
-               MOVE "INPUT-SORT" TO WS-FILE-NAME
-               PERFORM 1100-START-FILE-SECTION
-                  THRU END-1100-FILE-SECTION
-               MOVE "OUTPUT-SORT" TO WS-FILE-NAME
-               PERFORM 1100-START-FILE-SECTION
-                  THRU END-1100-FILE-SECTION
-               MOVE "WORK-SORT" TO WS-FILE-NAME
+               MOVE "SORT" TO WS-FILE-NAME
                PERFORM 1100-START-FILE-SECTION
                   THRU END-1100-FILE-SECTION
            END-IF.
 
            IF LK-OPTION-4 EQUAL 4
-               MOVE "INPUT" TO WS-FILE-NAME
+               MOVE "MERGE" TO WS-FILE-NAME
                PERFORM 1100-START-FILE-SECTION
                   THRU END-1100-FILE-SECTION
            END-IF.
 
-           INITIALIZE R-OUTPUT.
-           STRING 
-               PNT-BLANK-7 "WORKING-STORAGE SECTION."
-               DELIMITED BY SIZE 
-               INTO R-OUTPUT
-           END-STRING.
-           WRITE R-OUTPUT.
+           IF LK-OPTION-1 EQUAL 1 OR LK-OPTION-2 EQUAL 2 
+           OR LK-OPTION-3 EQUAL 4 OR LK-OPTION-4 EQUAL 4
+
+               INITIALIZE R-OUTPUT
+               STRING 
+                   PNT-BLANK-7 "WORKING-STORAGE SECTION."
+                   DELIMITED BY SIZE 
+                   INTO R-OUTPUT
+               END-STRING
+               WRITE R-OUTPUT
+           END-IF.
 
            IF LK-OPTION-1 EQUAL 1
                MOVE "INPUT" TO WS-FILE-NAME
@@ -155,21 +159,20 @@
            END-IF.
 
            IF LK-OPTION-3 EQUAL 3
-               MOVE "INPUT-SORT" TO WS-FILE-NAME
-               PERFORM 1200-START-FS-INPUT
-                  THRU END-1200-FS-INPUT
-               MOVE "OUTPUT-SORT" TO WS-FILE-NAME
-               PERFORM 1300-START-FS-OUTPUT
-                  THRU END-1300-FS-OUTPUT
-               MOVE "WORK-SORT" TO WS-FILE-NAME
+               MOVE "SORT" TO WS-FILE-NAME
                PERFORM 1300-START-FS-OUTPUT
                   THRU END-1300-FS-OUTPUT
            END-IF.
 
            IF LK-OPTION-4 EQUAL 4
-               MOVE "INPUT" TO WS-FILE-NAME
+               MOVE "MERGE" TO WS-FILE-NAME
                PERFORM 1200-START-FS-INPUT
                   THRU END-1200-FS-INPUT
+           END-IF.
+
+           IF LK-OPTION-5 EQUAL 5
+               PERFORM 1400-START-SQL-SECTION 
+                  THRU END-1400-SQL-SECTION
            END-IF.
        END-1000-DATA.
            EXIT.
@@ -283,4 +286,75 @@
 
            WRITE R-OUTPUT FROM PNT-BLANK-6.
        END-1300-FS-OUTPUT.
+           EXIT.
+      
+      ******************************************************************
+      *    Ecris :                                                     *
+      *        EXEC SQL BEGIN DECLARE SECTION END-EXEC.                *
+      *        01  DBNAME   PIC  X(30) VALUE 'dbname'.                 *
+      *        01  USERNAME PIC  X(30) VALUE 'username'.               *
+      *        01  PASSWD   PIC  X(10) VALUE 'password'.               *
+      *        EXEC SQL END DECLARE SECTION END-EXEC.                  *
+      *                                                                *
+      *        EXEC SQL INCLUDE SQLCA END-EXEC.                        *
+      ******************************************************************
+       1400-START-SQL-SECTION.
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 
+               "EXEC SQL BEGIN DECLARE SECTION END-EXEC."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 
+               '01  DBNAME   PIC  X(30) VALUE "dbname".'
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 
+               '01  USERNAME PIC  X(30) VALUE "username".'
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 
+               '01  PASSWD   PIC  X(10) VALUE "password".'
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
+
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 
+               "EXEC SQL END DECLARE SECTION END-EXEC."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
+
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+
+           INITIALIZE R-OUTPUT.
+           STRING 
+               PNT-BLANK-7 
+               "EXEC SQL INCLUDE SQLCA END-EXEC."
+               DELIMITED BY SIZE 
+               INTO R-OUTPUT
+           END-STRING.
+           WRITE R-OUTPUT.
+
+           WRITE R-OUTPUT FROM PNT-BLANK-6.
+       END-1400-SQL-SECTION.
            EXIT.

@@ -53,38 +53,38 @@
        01  SCREEN-OPTIONS FOREGROUND-COLOR 2.
            03 LINE 02 COL 02 
               VALUE "PROGRAM GENERATOR" FOREGROUND-COLOR 3.
-           03 LINE 04 COL 02 VALUE "PARTIE FICHIER :".
-           03 LINE 05 COL 05 VALUE "01. Lire un fichier.".
+           03 LINE 04 COL 02 VALUE "FILE :".
+           03 LINE 05 COL 05 VALUE "01. Read a file.".
            03 LINE 05 COL 02 PIC X(02) TO OPTION-1 FOREGROUND-COLOR 7.
-           03 LINE 06 COL 05 VALUE "02. Ecrire un fichier.".
+           03 LINE 06 COL 05 VALUE "02. Write a file.".
            03 LINE 06 COL 02 PIC X(02) TO OPTION-2 FOREGROUND-COLOR 7.
-           03 LINE 07 COL 05 VALUE "03. Trier un fichier.".
+           03 LINE 07 COL 05 VALUE "03. Sort a file.".
            03 LINE 07 COL 02 PIC X(02) TO OPTION-3 FOREGROUND-COLOR 7.
-           03 LINE 08 COL 05 VALUE "04. Fusionner plusieurs fichiers.".
+           03 LINE 08 COL 05 VALUE "04. Merge multiple files.".
            03 LINE 08 COL 02 PIC X(02) TO OPTION-4 FOREGROUND-COLOR 7.
-           03 LINE 10 COL 02 VALUE "PARTIE SQL :".
-           03 LINE 11 COL 05 VALUE "05. Acceder a une BDD.".
+           03 LINE 10 COL 02 VALUE "SQL :".
+           03 LINE 11 COL 05 VALUE "05. DB connection.".
            03 LINE 11 COL 02 PIC X(02) TO OPTION-5 FOREGROUND-COLOR 7.
-           03 LINE 12 COL 05 VALUE "06. Generer une requete COUNT(*).".
+           03 LINE 12 COL 05 VALUE "06. Add a COUNT(*) request.".
            03 LINE 12 COL 02 PIC X(02) TO OPTION-6 FOREGROUND-COLOR 7.
-           03 LINE 13 COL 05 VALUE "07. Generer un curseur.".
+           03 LINE 13 COL 05 VALUE "07. Add a cursor.".
            03 LINE 13 COL 02 PIC X(02) TO OPTION-7 FOREGROUND-COLOR 7.
-           03 LINE 14 COL 05 VALUE "08. Generer une requete UPDATE.".
+           03 LINE 14 COL 05 VALUE "08. Add a UPDATE request.".
            03 LINE 14 COL 02 PIC X(02) TO OPTION-8 FOREGROUND-COLOR 7.
-           03 LINE 16 COL 02 VALUE "PARTIE SOUS-ROUTINES :".
-           03 LINE 17 COL 05 VALUE "09. Creer une sous-routine.".
+           03 LINE 16 COL 02 VALUE "SUBPROGRAM :".
+           03 LINE 17 COL 05 VALUE "09. Create a subprogram.".
            03 LINE 17 COL 02 PIC X(02) TO OPTION-9 FOREGROUND-COLOR 7.
-           03 LINE 18 COL 05 VALUE "10. Integrer un appel type.".
+           03 LINE 18 COL 05 VALUE "10. Add a CALL statement.".
            03 LINE 18 COL 02 PIC X(02) TO OPTION-10 FOREGROUND-COLOR 7.
-           03 LINE 20 COL 02 VALUE "PARTIE WORKING-STORAGE :".
-           03 LINE 21 COL 05 VALUE "11. Preparer un Copybook.".
+           03 LINE 20 COL 02 VALUE "COPYBOOK :".
+           03 LINE 21 COL 05 VALUE "11. Create a copybook.".
            03 LINE 21 COL 02 PIC X(02) TO OPTION-11 FOREGROUND-COLOR 7.
-           03 LINE 22 COL 05 VALUE "12. Integrer un Copybook.".
+           03 LINE 22 COL 05 VALUE "12. Add a COPY statement.".
            03 LINE 22 COL 02 PIC X(02) TO OPTION-12 FOREGROUND-COLOR 7.
-           03 LINE 24 COL 02 VALUE "PARTIE PROCEDURE :".
-           03 LINE 25 COL 05 VALUE "13. Ajouter un Hello Cobol.".
+           03 LINE 24 COL 02 VALUE "PROCEDURE :".
+           03 LINE 25 COL 05 VALUE '13. Add a "Hello Cobol".'.
            03 LINE 25 COL 02 PIC X(02) TO OPTION-13 FOREGROUND-COLOR 7.
-           03 LINE 26 COL 05 VALUE "14. Integrer des paragraphes.".
+           03 LINE 26 COL 05 VALUE "14. Add paragraphs.".
            03 LINE 26 COL 02 PIC X(02) TO OPTION-14 FOREGROUND-COLOR 7.
 
       ****************************************************************** 
@@ -92,10 +92,10 @@
        PROCEDURE DIVISION.
        0000-START-MAIN.
            ACCEPT SCREEN-OPTIONS.
-
+           
            CALL "identdiv".   
            CALL "envirdiv" USING OPTIONS-NUM.
            CALL "datadiv"  USING OPTIONS-NUM.
-           CALL "procediv"  USING OPTIONS-NUM.
+           CALL "procediv" USING OPTIONS-NUM.
        END-0000-MAIN.
            STOP RUN.
