@@ -108,7 +108,7 @@
                WRITE R-OUTPUT
            ELSE
                STRING 
-                   PNT-BLANK-11 "Main paragraphe..."
+                   PNT-BLANK-6 "*    Main paragraphe..."
                    DELIMITED BY SIZE 
                    INTO R-OUTPUT
                END-STRING
