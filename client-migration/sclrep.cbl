@@ -111,7 +111,8 @@
                PERFORM 3000-START-HANDLE THRU END-3000-HANDLE
                PERFORM 4000-START-WRITE THRU END-4000-WRITE
            END-IF.
-
+           
+           CALL "mytest".
        END-0000-MAIN.
            EXEC SQL COMMIT WORK END-EXEC.
            EXEC SQL DISCONNECT ALL END-EXEC.  
