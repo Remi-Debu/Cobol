@@ -1,0 +1,46 @@
+                              RAPPORT DE SYNTHESE
+                              Rémi DEBUSSCHERE
+
+
+************************************************************************************************************************
+ID      ||GROUPE        ||TYPE          ||LABEL                                    ||STATUS  ||DATE DEBUT||DATE FIN  ||MONTANT   ||
+01000000||AGA_BASE      ||IRP AUTO Sante||Regimes Actifs                           ||Actif   ||01-01-2006||01-01-3000||  5275,90€||
+59008750||AGR_BASE      ||IRP AUTO Sante||Regimes Retraites                        ||Actif   ||01-09-2006||01-09-3000|| 13393,60€||
+03009800||AGTNA_AH      ||IRP AUTO Sante||AGTNA                                    ||Suspendu||01-01-2006||01-01-3000||  8135,60€||
+04009800||AGTNA_BASE    ||IRP AUTO Sante||Regimes TNS Actifs                       ||Actif   ||01-01-2006||01-01-3000||  9868,30€||
+59009400||AGTNI_AH      ||IRP AUTO Sante||AGTNI                                    ||Suspendu||01-11-2006||01-01-3000||  1955,30€||
+59010200||AGTNR_BASE    ||IRP AUTO Sante||Regimes TNS retraites                    ||Actif   ||01-01-2006||01-12-3000||  2402,80€||
+07000000||AH_BASE       ||IRP AUTO Sante||TNS Actif IJ                             ||Actif   ||01-01-2006||01-01-3000||  8539,40€||
+59033076||ANI_FM        ||IRP AUTO Sante||ANI FM                                   ||Actif   ||01-01-2006||01-01-3000||  6599,90€||
+59033176||ANI_PRV       ||IRP AUTO Sante||ANI PRV                                  ||Resilie ||01-01-2006||01-01-3000|| 13583,20€||
+10014000||ASA_BASE      ||IRP AUTO Sante||ASI Actifs                               ||Actif   ||01-01-2006||01-01-3000||   255,70€||
+59014400||ASR_BASE      ||IRP AUTO Sante||ASI Retraites                            ||Resilie ||01-12-2006||01-11-3000||  7875,50€||
+59014800||ASTNA_AH      ||IRP AUTO Sante||ASTNA AH                                 ||Actif   ||01-01-2006||01-03-3000||  7738,50€||
+59014800||ASTNA_BASE    ||IRP AUTO Sante||ASI TNS Actifs                           ||Suspendu||01-07-2006||01-01-3000|| 14851,40€||
+14040437||BAS_ACEDAT    ||IRP AUTO Sante||CEDAT                                    ||Suspendu||01-04-2015||01-01-3000||  1815,00€||
+59044469||BAS_ACENTRAL  ||IRP AUTO Sante||Gpe CENTRAL AUTO ind                     ||Actif   ||01-01-2018||01-08-3000||   914,90€||
+16000000||BAS_ACLARIS   ||IRP AUTO Sante||Gpe CLARIS AUTOMOBILES                   ||Actif   ||01-01-2019||01-01-3000||   217,90€||
+17046790||BAS_AKERPROI  ||IRP AUTO Sante||Groupe KER PRO                           ||Resilie ||01-10-2019||01-01-3000||  7065,90€||
+59046800||BAS_AKERPROM  ||IRP AUTO Sante||Groupe KER PRO                           ||Resilie ||01-10-2019||01-01-3000||  5666,20€||
+19049142||BAS_AKMMOTOR  ||IRP AUTO Sante||AKM Motors                               ||Resilie ||01-11-2021||01-01-3000||  3763,10€||
+59049799||BAS_ALABBE    ||IRP AUTO Sante||GRUAU LABBE                              ||Resilie ||01-11-2022||01-01-3000|| 13845,50€||
+21044242||BAS_ALABEL    ||IRP AUTO Sante||LABEL ind.                               ||Actif   ||01-08-2017||01-01-3000||  8318,60€||
+59041605||BAS_ALAMIRAU  ||IRP AUTO Sante||Groupe LAMIRAULT ind.                    ||Actif   ||01-01-2016||01-01-3000||  3286,60€||
+23000000||BAS_ALAUNAY   ||IRP AUTO Sante||Groupe LAUNAY ind.                       ||Actif   ||01-06-2018||01-01-3000|| 11504,30€||
+59046699||BAS_ALECLEAO  ||IRP AUTO Sante||LECLERC AUTOMOBILES                      ||Actif   ||01-10-2019||01-01-3000||  8778,50€||
+59046745||ANI_PRV       ||IRP AUTO Sante||L.R PARTICIPATIONS                       ||Suspendu||01-10-2019||01-01-3000|| 11932,00€||
+59049026||BAS_ALOIRAL   ||IRP AUTO Sante||Loire Alliance Motors                    ||Suspendu||01-04-2022||01-01-3000|| 13722,40€||
+27044672||BAS_AMAGYARC  ||IRP AUTO Sante||MAGYAR ind.                              ||Suspendu||01-01-2018||01-01-3000||   576,10€||
+59050005||BAS_AMAGYARC2 ||IRP AUTO Sante||MAGYAR ind.                              ||Actif   ||01-11-2022||01-03-3000|| 14696,00€||
+29045730||BAS_AMARY     ||IRP AUTO Sante||Mary Automobiles ind.                    ||Suspendu||01-10-2021||01-01-3000|| 11482,00€||
+89000000||BAS_AMARY     ||IRP AUTO Sante||CEDAT                                    ||Actif   ||01-10-2016||01-04-3000|| 66006,00€||
+75000000||ANI_PRV       ||IRP AUTO Sante||Groupe LAUNAY ind.                       ||Actif   ||01-10-2009||01-01-3000|| 16666,04€||
+32000000||BAS_AMARY     ||IRP AUTO Sante||Regimes TNS retraites                    ||Suspendu||01-10-2016||01-05-3000||  7823,00€||
+77000000||BAS_AMARY     ||IRP AUTO Sante||Groupe LAMIRAULT ind.                    ||Resilie ||01-10-2065||01-01-3000||   666,00€||
+34000000||ANI_PRV       ||IRP AUTO Sante||Mary Automobiles ind.                    ||Suspendu||01-10-2016||01-01-3000|| 66666,00€||
+35000000||BAS_ALAMIRAU  ||IRP AUTO Sante||CEDAT                                    ||Actif   ||01-10-2027||01-06-3000|| 64266,00€||
+73000000||BAS_AKERPROI  ||IRP AUTO Sante||ANI PRV                                  ||Resilie ||01-10-2026||01-06-3000||  6096,05€||
+
+************************************************************************************************************************
+Nombre d'enregistrements :   36
+Délimiteur : *

@@ -1,1 +1,10 @@
+○ Signification acronyme COBOL :
 COMMON BUSINESS ORIENTED LANGUAGE
+○ Phrase COBOL :
+Chaque ligne de code dans un programme cobol est une phrase et elle se termine par un '.'
+○ Paragraphe COBOL :
+Ils sont déclarés à partir de la colonne 8 dans la procedure division et servent à structurer le code. 
+○ En présenter les grands principes en quelques phrases :
+
+○ Les principaux éléments de la structure physique :
+4 DIVISION : IDENTIFICATION, ENVIRONMENT, DATA, PROCEDURE.
