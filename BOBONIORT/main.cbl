@@ -9,8 +9,6 @@
 
        PROCEDURE DIVISION.
        0000-START-MAIN.
-           CALL "yourSubprogramName".
-
-           DISPLAY "HELLO COBOL".
+               CALL "signin".
        END-0000-MAIN.
            STOP RUN.
